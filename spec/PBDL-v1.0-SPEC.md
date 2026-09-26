@@ -58,11 +58,15 @@ Treatment Pathway（治疗路径）**不属于**初始重新设计中的 PBDL-Co
 
 PBDL-Core **MUST** 用于描述信息，而不是规定执行行为。
 
-### 4.2 事实与派生结果分离
+### 4.2 来源陈述与派生结果分离
 
-PBDL-Core **MUST** 区分来源直接描述的事实与外部系统派生出的分析结果。
+PBDL-Core **MUST** 区分来源直接描述的信息与外部系统推断、分析或计算得到的信息。
 
-除非被明确表示为外部派生工件，否则 PBDL-Core **MUST NOT** 将以下内容视为来源事实：
+PBDL 表示“某个来源怎样描述、记录、观测或推断了某项 Behavior / Preference 信息”，但 PBDL-Core 本身 **MUST NOT** 因为信息被写入 PBDL 就宣称该信息在现实世界中已经被认证为绝对真实。
+
+例如，患者自述“每天都按时服药”与设备或记录显示“过去一周存在漏服”可以同时被表示；PBDL-Core 不自动裁决哪一个来源正确。
+
+除非被明确表示为外部派生工件或推断结果，否则 PBDL-Core **MUST NOT** 将以下内容伪装成来源直接描述的信息：
 
 - 风险评分
 - 推荐结果
@@ -266,7 +270,9 @@ Subject 与 Behavior executor / actor 不是同一个概念：
 
 R1B 不引入完整 Participant model，也不冻结 `executor` 的最终字段类型。后续设计 **MUST NOT** 仅因为 Behavior 已绑定 Subject 就无条件删除历史 executor 语义。
 
-Behavior 的具体字段、行为类型词表、时间模型、trigger / symptom 模型、Evidence / Provenance 结构和语法仍为 **TODO**。
+每个 canonical Behavior instance **MUST** 实际具有至少一条 provenance linkage，使其来源能够被追踪。仅仅“语言理论上支持 provenance”不足以满足该要求。
+
+Behavior 的具体字段、行为类型词表、时间模型、trigger / symptom 模型、Provenance / Evidence 的 surface 结构和语法仍为 **TODO**。
 
 ## 11. Preference
 
@@ -296,7 +302,11 @@ Preference category 或显示标签 **MUST NOT** 自动充当 Preference identit
 
 R1B 不冻结 `associated_behavior` 最终采用专用引用字段还是统一 Relation，也不冻结具体 Relation type。
 
-Preference 的具体字段、偏好类型词表、取值模型、confidence、Evidence / Provenance 结构、时间模型和语法仍为 **TODO**。
+每个 canonical Preference instance **MUST** 实际具有至少一条 provenance linkage，使下游能够判断该 Preference 是直接表达还是外部推断所得。
+
+直接表达与推断出的 Preference 可以具有相同的 preference category 与 preference value，但其 provenance semantics **MUST** 保持可区分，不得仅依赖自然语言 note 来判断。
+
+Preference 的具体字段、偏好类型词表、取值模型、confidence surface、Provenance / Evidence 的具体结构、时间模型和语法仍为 **TODO**。
 
 ## 12. Context
 
@@ -306,23 +316,138 @@ Context 是 PBDL-Core 的候选核心概念，用于承载解释 Behavior 或 Pr
 
 ## 13. Evidence 与 Provenance
 
-Behavior 与 Preference **MUST** 能够追踪至其来源。
+R1C 冻结 Provenance 与 Evidence 的最小语义边界。
 
-Evidence / Provenance 的精确结构尚未冻结。
+### 13.1 Provenance
 
-### 13.1 非规范性候选来源类型
+Provenance 回答：
 
-下列值仅作为设计候选记录，**不构成已经冻结的枚举**：
+> “这条 Behavior / Preference 信息是怎么来的？”
 
-- `self_report`
-- `ehr`
-- `survey`
-- `interview`
-- `device`
-- `manual_annotation`
-- `model_inference`
+Provenance 描述信息的来源与产生路径。其语义 **MUST** 足以让下游判断该信息来自什么来源或产生方式，并能够区分来源直接描述的信息与外部推断得到的信息。
 
-**TODO：** 定义来源身份、来源类型绑定、时间戳、原始片段或外部引用、作者或代理信息、是否需要置信度表示，以及来源链追踪方式。
+概念上，Provenance 可以涉及：
+
+- 来源类型；
+- 来源身份或外部引用；
+- 产生方式；
+- 记录、抽取或生成该信息的主体 / 系统；
+- 在必要时用于来源解释的时间信息；
+- 该信息是否经过推断。
+
+以上是语义职责，不是 R1C 冻结的字段列表或 Schema。
+
+每个 canonical Behavior **MUST** 至少具有一条 provenance linkage。
+
+每个 canonical Preference **MUST** 至少具有一条 provenance linkage。
+
+同一个 Behavior 或 Preference **MAY** 具有多条 provenance linkage，例如患者自述、EHR 记录与设备观测共同支持同一项结构化语义。
+
+多条 provenance **MUST NOT** 被解释为该信息自动“更真实”或自动具有更高可信度。PBDL-Core 不负责 evidence weighting、source ranking 或真值裁决。
+
+### 13.2 Evidence
+
+Evidence 回答：
+
+> “有什么材料支持、承载或记录了这条信息？”
+
+Evidence 可以是支撑某项 Behavior / Preference 表示的材料或外部引用，例如：
+
+- EHR 文本片段；
+- 问卷回答；
+- 访谈记录；
+- 设备观测；
+- 外部文档引用。
+
+Evidence 与 Provenance 相关但不同。
+
+Provenance 说明“信息如何产生以及从哪里来”；Evidence 说明“有哪些材料支持或承载该信息”。
+
+Evidence **MAY** 作为 Provenance 指向或关联的支持材料，但二者 **MUST NOT** 被视为完全同义的概念。
+
+R1C 不冻结 Evidence 的具体字段、identity requirement、嵌套方式或外部引用格式。
+
+### 13.3 DIRECT 与 INFERRED
+
+R1C 冻结至少两类必须可区分的 provenance semantics。具体 surface enum 名称本轮不冻结。
+
+#### DIRECT
+
+DIRECT 表示信息直接来自某个来源的报告、记录或观测，例如概念上的：
+
+- patient self-report；
+- survey response；
+- clinician documentation；
+- device observation；
+- manual entry。
+
+DIRECT **MUST NOT** 被解释为“已经证明绝对真实”。它只表示 PBDL 没有把该项语义标记为由外部推理过程生成的结论。
+
+#### INFERRED
+
+INFERRED 表示信息由 LLM、ML model、rule engine、analytic process 或其他 inference process 根据其他输入推断产生。
+
+INFERRED information **MUST NOT** 静默表示成 DIRECT 或来源直接描述的信息。
+
+canonical semantic representation **MUST** 使下游能够区分 DIRECT 与 INFERRED provenance semantics，而不能仅通过自由文本 note 猜测。
+
+对于 Preference：
+
+- 患者明确表达“我不想每天打针”可属于 DIRECT / expressed Preference；
+- 模型根据行为记录推断“患者可能偏好低治疗负担方案”属于 INFERRED Preference。
+
+即使两者最终具有相同的 preference category 或 preference value，其 provenance semantics 仍 **MUST** 可区分。
+
+### 13.4 冲突来源与多来源
+
+如果多个来源支持的是同一项结构化语义，一个 Behavior / Preference **MAY** 关联多条 provenance。
+
+如果不同来源表达的 semantic content 实质不同或相互冲突，它们 **SHOULD** 保持为不同的 Behavior / Preference instances，而不是仅把不同来源合并进同一对象的 provenance 列表，从而掩盖语义冲突。
+
+例如：
+
+- 患者自述规律服药；
+- 设备或记录显示存在漏服；
+
+二者可以并存，但不应因为主体相同就被静默压缩成一个单一 Behavior 并仅附加两个 provenance source。
+
+PBDL-Core 不负责自动裁决冲突，不在 R1C 设计 ConflictAnalysis。
+
+### 13.5 Legacy source compatibility
+
+历史 `Behavior.evidence_source` 的来源追踪能力继续保留，但其规范性方向是映射到统一的 Provenance / Source 语义，而不是把单一 string 字段冻结为最终模型。
+
+历史 `Preference.source_type` 同样收敛到统一的 Provenance / Source 语义。
+
+Behavior 与 Preference **SHOULD NOT** 长期维护两套彼此独立、语义重复的来源机制。
+
+R1C 不删除 `evidence_source` 或 `source_type` 的历史兼容意义，也不冻结它们最终对应的 surface field。
+
+### 13.6 Confidence boundary
+
+confidence **MUST NOT** 成为所有 Preference 的强制属性。
+
+DIRECT self-report **MUST NOT** 被迫赋予模型式 confidence。
+
+如果未来 confidence 用于 INFERRED information，其语义 **MUST** 能够说明：
+
+- confidence 由谁或什么系统生成；
+- confidence 衡量什么；
+- confidence 对应哪个 inference process / model / analytic process。
+
+R1C 不冻结 confidence 的字段名、数值范围、算法、校准方式或阈值。
+
+历史 `Preference.confidence_score` 因此继续保留为待细化概念，但不得被解释为所有 Preference 的必需 Core 属性。
+
+### 13.7 Provenance identity
+
+R1C **不要求** Provenance 自身具有独立的 document-local identity。
+
+当前冻结的最小引用需求是 Behavior / Preference 指向或携带足够的 provenance information；目前没有 Core 场景要求其他实体稳定引用某个 Provenance instance。
+
+未来若共享 provenance、provenance chaining、Evidence 引用或其他明确使用场景需要稳定引用 Provenance，可在后续设计轮次重新冻结 identity requirement。
+
+Provenance 的具体 Schema、field names、嵌套结构与 serialization 仍为 **TODO**。
 
 ## 14. Relations
 
@@ -400,23 +525,32 @@ R0 阶段不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语编�
 
 当前已冻结的语义约束如下：
 
-1. PBDL-Core **MUST** 区分来源直接描述的信息与派生分析结果。
-2. 一个 PBDL document **MUST** 至少包含一个 Subject，并 **MAY** 包含多个 Subject。
-3. Subject、Behavior 与 Preference **MUST** 具有 document-local identity。
-4. Subject、Behavior 与 Preference 共享同一个 document-local identity namespace，其 identifier **MUST** 在所属 PBDL document 内唯一。
-5. identifier **MUST NOT** 由数组位置或列表顺序充当规范性 identity。
-6. Behavior 与 Preference **MUST** 各自绑定到恰好一个 Subject。
-7. Behavior type、Preference category、显示标签与 Relation type **MUST NOT** 自动充当 entity instance identity。
-8. Core reference **MUST** 在当前文档 reference scope 内解析到恰好一个实体。
-9. undefined reference 与 ambiguous reference 均无效。
-10. Relation source / target **MUST** 使用明确 entity reference，不能使用未解析的自由文本标签。
-11. Core Relation endpoint 仅允许 Behavior 与 Preference；Subject 与 Relation 均不是 R1B 中的 Relation endpoint。
-12. Relation 在 v1 Core 最小模型中不要求 identity，且 Relation **MUST NOT** 作为 Relation endpoint。
-13. Behavior 与 Preference **MUST** 支持来源 / Provenance 追踪，但其详细结构不在 R1B 冻结。
-14. PBDL-Core **MUST NOT** 将未经证据支持的因果权重作为来源事实或默认 Core 语义。
-15. Treatment Pathway 不属于初始重新设计中的 PBDL-Core。
+1. PBDL-Core **MUST** 区分来源直接描述的信息与外部推断、分析或计算得到的信息。
+2. PBDL-Core **MUST NOT** 因信息被写入 PBDL 就宣称该信息在现实世界中已经被认证为绝对真实。
+3. 一个 PBDL document **MUST** 至少包含一个 Subject，并 **MAY** 包含多个 Subject。
+4. Subject、Behavior 与 Preference **MUST** 具有 document-local identity。
+5. Subject、Behavior 与 Preference 共享同一个 document-local identity namespace，其 identifier **MUST** 在所属 PBDL document 内唯一。
+6. identifier **MUST NOT** 由数组位置或列表顺序充当规范性 identity。
+7. Behavior 与 Preference **MUST** 各自绑定到恰好一个 Subject。
+8. 每个 canonical Behavior **MUST** 实际具有至少一条 provenance linkage。
+9. 每个 canonical Preference **MUST** 实际具有至少一条 provenance linkage。
+10. canonical semantic representation **MUST** 能区分 DIRECT 与 INFERRED provenance semantics。
+11. INFERRED information **MUST NOT** 静默表示成 DIRECT/source-described information。
+12. 同一个 Behavior / Preference **MAY** 具有多条 provenance linkage，但多来源 **MUST NOT** 自动表示更高真值或可信度。
+13. 如果不同来源表达的 semantic content 实质不同或冲突，它们 **SHOULD** 保持为不同 Behavior / Preference instances；PBDL-Core 不自动裁决冲突。
+14. Provenance 与 Evidence **MUST NOT** 被当作完全同义概念。
+15. confidence **MUST NOT** 成为所有 Preference 的强制属性，DIRECT self-report **MUST NOT** 被迫赋予模型式 confidence。
+16. Provenance 在 R1C 中不要求独立 identity。
+17. Behavior type、Preference category、显示标签与 Relation type **MUST NOT** 自动充当 entity instance identity。
+18. Core reference **MUST** 在当前文档 reference scope 内解析到恰好一个实体。
+19. undefined reference 与 ambiguous reference 均无效。
+20. Relation source / target **MUST** 使用明确 entity reference，不能使用未解析的自由文本标签。
+21. Core Relation endpoint 仅允许 Behavior 与 Preference；Subject 与 Relation 均不是 R1B 中的 Relation endpoint。
+22. Relation 在 v1 Core 最小模型中不要求 identity，且 Relation **MUST NOT** 作为 Relation endpoint。
+23. PBDL-Core **MUST NOT** 将未经证据支持的因果权重作为来源直接描述的信息或默认 Core 语义。
+24. Treatment Pathway 不属于初始重新设计中的 PBDL-Core。
 
-跨文档 identity / reference protocol、temporal model、Evidence / Provenance 详细结构、confidence、trigger / symptom、术语词表和 Constraint 模型仍为 **TODO**。
+跨文档 identity / reference protocol、temporal model、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom、术语词表、Context 详细结构和 Constraint 模型仍为 **TODO**。
 
 ## 17. 规范化表示
 

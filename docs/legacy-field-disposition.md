@@ -428,6 +428,22 @@ R1A 不解决以下问题，只将其登记为后续规范设计输入。
 
 需要明确 Evidence、Source、Provenance 三者是否分层。
 
+**R1C 状态：partially resolved by R1C。**
+
+R1C 已冻结：
+
+- Behavior 与 Preference 统一采用 Provenance / Source 语义，不长期维护两套平行来源机制；
+- Provenance 与 Evidence 相关但不同，不能继续作为完全同义概念；
+- 每个 canonical Behavior / Preference 必须实际至少具有一条 provenance linkage；
+- DIRECT 与 INFERRED provenance semantics 必须可区分；
+- Provenance 在 R1C 中暂不强制独立 identity。
+
+仍未解决：
+
+- Provenance / Evidence 的具体字段与 Schema；
+- Source、Evidence、Provenance 的最终对象分层与 surface naming；
+- 多来源共享、provenance chaining 与 Evidence identity / reference 机制。
+
 ### OQ-004 — Confidence 的语义归属
 
 `confidence_score` 是否：
@@ -438,6 +454,19 @@ R1A 不解决以下问题，只将其登记为后续规范设计输入。
 - 属于 derived assertion metadata。
 
 self-report 不应被迫具有模型式 confidence。
+
+**R1C 状态：partially resolved by R1C。**
+
+R1C 已冻结：
+
+- confidence 不是所有 Preference 的强制属性；
+- DIRECT self-report 不得被迫赋予模型式 confidence；
+- 若 confidence 用于 INFERRED information，未来必须能够说明生成者、衡量含义以及对应 inference process / model。
+
+仍未解决：
+
+- confidence 最终归属于 Provenance、推断结果元数据还是其他结构；
+- 字段名、范围、算法、calibration 与 threshold。
 
 ### OQ-005 — Trigger / Symptom 的非因果表达
 

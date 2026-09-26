@@ -54,7 +54,7 @@ PBDL-Core 负责表示患者行为、偏好，以及解释这些信息所需的�
 
 如果把描述性陈述与推断结论混合在一起，下游消费者将无法区分哪些信息直接来自来源，哪些信息由另一个系统计算得出。
 
-未来可以在明确标记其派生来源的前提下表示派生工件，但派生结果不得静默地变成来源事实。
+未来可以在明确标记其派生来源的前提下表示派生工件，但派生结果不得静默地变成来源直接描述的信息。
 
 ## DR-003 — 初始重新设计中 Pathway 不属于 Core
 
@@ -170,3 +170,65 @@ v1 Core 不强制 UUID、URI 或其他全球唯一标识符。
 直接要求全球 UUID、URI 或跨文档解析协议会提前引入尚无必要的命名、持久化和互操作复杂度。
 
 document-local scope 已足以满足当前 Core 引用需求，同时不妨碍未来增加 external/global identifier binding。
+
+## DR-009 — PBDL 记录有来源的信息，而不是认证真相
+
+### 决策
+
+PBDL 表示 Behavior / Preference 的结构化语义以及这些语义从哪里产生。
+
+PBDL-Core **MUST NOT** 因某条信息进入 PBDL 就将其视为已经得到现实世界真值认证。
+
+患者自述、临床记录、设备观测和外部推断可以表达不同甚至互相冲突的信息；PBDL 的职责是保留这些来源与语义差异，而不是自动决定哪个来源“正确”。
+
+### 理由
+
+将“来源直接描述的信息”误称为“事实”会让表示层承担并不存在的真实性担保。
+
+来源追踪使下游能够判断信息由谁报告、记录、观测或推断，但真实性评估、证据权重与冲突裁决需要额外的方法和应用上下文，不属于 PBDL-Core。
+
+## DR-010 — Direct 与 inferred information 必须保持可区分
+
+### 决策
+
+PBDL canonical semantics 必须至少能够区分两类来源语义：
+
+- DIRECT：直接来自报告、记录或观测；
+- INFERRED：由 LLM、ML model、rule engine、analytic process 或其他 inference process 根据输入推断产生。
+
+DIRECT 不代表“绝对真实”。
+
+INFERRED **MUST NOT** 静默伪装成 DIRECT information。
+
+该区分必须由结构化 provenance semantics 表达，不能只靠自由文本 note 推测。
+
+### 理由
+
+同一个 Preference category / value 或 Behavior semantic content 可能既来自患者直接表达，也可能来自模型推断。
+
+如果丢失产生方式，下游无法判断信息的语义来源，也容易把模型输出误认为患者陈述。
+
+## DR-011 — Behavior 与 Preference 必须具有实际来源追踪
+
+### 决策
+
+每个 canonical Behavior 和 Preference 都必须实际至少关联一条 provenance linkage。
+
+“语言具有表达 provenance 的能力，但某个实例可以完全没有来源”不满足 v1 Core 的最小来源追踪要求。
+
+同一个语义实例可以有多个 provenance records，但来源数量本身不构成真值权重。
+
+如果来源表达的 semantic content 实质不同或冲突，应优先保持为不同 Behavior / Preference instances，而不是把来源堆入同一对象并掩盖差异。
+
+Provenance 与 Evidence 是相关但不同的概念：
+
+- Provenance 回答信息如何产生、从哪里来；
+- Evidence 回答哪些材料支持或承载该信息。
+
+R1C 暂不强制 Provenance 自身具有独立 identity。
+
+### 理由
+
+强制实例级来源追踪关闭了 R0 中“可追踪”究竟是语言能力还是实例要求的歧义，并使 DIRECT / INFERRED 区分具有可实现基础。
+
+同时，不提前强制 Provenance identity 可以避免在没有共享 provenance、provenance chaining 或稳定反向引用需求时过度设计对象模型。
