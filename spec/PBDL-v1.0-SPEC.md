@@ -1,7 +1,7 @@
 # PBDL 1.0 Specification
 
-**Status:** Draft  
-**Target Version:** PBDL 1.0  
+**Status:** Draft
+**Target Version:** PBDL 1.0
 **Current Design Stage:** v0.1 language foundation
 
 This document is the normative specification for PBDL. When this specification conflicts with examples, historical reports, design-rationale documents, or implementation behavior, this specification takes precedence.
