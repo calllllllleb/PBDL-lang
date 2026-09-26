@@ -1,0 +1,6 @@
+# PBDL relation-type vocabulary registry.
+# Vocabulary entries will be frozen in later language-design rounds.
+version: "draft"
+status: "unfrozen"
+description: "Placeholder registry for future PBDL relation-type vocabulary entries."
+entries: []

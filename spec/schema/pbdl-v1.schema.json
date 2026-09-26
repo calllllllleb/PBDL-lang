@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PBDL Canonical Representation Placeholder",
+  "description": "This schema is a placeholder for the canonical PBDL representation and is not yet normative at field level.",
+  "type": "object"
+}

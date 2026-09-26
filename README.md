@@ -47,4 +47,4 @@ Historical project reports are design background only and are not development sp
 
 **PBDL v0.1 Draft preparation**
 
-The repository is currently establishing the language foundation for a redesigned PBDL specification. It does not claim a mature language, clinical validation, or a production implementation.
+This repository is currently establishing the language foundation for a redesigned PBDL specification. It does not claim a mature language, clinical validation, or a production implementation.

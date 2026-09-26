@@ -1,0 +1,6 @@
+# PBDL behavior-type vocabulary registry.
+# Vocabulary entries will be frozen in later language-design rounds.
+version: "draft"
+status: "unfrozen"
+description: "Placeholder registry for future PBDL behavior-type vocabulary entries."
+entries: []

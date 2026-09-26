@@ -1,0 +1,6 @@
+# PBDL preference-type vocabulary registry.
+# Vocabulary entries will be frozen in later language-design rounds.
+version: "draft"
+status: "unfrozen"
+description: "Placeholder registry for future PBDL preference-type vocabulary entries."
+entries: []

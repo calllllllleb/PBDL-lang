@@ -1,0 +1,13 @@
+(* PBDL grammar draft *)
+(* The grammar is intentionally incomplete during R0. *)
+
+document = ? TODO ? ;
+
+(* TODO: patient / subject declaration *)
+(* TODO: behavior declaration *)
+(* TODO: preference declaration *)
+(* TODO: relation declaration *)
+(* TODO: context declaration *)
+(* TODO: evidence / provenance declaration *)
+
+(* Tokens, keywords, delimiters, literals, and declaration syntax are not yet frozen. *)
