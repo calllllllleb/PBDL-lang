@@ -105,3 +105,68 @@ PBDL 不得通过字段名称或默认语言构造暗示未经验证的因果关
 ### 理由
 
 描述上的接近、时间先后、关联或患者报告的原因，本身都不能证明因果关系。因果推断与因果权重需要额外证据和方法，因此不应成为默认描述语言核心的一部分。
+
+## DR-006 — 依赖引用的 Core 实体需要显式 identity
+
+### 决策
+
+在 v1 Core 最小模型中：
+
+- Subject **MUST** 具有 identity；
+- Behavior **MUST** 具有 identity；
+- Preference **MUST** 具有 identity；
+- Relation 本身不要求 identity。
+
+Subject 需要 identity，是因为 Behavior 与 Preference 必须稳定绑定到明确主体。
+
+Behavior 与 Preference 需要 identity，是因为 Relation 以及历史 `associated_behavior` 兼容方向需要稳定引用具体实例。
+
+Relation 当前不允许作为 Relation endpoint，也没有已经冻结的 Core 构造必须引用 Relation 本身，因此 R1B 不为了未来可能性提前强制 relation identity。
+
+### 理由
+
+只有在真实引用需求已经存在时才引入强制 identity，可以保持 Core 模型简单，同时避免使用对象位置、显示名称或类型标签充当不稳定引用。
+
+如果未来 Provenance、扩展或其他明确用例需要引用 Relation，可以在后续设计轮次重新审议 relation identity。
+
+## DR-007 — 类型与类别标签不是实体 identity
+
+### 决策
+
+Behavior type、Preference category、Relation type、显示标签和其他分类值不能自动充当 entity instance identity。
+
+例如：
+
+`medication_nonadherence`
+
+如果它是一个 Behavior type，则只能回答“这是哪一类行为”，不能回答“这是哪个具体 Behavior instance”。
+
+规范性引用必须解析到稳定 entity identity，而不能仅依赖类型名称或人类可读 label。
+
+### 理由
+
+同一个文档中可能存在多个同类型 Behavior 或同类别 Preference。
+
+如果把 type/category 当作 identity，会导致引用歧义，并使对象重用、重复事件和多条同类陈述无法稳定表达。
+
+## DR-008 — v1 默认采用 document-local identity scope
+
+### 决策
+
+v1 Core 最小 identity scope 为 PBDL document。
+
+Subject、Behavior 与 Preference 共享同一个 document-local identity namespace；identifier 在所属文档内必须唯一，并在该文档生命周期中保持足够稳定以支持内部引用。
+
+v1 Core 不强制 UUID、URI 或其他全球唯一标识符。
+
+数组位置或列表序号不能作为规范性 identity。
+
+跨文档 identity 与 reference protocol 保留为未来工作。
+
+### 理由
+
+当前真实需求是保证一个 PBDL document 内的 Subject 归属与 Behavior / Preference / Relation 引用可以确定解析。
+
+直接要求全球 UUID、URI 或跨文档解析协议会提前引入尚无必要的命名、持久化和互操作复杂度。
+
+document-local scope 已足以满足当前 Core 引用需求，同时不妨碍未来增加 external/global identifier binding。

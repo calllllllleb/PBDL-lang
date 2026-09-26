@@ -491,6 +491,14 @@ StepObject.`status` 与 `outcome` 到底是：
 
 需要在 PBDL-Pathway 设计时进一步区分。
 
+### OQ-011 — Core identity 与 reference boundary
+
+该问题已进入 **R1B — Core Object Boundary & Identity** 处理。
+
+R1B 负责冻结 Subject、Behavior、Preference 与 Relation 的最小 identity / reference 规则；R1A 的 32-field disposition matrix 保持不变。
+
+规范性结论以 `spec/PBDL-v1.0-SPEC.md` 的 R1B 更新为准。
+
 ---
 
 ## 12. Compatibility Conclusion
