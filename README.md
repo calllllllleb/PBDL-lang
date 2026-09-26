@@ -1,50 +1,50 @@
 # PBDL-lang
 
-**PBDL — Patient Behavior Description Language**
+**PBDL — Patient Behavior Description Language（患者行为描述语言）**
 
-PBDL is a declarative domain-specific language for representing patient behaviors and preferences in a structured, explicit, and machine-verifiable form.
+PBDL 是一门用于以结构化、明确且可机器验证的形式表示患者行为与偏好的声明式领域专用语言（Declarative DSL）。
 
-中文：**面向患者行为与偏好的声明式领域专用描述语言。**
+中文定位：**面向患者行为与偏好的声明式领域专用描述语言。**
 
-## What is PBDL
+## 什么是 PBDL
 
-PBDL is designed to provide a stable representation layer for patient behaviors and preferences. It does **not** replace natural-language understanding.
+PBDL 的目标是为患者行为与偏好提供稳定的表示层。它**不是**自然语言理解技术的替代品。
 
-Modern LLMs, NLP systems, manual data entry, rule-based systems, and other upstream methods may all produce candidate PBDL information. PBDL is responsible for:
+现代大语言模型（LLM）、自然语言处理系统（NLP）、人工录入、规则系统以及其他上游方法，都可以成为候选 PBDL 信息的来源。PBDL 负责提供：
 
-- standardized representation
-- explicit semantics
-- validation
-- persistence
-- interoperability between upstream extraction and downstream applications
+- 标准化表示
+- 明确语义
+- 校验
+- 持久化
+- 上游信息抽取与下游应用之间的互操作
 
-## Core architectural boundary
+## 核心架构边界
 
-**PBDL-Core describes; external applications reason and act.**
+**PBDL-Core 负责“描述”；外部应用负责“推理与执行”。**
 
-PBDL-Core does not itself perform:
+PBDL-Core 本身不负责：
 
-- clinical diagnosis
-- clinical recommendation
-- risk prediction
-- causal inference
-- knowledge-base reasoning
-- LLM inference
-- pathway recommendation
-- workflow execution
+- 临床诊断
+- 临床推荐
+- 风险预测
+- 因果推断
+- 知识库推理
+- LLM 推理
+- 治疗路径推荐
+- 工作流执行
 
-These capabilities may be implemented by future systems that consume or produce PBDL artifacts, but they are outside the PBDL-Core language boundary.
+未来可以构建消费或生成 PBDL 数据的外部系统来实现上述能力，但这些能力不属于 PBDL-Core 的语言边界。
 
-## Normative source
+## 规范性来源
 
-[`spec/PBDL-v1.0-SPEC.md`](spec/PBDL-v1.0-SPEC.md) is the normative specification.
+[`spec/PBDL-v1.0-SPEC.md`](spec/PBDL-v1.0-SPEC.md) 是 PBDL 的**唯一规范性来源**。
 
-When documentation, examples, historical reports, and implementation behavior conflict with the normative specification, the normative specification takes precedence.
+当其他文档、示例、历史研究报告或实现行为与规范发生冲突时，以规范文件为准。
 
-Historical project reports are design background only and are not development specifications.
+历史研究报告仅作为设计背景与概念来源，不属于开发规范。
 
-## Current status
+## 当前状态
 
-**PBDL v0.1 Draft preparation**
+**PBDL v0.1 草案准备阶段**
 
-This repository is currently establishing the language foundation for a redesigned PBDL specification. It does not claim a mature language, clinical validation, or a production implementation.
+当前仓库正在建立重新设计后的 PBDL 语言基础。现阶段不宣称已经形成成熟语言、不宣称经过临床验证，也不存在生产级实现。

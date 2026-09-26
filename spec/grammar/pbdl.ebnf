@@ -1,13 +1,13 @@
-(* PBDL grammar draft *)
-(* The grammar is intentionally incomplete during R0. *)
+(* PBDL 语法草案 *)
+(* R0 阶段的语法有意保持不完整。 *)
 
 document = ? TODO ? ;
 
-(* TODO: patient / subject declaration *)
-(* TODO: behavior declaration *)
-(* TODO: preference declaration *)
-(* TODO: relation declaration *)
-(* TODO: context declaration *)
-(* TODO: evidence / provenance declaration *)
+(* TODO：Patient / Subject 声明 *)
+(* TODO：Behavior 声明 *)
+(* TODO：Preference 声明 *)
+(* TODO：Relation 声明 *)
+(* TODO：Context 声明 *)
+(* TODO：Evidence / Provenance 声明 *)
 
-(* Tokens, keywords, delimiters, literals, and declaration syntax are not yet frozen. *)
+(* token、keyword、delimiter、literal 以及声明语法均尚未冻结。 *)

@@ -1,95 +1,95 @@
-# PBDL Design Rationale
+# PBDL 设计理由
 
-This document records design reasoning for the 2026 PBDL redesign. It is **non-normative**. The normative language source is [`../spec/PBDL-v1.0-SPEC.md`](../spec/PBDL-v1.0-SPEC.md).
+本文档用于记录 2026 年 PBDL 重新设计过程中的设计理由，属于**非规范性文档**。唯一规范性来源为 [`../spec/PBDL-v1.0-SPEC.md`](../spec/PBDL-v1.0-SPEC.md)。
 
-Historical project reports from the original 2024 work may inform design discussion, but they do not determine PBDL v1 semantics.
+2024 年原始项目形成的历史研究报告可以为设计讨论提供背景与概念来源，但它们不直接决定 PBDL v1 的语言语义。
 
-## DR-001 — PBDL is not an LLM replacement
+## DR-001 — PBDL 不是 LLM 的替代品
 
-### Decision
+### 决策
 
-Modern LLMs may understand and extract patient behaviors and preferences from unstructured text. NLP systems, manual entry, surveys, devices, and rules may also provide candidate information.
+现代大语言模型可以负责理解非结构化文本，并从中抽取患者行为与偏好。NLP 系统、人工录入、问卷、设备数据和规则系统也可以提供候选信息。
 
-PBDL exists to provide a stable structured semantic contract after or alongside those extraction processes.
+PBDL 的职责是在这些抽取过程之后或旁路位置提供稳定的结构化语义契约。
 
-The intended architectural separation is:
+预期架构如下：
 
 ```text
-Natural language / EHR / survey
+自然语言 / EHR / 问卷
         ↓
-LLM / NLP / manual input
+LLM / NLP / 人工录入
         ↓
-Candidate PBDL
+候选 PBDL
         ↓
 Parser / Validator
         ↓
-Canonical PBDL
+规范化 PBDL
         ↓
-Applications
+应用
 ```
 
-The parser and validator shown here are future architectural components, not R0 implementations.
+上图中的 Parser 与 Validator 只是未来架构组件，并不是 R0 阶段的实现内容。
 
-### Rationale
+### 理由
 
-Extraction technology can change independently of the representation contract. Keeping these concerns separate allows upstream methods to evolve without making the PBDL language itself dependent on one inference technology.
+信息抽取技术可以独立演进，而表示层契约应保持稳定。把两者分离，可以避免 PBDL 语言本身绑定到某一种推理或抽取技术。
 
-## DR-002 — PBDL-Core describes, applications reason
+## DR-002 — PBDL-Core 负责描述，应用负责推理
 
-### Decision
+### 决策
 
-PBDL-Core is responsible for representing patient behaviors, preferences, and the contextual, evidential, and relational information needed to interpret them.
+PBDL-Core 负责表示患者行为、偏好，以及解释这些信息所需的上下文、证据和关系信息。
 
-Reasoning and action are outside Core, including:
+以下推理与执行能力均位于 Core 之外：
 
-- diagnosis
-- recommendation
-- risk prediction
-- causal inference
-- knowledge-base reasoning
-- pathway recommendation
-- workflow execution
+- 诊断
+- 推荐
+- 风险预测
+- 因果推断
+- 知识库推理
+- 治疗路径推荐
+- 工作流执行
 
-### Rationale
+### 理由
 
-Mixing descriptive statements with inferred conclusions causes semantic ambiguity: downstream consumers can no longer tell what came from a source and what was computed by another system.
+如果把描述性陈述与推断结论混合在一起，下游消费者将无法区分哪些信息直接来自来源，哪些信息由另一个系统计算得出。
 
-Derived artifacts may be represented explicitly when future design defines how to mark their derivation, but they must not silently become source facts.
+未来可以在明确标记其派生来源的前提下表示派生工件，但派生结果不得静默地变成来源事实。
 
-## DR-003 — Pathway is not Core in the initial redesign
+## DR-003 — 初始重新设计中 Pathway 不属于 Core
 
-### Decision
+### 决策
 
-Treatment Pathway is not part of PBDL-Core in the initial redesign.
+Treatment Pathway 不属于初始重新设计中的 PBDL-Core。
 
-It remains a candidate for:
+它暂时保留为：
 
-- a future PBDL extension, or
-- an application layer built on PBDL.
+- 未来 PBDL 扩展候选，或
+- 构建于 PBDL 之上的上层应用概念。
 
-### Rationale
+### 理由
 
-The project's original research focus is the description of patient behaviors and preferences. Freezing pathway semantics into Core before the behavior/preference language is stable would expand the ontology prematurely and blur the boundary between description and recommendation/workflow.
+项目的原始研究重点是患者行为与偏好的描述。在 Behavior / Preference 语言尚未稳定之前就把 Pathway 语义冻结进 Core，会过早扩张语言本体，同时模糊“描述”和“推荐 / 工作流”之间的边界。
 
-## DR-004 — Historical report is non-normative
+## DR-004 — 历史研究报告不具有规范性
 
-### Decision
+### 决策
 
-Historical reports preserve the project's design history and may provide concepts worth reconsidering, but they are not development specifications.
+历史研究报告用于保存项目历史，也可能包含值得重新讨论的概念，但它们不是开发规范。
 
-If a historical report conflicts with the normative specification, the normative specification takes precedence.
+如果历史报告与规范文件发生冲突，以规范文件为准。
 
-### Rationale
+### 理由
 
-Earlier material contains definition drift, field conflicts, and boundaries that mix language ontology with inference capabilities. Treating it as authoritative would carry those inconsistencies into the redesigned language.
+早期材料中存在定义漂移、字段冲突，以及语言本体与推理能力边界混淆的问题。如果直接将历史报告视为权威来源，这些不一致将被带入重新设计后的语言。
 
-## DR-005 — Avoid unsupported clinical semantics
+## DR-005 — 避免缺乏证据支持的临床语义
 
-### Decision
+### 决策
 
-PBDL must not use field names or default constructs that imply unverified causal relationships, treatment effects, or clinical conclusions.
+PBDL 不得通过字段名称或默认语言构造暗示未经验证的因果关系、治疗效果或临床结论。
 
-Candidate relations for later design discussion include:
+后续设计讨论中的候选关系包括：
 
 - `related_to`
 - `associated_with`
@@ -98,10 +98,10 @@ Candidate relations for later design discussion include:
 - `follows`
 - `derived_from`
 
-These are **design candidates only** and are not a frozen Core vocabulary.
+这些只是**设计候选**，并不是已经冻结的 Core 关系词表。
 
-`causal_effect` is deliberately not assumed as a default Core relation.
+`causal_effect` 不被预设为 Core 的默认关系。
 
-### Rationale
+### 理由
 
-Descriptive proximity, sequence, association, or a reported reason do not by themselves establish causality. Causal inference and causal weighting require evidence and methods outside the default descriptive language core.
+描述上的接近、时间先后、关联或患者报告的原因，本身都不能证明因果关系。因果推断与因果权重需要额外证据和方法，因此不应成为默认描述语言核心的一部分。

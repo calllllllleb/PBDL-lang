@@ -1,6 +1,6 @@
-# PBDL preference-type vocabulary registry.
-# Vocabulary entries will be frozen in later language-design rounds.
+# PBDL Preference 类型词表注册表。
+# 具体词表条目将在后续语言设计轮次中冻结。
 version: "draft"
 status: "unfrozen"
-description: "Placeholder registry for future PBDL preference-type vocabulary entries."
+description: "用于未来 PBDL Preference 类型词表条目的占位注册表。"
 entries: []

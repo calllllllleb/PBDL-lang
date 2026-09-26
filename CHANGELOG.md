@@ -1,12 +1,12 @@
-# Changelog
+# 变更记录
 
-## Unreleased
+## 未发布
 
-### Added
+### 新增
 
-- Initial PBDL language repository structure.
-- Normative specification skeleton.
-- Grammar placeholder.
-- Canonical schema placeholder.
-- Vocabulary registries.
-- Design rationale document.
+- 初始 PBDL 语言仓库结构。
+- 规范性规范文档骨架。
+- 语法占位文件。
+- 规范化 Schema 占位文件。
+- 词表注册表。
+- 设计理由文档。
