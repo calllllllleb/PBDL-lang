@@ -202,7 +202,7 @@ Behavior、Preference 与 Relation **SHOULD** 基于同一套 Core temporal abst
 
 Instant 表示一个时间点。
 
-Instant 可以具有不同的来源精度，例如只精确到年、月、日，或更高精度的具体时刻。R1D 不冻结具体日期时间序列化格式。
+Instant 可以具有不同的来源精度，例如只精确到年、月、日，或更高精度的具体时刻。R1D 当时不冻结具体日期时间序列化格式；R2B2 在 §8.2 冻结 TemporalValue canonical lexical profiles。
 
 #### 5.7.2 Interval
 
@@ -255,7 +255,7 @@ R1D 不要求引入显式的 UNKNOWN token；缺少 temporal information 可以�
 
 同样，“2026 年” **MUST NOT** 被自动伪造成某一个具体日期。
 
-具体 partial-date representation 与 ISO 8601 serialization 仍为 **TODO**。
+R2B2 在 §8.2 冻结 partial-date / date-time 的 canonical lexical profiles，并通过 lexical form 保留 year / month / date / minute / second / fractional-second precision。
 
 #### 5.7.5 Timezone preservation
 
@@ -263,7 +263,7 @@ R1D 不要求引入显式的 UNKNOWN token；缺少 temporal information 可以�
 
 如果来源已经提供 timezone / offset，canonical representation **MUST** 能够保留该来源提供的信息。
 
-R1D 不冻结 timezone / offset 的具体 serialization。
+R1D 当时不冻结 timezone / offset serialization；R2B2 在 §8.2 冻结 optional offset / zone suffix，并继续禁止凭空补造 source 未提供的 timezone / offset。
 
 #### 5.7.6 Relative time
 
@@ -312,7 +312,7 @@ Annotation **MAY** 用于保留：
 - 来源中无法完全结构化、但值得保留的说明；
 - 人工或外部系统产生的解释性备注。
 
-R1I 当时不冻结 Annotation representation；R2A 已在 §17 冻结 Annotation 的最小 canonical field inventory、attachment ownership 与 cardinality。Text lexical constraints、author / generator representation、JSON Schema、serialization 与 DSL syntax 仍留待后续。
+R1I 当时不冻结 Annotation representation；R2A 已在 §17 冻结 Annotation 的最小 canonical field inventory、attachment ownership 与 cardinality；R2B2 在 §8.1 冻结 Text lexical contract。Author / generator representation、JSON Schema 与 DSL syntax 仍留待后续。
 
 #### 5.8.1 Annotation is not a machine-semantics backdoor
 
@@ -441,14 +441,183 @@ R2A 冻结 canonical object model 层面的最小结构类型、required / optio
 
 R2B1 已冻结 VersionToken、EntityId、SubjectRef、CoreEntityRef、ActorRef、ExternalActorRef、DerivationKind、SourceDescriptor、GeneratorDescriptor、Evidence 与 reference representation 的 concrete canonical form。
 
+R2B2 进一步冻结 Text 与 TemporalValue，并在 §15 / §17 冻结 Coding 与 Confidence。
+
+### 8.1 Text
+
+Canonical Text 是 JSON-compatible Unicode string。
+
+Text **MUST**：
+
+- decode 为有效 Unicode scalar-value sequence；
+- 至少包含一个不属于 Unicode White_Space property 的 code point。
+
+因此空字符串与仅由 whitespace 组成的字符串 **MUST NOT** 作为 canonical Text。
+
+Text **MUST NOT** 被 canonicalization 自动：
+
+- trim；
+- case-fold；
+- Unicode normalize；
+- 解释为 Coding / terminology token。
+
+Canonical Text equality 使用**精确 Unicode scalar-value sequence equality**。
+
+因此 canonically distinct code-point sequences 即使视觉上相似，也 **MUST NOT** 在没有额外明确 normalization profile 时被自动视为相等。
+
+该规则使 Evidence.content 与 Annotation.text 无法用 empty / whitespace-only value 伪造“存在内容”。
+
+R2B2 不定义 Markdown、HTML、rich-text 或 natural-language ontology semantics。
+
+### 8.2 TemporalValue
+
+Canonical TemporalValue 是 constrained string。它通过 lexical form 本身保留 source-supported temporal precision 与 timezone / offset information。
+
+TemporalValue **MUST** 精确符合以下一种 profile。
+
+#### 8.2.1 Date-family profiles
+
+Year precision：
+
+    YYYY
+
+其中 YYYY 为 0001..9999。
+
+Month precision：
+
+    YYYY-MM
+
+其中 MM 为 01..12。
+
+Date precision：
+
+    YYYY-MM-DD
+
+其中 date **MUST** 是 proleptic Gregorian calendar 中真实存在的日期。
+
+Date-family value **MUST NOT** 带 time、offset 或 zone suffix。
+
+#### 8.2.2 Date-time profiles
+
+Minute precision：
+
+    YYYY-MM-DDTHH:MM<zone?>
+
+Second precision：
+
+    YYYY-MM-DDTHH:MM:SS<zone?>
+
+Fractional-second precision：
+
+    YYYY-MM-DDTHH:MM:SS.F<zone?>
+
+其中：
+
+- HH = 00..23；
+- MM = 00..59；
+- SS = 00..59；
+- leap-second lexical value 60 不属于当前 canonical profile；
+- F 为 1..9 位 decimal digits，其位数属于 preserved precision information；
+- calendar date **MUST** 有效。
+
+`<zone?>` 可以省略，或采用以下一种形式：
+
+    Z
+    +HH:MM
+    -HH:MM
+    [ZoneToken]
+    Z[ZoneToken]
+    +HH:MM[ZoneToken]
+    -HH:MM[ZoneToken]
+
+Numeric offset 范围为 -14:00..+14:00；绝对值为 14 小时时 minute **MUST** 为 00。
+
+ZoneToken **MUST** 为 non-empty、case-sensitive token，字符限于 ASCII letters / digits / `.` / `_` / `+` / `-` / `/`，并 **MUST NOT** 含 whitespace、`[` 或 `]`。
+
+Bracketed ZoneToken 只用于保留来源提供的 timezone identifier，例如 `[America/Los_Angeles]`；PBDL-Core **MUST NOT** 从 ZoneToken 名称自行推导未提供的 numeric offset。
+
+来源未提供 timezone / offset 时，canonicalization **MUST NOT** 添加 `Z`、numeric offset 或 ZoneToken。
+
+来源提供 numeric offset、zone identifier 或二者时，canonical representation **MUST** 保留来源实际提供的信息。
+
+#### 8.2.3 Invalid forms
+
+以下不属于 canonical TemporalValue：
+
+- time-only value；
+- date-only value 携带 timezone / offset；
+- impossible Gregorian date；
+- malformed month / day / clock component；
+- unresolved relative phrase；
+- 为补齐精度而伪造的日期 / time / timezone。
+
+Unresolved relative temporal expression 继续遵守 R1D / R2A：必须在 canonicalization 前可靠解析，或只作为 Evidence / Annotation 保真保存，**MUST NOT** 伪装成 TemporalValue。
+
+#### 8.2.4 Precision
+
+Temporal precision 完全由 lexical profile 保留：
+
+- `2026` ≠ year expanded to a date；
+- `2026-09` ≠ first day of September；
+- minute precision ≠ second precision；
+- `.1`、`.10` 与 `.100` 保留不同 fractional precision。
+
+Canonicalization **MUST NOT** 为了 uniform timestamp shape 添加来源未提供的 components。
+
+#### 8.2.5 TemporalValue canonical information equality
+
+TemporalValue canonical equality 使用 **canonical information equality**，不是 physical instant equivalence。
+
+两个 TemporalValue 只有在完整 lexical string 精确相同时才 semantic-equivalent。
+
+因此：
+
+    2026-09-27T10:00Z
+
+与：
+
+    2026-09-27T18:00+08:00
+
+即使可能表示相同 physical instant，也 **MUST NOT** 作为 canonical-information-equal，因为 preserved local lexical value 与 offset information 不同。
+
+同样：
+
+- `Z` 与 `+00:00` 不 canonical-equal；
+- timezone absent 与 timezone present 不 canonical-equal；
+- ZoneToken presence / value 不同不 canonical-equal；
+- precision 不同不 canonical-equal。
+
+实现 **MAY** 提供独立的 physical-instant comparison operation，但该 operation **MUST NOT** 改写或替代 canonical information equality，也 **MUST NOT** 为缺失 offset / timezone 的值发明时区。
+
+#### 8.2.6 Minimum temporal comparability for Interval validation
+
+Interval boundary ordering 使用保守的 “definitely later than” 判断。
+
+Date-family values 可以在 proleptic Gregorian calendar 上按其 precision 对应的可能日期范围比较。
+
+例如：
+
+- `2026-10` 的最早可能日期晚于 `2026-09-15` 的最晚可能日期，因此作为 start/end 时可判定 start later than end；
+- `2026-09` 与 `2026-09-15` 的可能范围重叠，因此不能据此判定 start later than end，也 **MUST NOT** 发明具体 day 来强行比较。
+
+Date-time values：
+
+- 两者都有 explicit numeric offset 时，可以基于 offset 将各自 precision range 映射到 physical instant range后进行 ordering check；
+- 两者都没有任何 offset / ZoneToken 时，可以按 local civil date-time precision range比较；
+- 一方有 numeric offset、另一方没有时，视为不可比较；
+- 只有 bracketed ZoneToken 而无 numeric offset 时，R2B2 不要求 timezone database / DST resolution，因此不据此做 physical ordering rejection；
+- date-family 与 date-time-family 之间不做强制 ordering comparison。
+
+只有当 start 的**最早可能值**仍严格晚于 end 的**最晚可能值**时，才必须判定 start later than end。
+
+如果 ranges 重叠或当前信息不足以建立可比较 ordering，validator **MUST NOT** 通过补造 precision / timezone 来拒绝该 Interval。
+
+本节定义最小 validity boundary，不要求完整 date arithmetic engine。
+
 仍为 **TODO** 的主要是：
 
-- TemporalValue representation；
 - PreferenceValue leaf type system；
 - Context / BehaviorFrequency / BehaviorFactor concrete internal fields；
-- Confidence concrete structure / metric model；
-- Coding concrete JSON serialization；
-- Text lexical constraints；
 - 类型兼容与转换规则；
 - JSON Schema 与 DSL syntax。
 
@@ -876,7 +1045,7 @@ Preference Annotation **MUST NOT** 自动成为 Evidence 或 Provenance，也 **
 
 R2A 在 §17 冻结 legacy Preference.note → Preference.annotations，并冻结 Annotation 的最小 text + provenance field inventory；更细的 serialization / author-generator representation 仍留待后续。
 
-R2A 在 §17 冻结 Preference 的 canonical field inventory；R2B1 已冻结 SourceDescriptor / Evidence concrete structure。PreferenceValue leaf type system、偏好类型词表、Confidence concrete representation、Preference recurrence model 与语法仍为 **TODO**。
+R2A 在 §17 冻结 Preference 的 canonical field inventory；R2B1 已冻结 SourceDescriptor / Evidence concrete structure；R2B2 已冻结 Confidence concrete representation。PreferenceValue leaf type system、偏好类型词表、Preference recurrence model 与语法仍为 **TODO**。
 
 ## 12. Context
 
@@ -1080,13 +1249,13 @@ confidence **MUST NOT** 成为所有 Preference 的强制属性。
 
 DIRECT self-report **MUST NOT** 被迫赋予模型式 confidence。
 
-如果未来 confidence 用于 INFERRED information，其语义 **MUST** 能够说明：
+如果 confidence 用于 INFERRED information，其语义 **MUST** 能够说明：
 
 - confidence 由谁或什么系统生成；
 - confidence 衡量什么；
 - confidence 对应哪个 inference process / model / analytic process。
 
-R2A 在 §17 冻结 canonical confidence ownership 为 optional Provenance.confidence；Confidence 的数值范围、metric、算法、校准方式、serialization 与 validation 仍未冻结。
+R2A 在 §17 冻结 canonical confidence ownership 为 optional Provenance.confidence；R2B2 在 §17.8.6 冻结 value + metric + optional scale 的 minimum concrete contract 与 equality。Calibration framework、threshold policy、metric vocabulary governance、JSON Schema 与 DSL serialization 仍未冻结。
 
 历史 `Preference.confidence_score` 因此继续保留为待细化概念，但不得被解释为所有 Preference 的必需 Core 属性。
 
@@ -1104,7 +1273,7 @@ R1H 新增 Relation assertion provenance requirement **MUST NOT** 被解释为 P
 
 当前仍没有 Core 场景要求其他实体通过稳定 Core reference 指向某个 Provenance instance。
 
-R2A 在 §17 冻结 Provenance 的最小 field inventory 与 embedded attachment pattern；R2B1 已冻结 SourceDescriptor / GeneratorDescriptor / Evidence 与 nested provenance equality/inheritance 的 concrete representation。Shared provenance identity、provenance chaining、Confidence concrete semantics、JSON Schema 与 DSL serialization 仍为 **TODO**。
+R2A 在 §17 冻结 Provenance 的最小 field inventory 与 embedded attachment pattern；R2B1 已冻结 SourceDescriptor / GeneratorDescriptor / Evidence 与 nested provenance equality/inheritance 的 concrete representation；R2B2 已冻结 Confidence concrete semantics 以及 Text / TemporalValue / Confidence-based provenance equality。Shared provenance identity、provenance chaining、JSON Schema 与 DSL serialization 仍为 **TODO**。
 
 ## 14. Relations
 
@@ -1299,26 +1468,52 @@ Source-described qualitative strength 与 derived numeric relation strength **MU
 
 ## 15. 术语绑定
 
-PBDL 当前采用以下概念层面的术语绑定模型：
+R2B2 冻结 canonical Coding concrete representation：
 
-```text
-Coding {
-    code
-    display
-    system
-    optional version
-}
-```
+    Coding {
+        system   : string
+        code     : string
+        display? : Text
+        version? : string
+    }
 
-在该概念模型中：
+system 与 code REQUIRED。
 
-- `code + system` 承担机器语义身份。
-- `display` 主要用于人类可读展示。
-- `version` 为可选信息。
+display 与 version OPTIONAL。
 
-`Coding` 的具体 PBDL 语法和规范化序列化字段仍为 **TODO**。
+system、code，以及存在时的 version **MUST** 为 non-empty string。
 
-R0 阶段不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语编码。
+R2B2 **MUST NOT** 要求 system 一定是 URI；具体 terminology binding profile 可以进一步约束 system，但 Core 不做该假设。
+
+R0 已冻结的 machine semantic identity 保持：
+
+    Coding identity = system + code
+
+display 仅为 human-readable representation，**MUST NOT** 改变 Coding machine identity。
+
+version 不改变上述基本 code + system identity，但它属于 canonical information。
+
+### 15.1 Coding equality
+
+两个 Coding 的 basic machine identity 相同，当且仅当：
+
+- system string 精确相同；
+- code string 精确相同。
+
+两个 Coding 的 canonical information equality 则要求：
+
+- system 精确相同；
+- code 精确相同；
+- version 同时缺失，或精确相同；
+- display 同时缺失，或按 Text equality semantic-equivalent。
+
+因此同 system + code、不同 version 的 Coding 仍共享基本 machine identity，但 **MUST NOT** 被视为 canonical-information-equal。
+
+不同 display 也 **MUST NOT** 改变 machine identity，但会使 canonical information representation 不相等。
+
+Core **MUST NOT** 自动 trim、case-fold、URI-normalize 或 terminology-normalize system / code / version。
+
+R2B2 不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语 code。
 
 ## 16. 语义约束
 
@@ -1399,7 +1594,7 @@ R0 阶段不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语编�
 73. Annotation 与 structured canonical semantics 冲突时，conforming consumer **MUST NOT** 仅根据 Annotation 静默覆盖 structured semantics。
 74. PBDL-Core **MUST NOT** 要求 hidden chain-of-thought、private model reasoning trace、internal scratchpad 或 hidden model deliberation 作为规范性 Annotation 内容。
 
-跨文档 identity / reference protocol、exact TemporalValue lexical profile、BehaviorFrequency / Context / BehaviorFactor internals、PreferenceValue leaf type system、Confidence concrete structure / metric model、Coding final serialization、communication vocabulary、Constraint / Barrier model、normative relation vocabulary / codes / inverse conventions、derived relation-strength artifact Schema、JSON Schema、DSL syntax 与术语词表仍为 **TODO**。
+跨文档 identity / reference protocol、BehaviorFrequency / Context / BehaviorFactor internals、PreferenceValue leaf type system、communication vocabulary、Constraint / Barrier model、normative relation vocabulary / codes / inverse conventions、derived relation-strength artifact Schema、JSON Schema、DSL syntax 与术语词表仍为 **TODO**。
 
 ## 17. Canonical Object Model
 
@@ -1506,7 +1701,7 @@ Coding 的概念职责保持：
 - display 为人类可读展示；
 - version 为可选信息。
 
-Coding 的 concrete JSON serialization 仍未冻结。
+R2B2 已在 §15 冻结 Coding canonical object shape 与 equality；JSON Schema 与 DSL serialization 仍未冻结。
 
 Behavior.type **MUST** 承担 structured machine semantics，**MUST NOT** 由 Annotation 替代。
 
@@ -1565,32 +1760,58 @@ R2B1 不新增 Actor / Participant entity、Participant identity namespace 或 P
 
 Behavior.temporal 为 OPTIONAL single TemporalExtent。
 
-R2A 冻结 TemporalExtent 的两种 canonical structured shape：
+R2B2 冻结 TemporalExtent canonical structured shape：
 
     TemporalExtent = Instant | Interval
 
     Instant {
-        kind : "instant"
-        at   : TemporalValue
+        kind        : "instant"
+        at          : TemporalValue
+        provenance? : Provenance[1..*]
     }
 
     Interval {
-        kind   : "interval"
-        start? : TemporalValue
-        end?   : TemporalValue
+        kind        : "interval"
+        start?      : TemporalValue
+        end?        : TemporalValue
+        provenance? : Provenance[1..*]
     }
+
+Instant.at REQUIRED。
 
 Interval 的 start / end 至少一个存在。
 
-TemporalValue 的 lexical format、precision encoding 与 timezone serialization 留待 R2B。
+TemporalExtent.provenance 为 OPTIONAL；一旦存在，collection **MUST** 至少包含一个 Provenance，显式空 collection无效。
 
-R1D 允许 relative time 带 anchor 保留或在 canonicalization 前解析。R2A 选择更严格的 canonical representation：TemporalExtent 当前只冻结 Instant / Interval。
+R2B2 决定 **ADD TemporalExtent local provenance**。
+
+理由是 owner provenance 无法无损覆盖以下情况：
+
+- Behavior DIRECT，但 temporal 来自另一来源；
+- Behavior DIRECT，但 temporal 为 model-inferred；
+- Preference owner provenance = {P1,P2}，但 temporal 仅由 P1 支持；
+- Relation assertion DIRECT，但 temporal applicability INFERRED。
+
+TemporalExtent.provenance **MUST** 完全复用 §17.10 的统一 inheritance / override / equality / canonical omission rules：
+
+- local absent → inherit complete current applicable owner provenance set；
+- local present → complete override；
+- additive merge → forbidden；
+- explicit local set 与 inherited complete set semantic-equivalent → canonical omission。
+
+R2B2 **MUST NOT** 为 temporal provenance 发明第二套 mechanism。
+
+TemporalValue lexical contract、precision、timezone preservation 与 equality 见 §8.2。
+
+R1D 允许 relative time 带 anchor 保留或在 canonicalization 前解析。R2A / R2B2 采用更严格 canonical representation：TemporalExtent 的 structured boundary 必须是 §8.2 合法 TemporalValue。
 
 如果上游可基于明确 anchor 将 relative expression 可靠解析为 Instant / Interval，则 **MAY** canonicalize。
 
-如果不能可靠解析，canonicalization **MUST NOT** 发明 absolute time 或把 unresolved relative expression 伪装成 absolute TemporalExtent。
+如果不能可靠解析，canonicalization **MUST NOT** 发明 absolute time 或把 unresolved relative expression 伪装成 TemporalExtent。
 
 原始 relative phrase **MAY** 通过 Evidence / Annotation 保真保存，但 **MUST NOT** 被当作 structured TemporalExtent。
+
+当 Interval 同时具有 start 与 end 时，ordering validity 使用 §8.2.6 的保守 comparability rule。
 
 #### 17.4.4 Behavior.frequencies
 
@@ -1996,7 +2217,7 @@ content 与 locator 均 OPTIONAL，但一个 Evidence **MUST** 至少提供二�
 
 content 用于 inline human-readable excerpt / response；locator 用于 external material locator。二者 **MAY** 同时存在。
 
-R2B1 不冻结 Text lexical contract；content 的最终 lexical validity 留待后续 Text concrete work。
+Evidence.content 使用 §8.1 Text contract，因此 empty / whitespace-only content 无效。
 
 Evidence.times **MAY** 使用 SourceTimeEvent 保存只属于该 evidence item 的 reported / recorded / observed time。
 
@@ -2011,13 +2232,64 @@ Evidence 继续：
 
 #### 17.8.6 Provenance.confidence
 
-如果 canonical Core 需要保留 inference confidence，其 canonical ownership 为 optional Provenance.confidence。
+如果 canonical Core 需要保留 confidence，其 canonical ownership 为 optional Provenance.confidence。
 
 Confidence **MUST NOT** 成为 Behavior / Preference / Relation intrinsic truth field。
 
 DIRECT self-report **MUST NOT** 被迫填写 Confidence。
 
-Confidence 的 scale、range、metric、calibration、numeric representation 与 validation 留待 R2B / 后续工作。
+R2B2 冻结最小 canonical representation：
+
+    Confidence {
+        value  : number
+        metric : string
+        scale? : {
+            min : number
+            max : number
+        }
+    }
+
+value 与 metric REQUIRED。
+
+scale OPTIONAL。
+
+value、scale.min、scale.max 若存在都 **MUST** 是 finite number；NaN、positive infinity、negative infinity 不属于 canonical Confidence。
+
+metric **MUST** 为 non-empty string，并承担“该数字衡量什么”的语义标识责任。
+
+Core 不冻结 confidence metric vocabulary，但 producer **MUST NOT** 因 value 恰好落在 0..1 就自动解释为 probability。
+
+如果 scale 存在：
+
+- min 与 max REQUIRED；
+- min **MUST** strictly less than max；
+- value **MUST** 落在 inclusive range [min,max]。
+
+scale 可以省略；这允许表达 range 未冻结或本来无 bounded range 的 model score / human certainty measure。
+
+### 17.8.6.1 Confidence stress cases
+
+- calibrated probability：可用明确 metric，例如 producer-defined `"probability"`，并可声明 scale {min:0,max:1}；
+- uncalibrated model score：metric 必须说明是何种 score；**MUST NOT** 因 0..1 range 自动称为 probability；
+- human annotation certainty：可使用与 model score 不同的 metric；
+- legacy confidence_score：只有在其 metric meaning 可恢复 / 支持时才可 canonicalize 为 Confidence；
+- score range unknown：允许省略 scale，但 metric 仍 REQUIRED。
+
+Legacy confidence_score 若没有可支持的 metric meaning，**MUST NOT** 通过发明 metric 或 scale 被迁入 canonical Confidence。原始 legacy material可以按实际来源通过 Evidence / Annotation 或 Core 外 migration report 保真保存。
+
+R2B2 不设计 calibration framework、threshold policy 或 statistical interpretation。
+
+### 17.8.6.2 Confidence equality
+
+两个 Confidence semantic-equivalent，当且仅当：
+
+- metric string 精确相同；
+- value 数值严格相等；
+- scale 同时缺失，或双方 scale.min 与 scale.max 分别数值严格相等。
+
+Confidence equality **MUST NOT** 使用隐式 float tolerance、rounding tolerance 或 statistical equivalence。
+
+JSON number 不同 lexical spelling如果表示同一有限数学数值，可以在数值语义上相等；本轮不要求保留 number lexical spelling 作为 confidence information。
 
 ### 17.9 Annotation
 
@@ -2047,7 +2319,7 @@ R2A 不增加 Subject.annotations。
 
 Annotation owner 的 provenance **MUST NOT** 在 source / generator / derivation 不同时自动替代 Annotation provenance。
 
-Text lexical constraints 留待 R2B。
+Annotation.text 使用 §8.1 Text contract。
 
 ### 17.10 Nested qualifier provenance inheritance and equality
 
@@ -2094,14 +2366,17 @@ Canonical model **MUST NOT** 支持 “inherit owner provenance + add local prov
 2. source 都缺失，或 SourceDescriptor semantic-equivalent；
 3. generator 都缺失，或 GeneratorDescriptor semantic-equivalent；
 4. evidence collections 按 order-insensitive comparison semantic-equivalent；
-5. confidence 都缺失；若任一 Provenance 具有 confidence，在 Confidence concrete semantics 冻结前，R2B1 **MUST NOT** 假定两者 confidence-equivalent。
+5. confidence 同时缺失，或按 §17.8.6.2 Confidence equality semantic-equivalent。
 
 SourceDescriptor / GeneratorDescriptor / Evidence 的 semantic equality 基于其 R2B1 concrete fields：
 
 - scalar / token fields 值相同；
-- optional field 同时缺失或值相同；
-- times collections 采用 order-insensitive comparison；
-- Evidence collections 采用 order-insensitive comparison。
+- Text fields 按 §8.1 exact Unicode scalar sequence equality；
+- TemporalValue fields 按 §8.2.5 canonical information equality；
+- optional field 同时缺失或值 semantic-equivalent；
+- times collections 采用 order-insensitive comparison，其中 time-event role 必须相同且 at 必须 TemporalValue-equal；
+- Evidence collections 采用 order-insensitive comparison；
+- Confidence 按 §17.8.6.2 比较。
 
 Collection comparison 使用 one-to-one semantic matching；collection order **MUST NOT** 产生 semantic difference。R2B1 不冻结 duplicate elimination semantics。
 
@@ -2122,17 +2397,20 @@ semantic-equivalent，且 canonical form 为 child omitted provenance。
 
 Provenance collection ordering **MUST NOT** 产生 semantic difference。
 
-由于 TemporalValue、Text lexical constraints 与 Confidence concrete representation 尚未全部冻结，R2B1 **不冻结** canonical provenance sorting key。Deterministic serialization ordering 留待 final serialization round，但 semantic equality **MUST** 已按上述 order-insensitive rules 判断。
+R2B2 已冻结 TemporalValue、Text 与 Confidence equality，因此 Provenance semantic equality 不再因这些 leaf types 未定而阻塞。
+
+R2B2 仍 **不冻结** canonical provenance sorting key。Deterministic global serialization ordering 留待 final serialization round；semantic equality 继续按上述 order-insensitive rules 判断。
 
 #### 17.10.5 Scope
 
-上述 inheritance / override / equality / normalization semantics 至少统一适用于：
+上述 inheritance / override / equality / normalization semantics 统一适用于：
 
 - BehaviorFrequency；
 - BehaviorFactor；
-- Context。
+- Context；
+- TemporalExtent。
 
-Temporal local provenance 是否采用相同机制留待 R2B 后续。
+R2B2 已关闭 Temporal local provenance deferred question：TemporalExtent **采用同一机制**，不另建 temporal-specific provenance system。
 
 Canonical model **MUST NOT** 用单一 owner-level DIRECT / INFERRED / UNDETERMINED label 粗暴覆盖内部 derivation 实际不同的 nested qualifier，也 **MUST NOT** 把 owner 中不支持该 qualifier 的 provenance 错误继承给 qualifier。
 
@@ -2187,37 +2465,30 @@ Legacy input **MAY** 被迁移，但 canonical output **MUST** 只使用 R2A own
 
 这些 fields **MUST NOT** 为了历史兼容被重新塞回 canonical Core。
 
-### 17.14 Remaining deferred named types after R2B1
+### 17.14 Remaining deferred named types after R2B2
 
-R2B1 已 concretize：
+R2B1 已 concretize identity / reference / actor / source / generator / evidence foundations。
 
-- VersionToken；
-- EntityId；
-- SubjectRef；
-- CoreEntityRef；
-- ActorRef union representation；
-- ExternalActorRef；
-- DerivationKind lexical tokens；
-- SourceDescriptor；
-- GeneratorDescriptor；
-- Evidence；
-- canonical reference representation；
-- nested provenance field/cardinality；
-- minimum provenance equality / ordering semantics。
+R2B2 新 concretize：
+
+- Text lexical contract + equality；
+- TemporalValue lexical profiles + equality；
+- TemporalExtent boundary validity / comparability；
+- TemporalExtent local provenance；
+- Coding concrete representation + identity / information equality；
+- Confidence concrete representation + equality；
+- Provenance equality 对 Text / TemporalValue / Confidence 的 concrete comparison。
 
 仍需后续 R2B concretize：
 
-- TemporalValue；
 - BehaviorFrequency non-provenance fields；
 - Context non-provenance fields；
 - BehaviorFactor non-provenance fields；
 - PreferenceValue；
-- Confidence；
-- Text lexical constraints；
-- Coding concrete JSON serialization；
-- canonical sorting key where final leaf serialization is required。
+- 类型兼容 / conversion details；
+- canonical global sorting key where final serialization requires it。
 
-R2B1 不设计 JSON Schema、EBNF、DSL syntax、parser、validator implementation 或 runtime。
+R2B2 不设计 JSON Schema、EBNF、DSL syntax、parser、validator implementation 或 runtime。
 
 ## 18. 校验模型
 
@@ -2225,14 +2496,20 @@ R2B1 不设计 JSON Schema、EBNF、DSL syntax、parser、validator implementati
 
 未来的校验模型预计至少需要区分结构合法性与语义合法性，但具体分层、严重级别模型、错误码与实现仍为 **TODO**。
 
-R2B0 只冻结一个与 DerivationKind 直接相关的 validation consequence：
+已冻结的 minimum validation consequences 包括：
 
 - legacy migration 因历史 metadata 真实不足而使用 `"undetermined"`，可以形成 canonical-valid provenance；
 - conforming validator **SHOULD** 对 `"undetermined"` 产生 provenance-quality warning；
 - producer 已掌握足够 derivation information 却使用 `"undetermined"`，属于 semantic non-conformance；
-- 缺少最小 traceable source path 时，`"undetermined"` **MUST NOT** 使 provenance requirement 自动变为 satisfied。
+- 缺少 R2B1 所要求的 traceable source path 时，`"undetermined"` **MUST NOT** 使 provenance requirement 自动变为 satisfied；
+- Text 必须满足 §8.1 non-whitespace content rule；
+- TemporalValue 必须满足 §8.2 lexical / Gregorian / offset validity；
+- Interval start/end 在 §8.2.6 可判定 start definitely later than end 时必须 invalid；
+- TemporalExtent explicit local provenance 必须满足 §17.10 complete-override / no-additive-merge rules；
+- Coding required / non-empty constraints 必须满足 §15；
+- Confidence 必须满足 finite number、metric、optional scale range rules。
 
-R2B0 不定义 Validator implementation。
+R2B2 不定义 Validator implementation。
 
 ## 19. 扩展机制
 

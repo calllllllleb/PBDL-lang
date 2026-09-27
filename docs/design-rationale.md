@@ -288,7 +288,7 @@ Preference 尤其不能因为没有时间信息就被解释为永久偏好。
 - 来源未提供 timezone / offset 时，不能凭空补充；
 - relative time 若保留在 canonical semantics 中，必须具有明确 anchor。
 
-具体 ISO 8601 serialization、partial-date 表示与 relative-time syntax 留待后续。
+R2B2 已冻结 TemporalValue partial-date / date-time lexical profiles；relative-time syntax 继续留待上游解析 / future DSL work。
 
 ### 理由
 
@@ -576,7 +576,7 @@ Canonical model 必须允许 frequency qualifier 保留 local INFERRED provenanc
 
 因此，nested qualifier 只有在其 provenance semantics 与 owner 对该 qualifier 的完整 applicable provenance set 一致时，才可以省略 local provenance并继承 owner provenance。
 
-同样原则适用于 BehaviorFactor 与 Context；Temporal qualifier 是否需要同样 local mechanism 留待 R2B。
+同样原则适用于 BehaviorFactor、Context 与 TemporalExtent；R2B2 已确认 TemporalExtent 必须具有同样的 optional local provenance capacity。
 
 ### 理由
 
@@ -754,7 +754,7 @@ Provenance collections、Evidence collections 与 role-explicit time-event colle
 
 Nested local provenance 与 inherited owner set semantic-equivalent 时，canonical form 必须省略 redundant local provenance。
 
-R2B1 不冻结 deterministic sorting key，因为 TemporalValue、Text lexical constraints 与 Confidence concrete representation 尚未全部冻结。
+R2B2 已冻结 TemporalValue、Text 与 Confidence equality，因此 provenance semantic equality 已具备完整 leaf comparison foundation；deterministic global sorting key 仍留 final serialization round。
 
 ### 理由
 
@@ -763,3 +763,95 @@ Equality 必须先于 Schema / serialization freeze 明确，否则 provenance i
 但在 leaf lexical representation 尚不完整时强行冻结 sort key，会把后续 TemporalValue / Text / Confidence 设计反向绑死。
 
 因此本轮冻结 order-insensitive semantic equality，sorting 延后到 final serialization round。
+
+## DR-036 — Text preserves Unicode content without normalization side effects
+
+### 决策
+
+Canonical Text 是 JSON-compatible Unicode string，并且至少包含一个 Unicode White_Space 之外的 code point。
+
+Text equality 使用 exact Unicode scalar-value sequence equality。
+
+Core 不自动 trim、case-fold 或 Unicode-normalize。
+
+### 理由
+
+Evidence.content 与 Annotation.text 需要阻止 empty / whitespace-only value 伪造“存在内容”，同时又必须保留原始人类文本。
+
+自动 normalization 会修改来源文本并让 canonical equality 隐含 producer-dependent behavior，因此不在 Core 中执行。
+
+## DR-037 — TemporalValue encodes source precision and timezone information lexically
+
+### 决策
+
+TemporalValue 使用 constrained canonical string，分别支持 year、month、date、minute、second 与 fractional-second precision。
+
+Date-time 可以无 timezone、带 numeric offset、带 bracketed source zone token，或同时保留 offset + zone token。
+
+Canonical temporal equality 是 canonical information equality：要求完整 lexical form 相同，而不是只比较 physical instant。
+
+### 理由
+
+把所有值强制提升为 full timestamp 或 UTC instant 会发明缺失日期精度 / timezone，或丢失 source offset / zone information。
+
+例如 `10:00Z` 与 `18:00+08:00` 可能是同一 physical instant，但它们保存的 source-local representation 不同。
+
+需要 physical-instant comparison 的实现可以提供单独 operation，但不能替代 canonical equality。
+
+## DR-038 — TemporalExtent receives local provenance
+
+### 决策
+
+TemporalExtent 增加 optional：
+
+    provenance? : Provenance[1..*]
+
+并完全复用 nested qualifier 的 complete-current-set inheritance、complete override、no additive merge 与 redundant omission rules。
+
+### 理由
+
+Owner assertion 与 temporal qualifier 可以来自不同 source 或 derivation。
+
+Behavior 本身 DIRECT 但 temporal 是模型推断、Preference 的 temporal 只由 owner provenance 子集支持、Relation temporal applicability 为 INFERRED 等场景，仅靠 owner provenance 无法无损表达。
+
+因此 TemporalExtent local provenance 是 semantic fidelity requirement，不是第二套 temporal provenance system。
+
+## DR-039 — Coding separates basic machine identity from canonical information equality
+
+### 决策
+
+Coding concrete shape 使用 required system + code，optional display + version。
+
+Basic machine semantic identity 继续由 system + code 决定。
+
+Canonical information equality 还要求 version presence/value 与 display presence/value 相同。
+
+### 理由
+
+display 只是人类可读文本，不应改变 terminology code identity。
+
+version 虽不推翻 R0 的 code + system basic identity，但属于被保留的 canonical information；不同版本不能在 normalization / dedup 时静默视为完全相同 representation。
+
+## DR-040 — Confidence is metric-aware finite numeric metadata, not implicit probability
+
+### 决策
+
+Confidence 使用：
+
+    value + metric + optional scale(min,max)
+
+metric REQUIRED。
+
+value / scale boundaries 必须 finite；scale 存在时 min < max 且 value 位于 inclusive range。
+
+scale 可以省略。
+
+Confidence equality 要求 metric、value、scale 精确语义相等，不使用 float tolerance。
+
+### 理由
+
+Calibrated probability、uncalibrated model score、human certainty 与 legacy confidence_score 不是同一 metric。
+
+仅根据数字落在 0..1 就把任意 score 解释为 probability 会制造不存在的语义。
+
+要求 metric 而允许 scale 省略，可以同时覆盖已知 bounded scale 与 range 未知的 score，而不引入完整 calibration framework。

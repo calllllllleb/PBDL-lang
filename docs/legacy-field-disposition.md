@@ -465,6 +465,26 @@ R1G 后仍未解决：
 - JSON Schema；
 - textual DSL syntax。
 
+**R2B2 状态：further partially resolved by R2B2。**
+
+R2B2 新冻结：
+
+- TemporalValue concrete lexical profiles：year / month / date / minute / second / fractional-second；
+- timezone / offset absence-preservation，以及 numeric offset / bracketed zone-token preservation；
+- malformed / impossible Gregorian values invalid；
+- canonical TemporalValue equality 使用 source-information-preserving lexical equality，而非 physical-instant equality；
+- Interval ordering 使用保守的 precision-range comparability，不发明缺失 precision / timezone；
+- TemporalExtent 增加 optional local provenance，并复用 nested qualifier complete-override semantics。
+
+仍未解决：
+
+- recurrence / frequency concrete fields；
+- duration arithmetic；
+- explicit ongoing / unbounded semantics；
+- relative-time DSL syntax；
+- JSON Schema；
+- textual DSL syntax。
+
 ### OQ-002 — `communication_status` 的最终归属
 
 需要判断它是：
@@ -597,7 +617,26 @@ R2A 冻结：
 - DIRECT self-report 不被强制要求 confidence；
 - legacy `Preference.confidence_score` 不得在缺少 metric / generator / inference semantics 时无条件搬值。
 
-仍未解决 Confidence metric、scale、range、calibration、numeric representation 与 validation。
+R2A 后仍未解决 Confidence metric、scale、range、calibration、numeric representation 与 validation。
+
+**R2B2 状态：further partially resolved by R2B2。**
+
+R2B2 新冻结：
+
+- Confidence canonical ownership 仍为 `Provenance.confidence`；
+- concrete shape = required value + required metric + optional scale(min,max)；
+- numeric values 必须 finite；
+- scale 存在时 min < max 且 value 必须位于 inclusive range；
+- scale 可省略，避免把未知-range score 伪装成 probability；
+- Confidence equality 要求 metric / value / scale semantic-exact equality，不采用隐式 float tolerance；
+- legacy `confidence_score` 没有可支持 metric meaning 时不得迁入 canonical Confidence。
+
+仍未解决：
+
+- metric vocabulary / profile governance；
+- calibration framework；
+- threshold policy；
+- JSON Schema 与 DSL serialization。
 
 ### OQ-005 — Trigger / Symptom 的非因果表达
 
