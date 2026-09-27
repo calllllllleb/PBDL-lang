@@ -15,6 +15,66 @@
       "title": "PBDL Text",
       "type": "string",
       "pattern": "^[\\s\\S]*\\S[\\s\\S]*$"
+    },
+    "Coding": {
+      "title": "PBDL Coding",
+      "type": "object",
+      "properties": {
+        "system": {
+          "type": "string",
+          "pattern": "^[\\s\\S]*\\S[\\s\\S]*$"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[\\s\\S]*\\S[\\s\\S]*$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[\\s\\S]*\\S[\\s\\S]*$"
+        },
+        "display": {
+          "$ref": "#/$defs/Text"
+        }
+      },
+      "required": [
+        "system",
+        "code"
+      ],
+      "unevaluatedProperties": false
+    },
+    "Confidence": {
+      "title": "PBDL Confidence",
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "metric": {
+          "type": "string",
+          "pattern": "^[\\s\\S]*\\S[\\s\\S]*$"
+        },
+        "scale": {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "min",
+            "max"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "required": [
+        "value",
+        "metric"
+      ],
+      "unevaluatedProperties": false
     }
   }
 }
