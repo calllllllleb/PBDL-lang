@@ -674,6 +674,8 @@ UNDETERMINED 必须保留至少一条 traceable source path；validator 应产�
 
 受限的 UNDETERMINED 允许诚实迁移 legacy uncertainty，同时保持 native documents 的分类责任。
 
+R2B1 将其唯一 canonical lexical token 冻结为 `"undetermined"`，与 `"direct"`、`"inferred"` 共同构成唯一 DerivationKind token set。
+
 ## DR-032 — ActorRef is SubjectRef or embedded ExternalActorRef
 
 ### 决策
@@ -686,7 +688,9 @@ ActorRef architecture 冻结为：
 
 Caregiver、clinician、device、external software / system 等非 Core Subject actor 使用 non-identity-bearing embedded ExternalActorRef。
 
-ExternalActorRef 必须能够表达 actor kind，并可在来源支持时表达 external identity 与 display / role；具体 leaf fields 留待 R2B。
+R2B1 concrete representation 使用 REQUIRED kind，并允许 optional external_id / display / role。
+
+external_id 使用 system + value 明确区分外部稳定 identity 与 human-readable display / role；SubjectRef 与 ExternalActorRef 通过 `ref` vs `kind` structural discrimination 保持 JSON shape 无歧义。
 
 不新增 Actor / Participant Core entity。
 
@@ -697,3 +701,65 @@ Stress cases 显示 executor 需要覆盖人、设备与软件系统，但没有
 Embedded external descriptor 足以表达当前语义需求。
 
 当稳定 external id 存在时，可以重复表达同一 external actor；只有 role / display 时则不能假装具有稳定 instance identity。
+
+## DR-033 — References use explicit ref objects and constrained document-local EntityId
+
+### 决策
+
+VersionToken 使用 constrained string；当前 PBDL 1.0 canonical token 精确为 `"1.0"`。
+
+EntityId 使用简单、case-sensitive ASCII lexical profile：
+
+    [A-Za-z_][A-Za-z0-9._-]*
+
+SubjectRef 与 CoreEntityRef 统一使用：
+
+    { "ref": EntityId }
+
+而不是 bare string。
+
+### 理由
+
+Bare string reference 容易与 display text、code 或普通 string value 混淆。
+
+显式 `ref` object 保持 parser / validator 简单，同时为 future versioned reference extension 提供结构边界，而不会引入 URI / global identity 负担。
+
+EntityId 继续只承担 document-local instance identity，不需要 UUID。
+
+## DR-034 — Source, generator, and evidence use minimal role-explicit concrete descriptors
+
+### 决策
+
+SourceDescriptor、GeneratorDescriptor 与 Evidence 在 R2B1 获得最小 concrete structure。
+
+Source-related time 使用 `SourceTimeEvent(role, at)`，其中 role 明确为 reported / recorded / observed。
+
+Generator-related time 使用 `GeneratorTimeEvent(role, at)`，其中 role 明确为 extracted / generated / transformed / migrated。
+
+Evidence 同时允许 inline content 与 external locator，至少存在其中之一；Evidence 可以承载只属于该 evidence item 的 SourceTimeEvent。
+
+### 理由
+
+这些结构足以覆盖 patient self-report、questionnaire、clinician documentation、EHR record、device observation、legacy migration、human annotator、LLM extractor、rule engine 与 analytic model，而不需要完整 FHIR resource、ML registry 或 provenance event ontology。
+
+Role-explicit time 保持 R2A final repair：不得重新引入 ambiguous top-level `Provenance.time`。
+
+## DR-035 — Provenance equality is semantic and order-insensitive; sorting remains serialization work
+
+### 决策
+
+Provenance equality 基于已经 concretize 的 fields，而不是 collection position 或 serialization order。
+
+Provenance collections、Evidence collections 与 role-explicit time-event collections 的 ordering 不产生 semantic meaning。
+
+Nested local provenance 与 inherited owner set semantic-equivalent 时，canonical form 必须省略 redundant local provenance。
+
+R2B1 不冻结 deterministic sorting key，因为 TemporalValue、Text lexical constraints 与 Confidence concrete representation 尚未全部冻结。
+
+### 理由
+
+Equality 必须先于 Schema / serialization freeze 明确，否则 provenance inheritance 无法判断 redundant local set。
+
+但在 leaf lexical representation 尚不完整时强行冻结 sort key，会把后续 TemporalValue / Text / Confidence 设计反向绑死。
+
+因此本轮冻结 order-insensitive semantic equality，sorting 延后到 final serialization round。
