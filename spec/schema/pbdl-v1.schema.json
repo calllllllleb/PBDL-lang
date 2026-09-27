@@ -14,7 +14,7 @@
     "Text": {
       "title": "PBDL Text",
       "type": "string",
-      "pattern": "^(?s:.*\\S.*)$"
+      "pattern": "^[\\s\\S]*\\S[\\s\\S]*$"
     }
   }
 }
