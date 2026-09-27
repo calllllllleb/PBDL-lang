@@ -855,3 +855,150 @@ Calibrated probability、uncalibrated model score、human certainty 与 legacy c
 仅根据数字落在 0..1 就把任意 score 解释为 probability 会制造不存在的语义。
 
 要求 metric 而允许 scale 省略，可以同时覆盖已知 bounded scale 与 range 未知的 score，而不引入完整 calibration framework。
+
+## DR-041 — BehaviorFrequency uses four discriminated semantic variants
+
+### 决策
+
+BehaviorFrequency 冻结为：
+
+    ObservedCountFrequency
+    | RateFrequency
+    | RecurrenceFrequency
+    | QualitativeFrequency
+
+不采用 arbitrary frequency string，也不引入 RRULE / cron。
+
+Quantitative variants 使用 required `exact | approximate` precision。
+
+FrequencyPeriod 只支持 positive integer + day/week/month/year；本轮不加入 hour 或 non-integer period。
+
+### Stress-test 结果
+
+| Case | Canonical decision |
+|---|---|
+| F1 过去一周漏服 3 次 | observed_count, count=3, window=Interval |
+| F2 平均每周 2 次 | rate, value=2, period=1 week |
+| F3 每天一次 | recurrence, period=1 day, times_per_period=1 |
+| F4 每两周一次 | recurrence, period=2 weeks, times_per_period=1 |
+| F5 每周一、三、五 | recurrence, period=1 week, days_of_week={mon,wed,fri} |
+| F6 每天早晨 | recurrence, period=1 day, day_part=morning |
+| F7 经常 | qualitative, value=often |
+| F8 大约每周两次 | rate, value=2, period=1 week, precision=approximate |
+| F9 通常每天一次，但上周只发生 3 次 | two BehaviorFrequency items: recurrence + observed_count |
+| F10 医嘱每天两次，实际平均每天一次 | prescribed schedule 不进入 actual BehaviorFrequency；actual statement → rate 1/day |
+
+### 理由
+
+Observed count、rate、recurrence 与 qualitative frequency 的 denominator / schedule / evidence meaning 不同。
+
+把它们压成同一个 string 或 numeric value 会重新制造 R1G 已经禁止的语义混淆。
+
+Hour-level recurrence、non-integer period 与完整 scheduler engine 当前没有 stress-case necessity，因此延后而不是提前扩张。
+
+## DR-042 — Observed count, rate, and recurrence remain non-interchangeable
+
+### 决策
+
+ObservedCountFrequency 的 count 可以为 0，window optional。
+
+Count-only source information可以保留，而不发明 window。
+
+RateFrequency 必须显式带 FrequencyPeriod。
+
+RecurrenceFrequency 描述 pattern，不代表 concrete observed occurrences，也不由多条 observation 自动生成。
+
+### 理由
+
+“漏服 3 次”是 count information；“平均每周 3 次”有 denominator semantics；“每周三次”作为 recurrence 则表达 repeated pattern。
+
+三者数值可能相同，但 semantic claim 不同。
+
+强迫 count 必须有 window 会导致 source-only count 无处可放；反过来允许 count 自动变 rate 又会发明 denominator。
+
+## DR-043 — Approximation is explicit semantic precision, not Confidence
+
+### 决策
+
+ObservedCountFrequency、RateFrequency、RecurrenceFrequency 都使用 required：
+
+    precision = "exact" | "approximate"
+
+不通过 numeric rounding、Confidence 或 fuzzy comparison 表达 approximation。
+
+### 理由
+
+“大约每周两次”与“每周两次”语义不同，即使 numeric value 都是 2。
+
+Confidence 回答 producer 对 assertion 的 confidence；approximation 回答 source assertion 本身是否近似。二者不能混为一谈。
+
+## DR-044 — Qualitative frequency uses finite tokens without hidden numeric thresholds
+
+### 决策
+
+R2B3A 使用有限 QualitativeFrequencyToken，而不是 Coding 或 arbitrary text：
+
+    never / rarely / occasionally / sometimes /
+    often / frequently / usually / intermittently / always
+
+这些 token 不绑定 numeric threshold、probability、rate 或规范性 severity order。
+
+### 理由
+
+当前 Core 需要稳定 machine discrimination，但没有可信依据把 “often” 定义为某个百分比。
+
+使用有限 token 可以覆盖 R1G 已出现的 qualitative expressions，同时避免引入外部 vocabulary dependency。
+
+Exact-token equality 也不会假装 “often” 与 “frequently” 是自动同义词。
+
+## DR-045 — PreferenceValue uses a minimal four-way tagged union
+
+### 决策
+
+PreferenceValue 冻结为：
+
+    coded | text | boolean | number
+
+Numeric variant 增加 required comparator：
+
+    eq | lt | lte | gt | gte
+
+unit 使用 optional Coding。
+
+不新增 ordinal/strength、reference-valued 或 list/multi-select variant。
+
+### Stress-test 结果
+
+| Case | Canonical decision |
+|---|---|
+| P1 偏好口服给药 | coded when reliable terminology mapping exists |
+| P2 不接受电话联系 | boolean only when category semantics is genuinely binary; otherwise coded/text |
+| P3 偏好上午联系 | coded if reliable concept exists; otherwise text |
+| P4 希望医生先和女儿沟通 | text fallback when no reliable structured value binding exists |
+| P5 等待时间不超过 30 分钟 | number, operator=lte, value=30, unit=Coding(minutes) |
+| P6 强烈偏好居家管理 | coded/text value for home management; “强烈” not converted into strength score |
+| P7 legacy raw string, no reliable type mapping | text |
+
+### 理由
+
+四个 variant 足以覆盖当前真实 stress cases，同时避免把完整 FHIR datatype system搬入 Core。
+
+P5 证明 bare numeric value 不足以保存比较语义，因此 comparator 是必要的最小字段。
+
+P6 不足以证明需要 ordinal preference-strength type；本轮明确禁止 preference-strength analytics，因此保留 source wording而不发明强度值。
+
+## DR-046 — Free text is a fidelity fallback, not a typed-value escape hatch
+
+### 决策
+
+PreferenceValue text variant 在 reliable typing / terminology mapping 不可得时允许保真迁移。
+
+当 applicable normative binding 明确支持可靠 Coding 时，不应为了实现方便把 typed semantics降级为 Text。
+
+Legacy raw string 如果无法可靠类型化，必须保留为 Text，而不是猜 code、boolean、number、operator 或 unit。
+
+### 理由
+
+完全禁止 Text 会迫使 legacy migration 发明不存在的类型信息；完全放任 Text 又会让 consumer 必须重新 NLP 所有 preference values。
+
+因此 R2B3A 采用“可靠结构化优先、无法可靠类型化则 Text 保真”的单向边界。

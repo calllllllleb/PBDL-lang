@@ -614,11 +614,375 @@ Date-time values：
 
 本节定义最小 validity boundary，不要求完整 date arithmetic engine。
 
+### 8.3 BehaviorFrequency
+
+R2B3A 冻结 BehaviorFrequency 为明确 discriminated union：
+
+    BehaviorFrequency =
+        ObservedCountFrequency
+        | RateFrequency
+        | RecurrenceFrequency
+        | QualitativeFrequency
+
+四种 variant **MUST NOT** 通过 arbitrary string 合并为同一个 frequency field。
+
+所有 variant **MAY** 具有：
+
+    provenance? : Provenance[1..*]
+
+该 local provenance field 继续完全遵守 §17.10 complete-current-set inheritance、complete override、no additive merge 与 redundant omission rules。
+
+#### 8.3.1 QuantitativeFrequencyPrecision
+
+ObservedCountFrequency、RateFrequency 与 RecurrenceFrequency 使用 REQUIRED precision token：
+
+    "exact" | "approximate"
+
+`"exact"` 表示 canonical numeric / recurrence statement 未携带来源中的 approximation qualifier。
+
+`"approximate"` 表示来源明确表达约数、近似频率或近似 recurrence cadence。
+
+Precision token **MUST NOT** 被替换成 Confidence，也 **MUST NOT** 被 consumer 解读为 statistical confidence level。
+
+#### 8.3.2 FrequencyPeriod
+
+Canonical FrequencyPeriod：
+
+    FrequencyPeriod {
+        value : positive integer
+        unit  : "day" | "week" | "month" | "year"
+    }
+
+value **MUST** >= 1。
+
+R2B3A 不加入 `"hour"`：当前 stress cases 不需要 hour-level regimen engine；day-part recurrence 已覆盖本轮 time-of-day requirement。需要 hour-level recurrence 的来源在本轮 **MUST NOT** 被偷偷改写成 day fraction。
+
+R2B3A 不允许 non-integer period value。来源若表达当前 profile 无法无损表示的非整数 period，canonicalizer **MUST NOT** rounding / rescale / 发明等价 duration；原始信息可由 Evidence / Annotation 保真，并等待 future extension。
+
+`month` / `year` 表示 calendar period concept，**MUST NOT** 被自动换算为固定天数。
+
+FrequencyPeriod equality 要求 value 数值精确相等且 unit token 相同。
+
+#### 8.3.3 ObservedCountFrequency
+
+Canonical shape：
+
+    ObservedCountFrequency {
+        kind        : "observed_count"
+        count       : non-negative integer
+        precision   : "exact" | "approximate"
+        window?     : Interval
+        provenance? : Provenance[1..*]
+    }
+
+count REQUIRED，且 **MUST** >= 0。
+
+count = 0 合法，表示来源明确支持在所述 observation semantics 下 occurrence count 为零；它 **MUST NOT** 被解释为 missing frequency。
+
+window OPTIONAL。
+
+允许 count-only representation。例如来源只说“漏服了 3 次”，可以 canonicalize 为 count = 3、window absent，而 **MUST NOT** 发明 observation window。
+
+window 存在时使用 R2B2 Interval；window 是 observation / reference window，不是 rate denominator，也 **MUST NOT** 自动把 count 转成 rate。
+
+#### 8.3.4 RateFrequency
+
+Canonical shape：
+
+    RateFrequency {
+        kind        : "rate"
+        value       : non-negative finite number
+        period      : FrequencyPeriod
+        precision   : "exact" | "approximate"
+        provenance? : Provenance[1..*]
+    }
+
+value、period、precision REQUIRED。
+
+value **MUST** >= 0 且 finite。
+
+RateFrequency 的含义是平均 / 频率值 “value occurrences per period”。
+
+period **MUST** 显式存在；只有一个裸 `value = 2` **MUST NOT** 被解释为 rate。
+
+Observed count **MUST NOT** 因具有 window 自动 canonicalize 为 RateFrequency。
+
+#### 8.3.5 RecurrenceFrequency
+
+Canonical shape：
+
+    RecurrenceFrequency {
+        kind              : "recurrence"
+        period            : FrequencyPeriod
+        precision         : "exact" | "approximate"
+        times_per_period? : positive integer
+        days_of_week?     : Weekday[1..*]
+        day_part?         : DayPart
+        provenance?       : Provenance[1..*]
+    }
+
+period 与 precision REQUIRED。
+
+times_per_period 若存在，**MUST** >= 1。
+
+times_per_period 缺失只表示来源未提供每 period 的 occurrence count，**MUST NOT** 默认为 1。
+
+Weekday canonical tokens：
+
+    "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun"
+
+days_of_week 若存在：
+
+- collection **MUST** non-empty；
+- duplicate weekday **MUST NOT** 出现；
+- collection ordering **MUST NOT** 具有 semantic meaning；
+- period **MUST** 精确为 { value: 1, unit: "week" }；
+- times_per_period **MUST** 缺失，以避免同时存在两个 competing occurrence-count mechanisms。
+
+days_of_week 缺失表示未提供 weekday schedule，**MUST NOT** 表示 every weekday。
+
+DayPart canonical tokens：
+
+    "morning" | "afternoon" | "evening" | "night"
+
+day_part OPTIONAL；缺失表示未提供 day-part qualifier。
+
+DayPart 是 source-described categorical time-of-day concept，R2B3A **MUST NOT** 为这些 token 偷偷绑定统一 clock-hour thresholds。
+
+day_part 可与 daily recurrence 或 weekly days_of_week recurrence 共存；R2B3A 不引入 concrete clock-time schedule、RRULE 或 cron semantics。
+
+RecurrenceFrequency 表达 recurrence pattern，**MUST NOT** 自动生成 concrete observed occurrence timestamps。
+
+#### 8.3.6 QualitativeFrequency
+
+Canonical shape：
+
+    QualitativeFrequency {
+        kind        : "qualitative"
+        value       : QualitativeFrequencyToken
+        provenance? : Provenance[1..*]
+    }
+
+QualitativeFrequencyToken 为以下 canonical lowercase tokens：
+
+    "never"
+    "rarely"
+    "occasionally"
+    "sometimes"
+    "often"
+    "frequently"
+    "usually"
+    "intermittently"
+    "always"
+
+这些 token 表示 source-described qualitative frequency concept。
+
+Core **MUST NOT** 为任一 token 绑定 numeric threshold、probability、rate、percentage 或 recurrence interval。
+
+Token 列表顺序 **MUST NOT** 被解释为规范性的 numeric scale 或 clinical severity ordering。
+
+`"never"` / `"always"` 继续受 owner temporal / Context scope 限定；scope 缺失 **MUST NOT** 自动升级为 lifetime scope。
+
+#### 8.3.7 BehaviorFrequency content equality
+
+BehaviorFrequency **semantic content equality** 明确忽略 BehaviorFrequency.provenance。
+
+不同 kind 的 variants **MUST NOT** semantic-equivalent。
+
+ObservedCountFrequency content equality 要求：
+
+- count 相同；
+- precision token 相同；
+- window 同时缺失，或 window temporal content equality 相同。
+
+这里 window temporal content equality 只比较 Interval kind / start / end，使用 TemporalValue canonical information equality，并忽略 window.provenance。
+
+RateFrequency content equality 要求：
+
+- value finite-number semantic equality；
+- period equality；
+- precision token 相同。
+
+RecurrenceFrequency content equality 要求：
+
+- period equality；
+- precision token 相同；
+- times_per_period 同时缺失或数值相同；
+- day_part 同时缺失或 token 相同；
+- days_of_week 同时缺失，或作为无重复 token set 相等；ordering 不影响 equality。
+
+QualitativeFrequency content equality 要求 value token 完全相同。
+
+R2B3A 不定义 fuzzy frequency similarity。
+
+#### 8.3.8 Full BehaviorFrequency qualifier equality
+
+完整 canonical qualifier equality 与 frequency content equality 不同。
+
+完整 BehaviorFrequency equality **MUST** 同时满足：
+
+1. §8.3.7 content equality；
+2. BehaviorFrequency 的 effective provenance set 按 §17.10 / Provenance equality semantic-equivalent；
+3. 若 ObservedCountFrequency.window 存在且具有独立 TemporalExtent provenance，则 window effective provenance semantics 也必须 semantic-equivalent。
+
+因此 provenance 不属于 frequency **content**，但属于完整 canonical qualifier information。
+
+### 8.4 PreferenceValue
+
+R2B3A 冻结 PreferenceValue 为最小 tagged union：
+
+    PreferenceValue =
+        CodedPreferenceValue
+        | TextPreferenceValue
+        | BooleanPreferenceValue
+        | NumericPreferenceValue
+
+R2B3A 不新增 ordinal / strength、reference-valued、list / multi-select variant。
+
+#### 8.4.1 CodedPreferenceValue
+
+    CodedPreferenceValue {
+        kind  : "coded"
+        value : Coding
+    }
+
+value REQUIRED。
+
+当 applicable terminology / category contract 提供可靠且不丢失来源语义的 Coding 时，canonicalizer **SHOULD** 使用 coded variant，而不是仅为了方便退化成 free text。
+
+如果没有可靠 binding，canonicalizer **MUST NOT** 发明 Coding。
+
+#### 8.4.2 TextPreferenceValue
+
+    TextPreferenceValue {
+        kind  : "text"
+        value : Text
+    }
+
+value REQUIRED，并遵守 §8.1 Text contract。
+
+Text variant 用于来源保真：当 source preference value 无法可靠映射到 Coding、boolean 或 numeric semantics 时，**MAY** 使用 Text。
+
+Text variant **MUST NOT** 成为 structured semantics backdoor。
+
+如果规范性 category/value binding 明确要求某个可靠 coded value，canonicalizer **MUST NOT** 仅为了避免 terminology mapping 而使用 Text。
+
+Consumer **MUST NOT** 被迫通过 NLP 才能恢复本可可靠结构化的所有 PreferenceValue。
+
+#### 8.4.3 BooleanPreferenceValue
+
+    BooleanPreferenceValue {
+        kind  : "boolean"
+        value : boolean
+    }
+
+value REQUIRED。
+
+Boolean variant 只应在 Preference.category 的语义确实把 value 定义为 binary choice / state 时使用。
+
+例如 category 表示 phone contact acceptance 时，value = false 可以表示“不希望电话联系”。
+
+Boolean false 是一个真实 PreferenceValue，**MUST NOT** 被解释为 missing Preference；缺少 Preference assertion 也 **MUST NOT** 被解释为 false。
+
+Canonicalizer **MUST NOT** 仅因为 legacy string 看起来像 `"yes"` / `"no"` 就在缺少 category / source semantic support 时猜 boolean。
+
+#### 8.4.4 NumericPreferenceValue
+
+    NumericPreferenceValue {
+        kind     : "number"
+        operator : "eq" | "lt" | "lte" | "gt" | "gte"
+        value    : finite number
+        unit?    : Coding
+    }
+
+operator 与 value REQUIRED。
+
+value **MUST** finite；NaN 与 ±Infinity invalid。
+
+operator 保留 numeric preference 的 comparison semantics。
+
+因此“等待时间不超过 30 分钟”需要 operator = `"lte"`，而不能只保存裸 number 30。
+
+unit OPTIONAL，但若 source/category semantics 表示 dimensioned quantity 且 source 提供 unit，canonical representation **MUST** 保留该 unit。
+
+unit 使用已有 Coding，R2B3A **MUST NOT** 新增 arbitrary unit string type。
+
+Unitless numeric 合法，仅当：
+
+- 来源明确表达 dimensionless number；或
+- applicable Preference.category semantic contract 明确定义该 value 为 unitless。
+
+当 quantity 语义需要 unit 但来源未提供 unit 时，canonicalizer **MUST NOT** 猜测 minutes、days、percent 或其他 unit。
+
+#### 8.4.5 Preference strength / ordinal boundary
+
+R2B3A 不新增 preference-strength / ordinal variant。
+
+例如“强烈偏好居家管理”中：
+
+- “居家管理”如果有可靠 Coding，可以进入 CodedPreferenceValue；
+- “强烈” **MUST NOT** 在本轮被发明成 ordinal number、Confidence 或 derived preference-strength score。
+
+需要保留的原始强度措辞可由 Evidence / Annotation 保真；future preference-strength design 如有真实需求必须另行冻结。
+
+#### 8.4.6 Reference / list boundary
+
+PreferenceValue 不包含 CoreEntityRef variant。
+
+Legacy / source 中 Preference 与 Behavior 的 association 继续使用 R1H Relation，而 **MUST NOT** 通过 reference-valued PreferenceValue 绕回第二套 link mechanism。
+
+PreferenceValue 也不包含 generic list / multi-select variant。
+
+如果来源表达多个可独立成立的 Preference assertions，canonicalizer **MAY** 使用多个 Preference instances；如果多值集合本身具有不可拆分语义而当前 union 无法无损表示，**MUST NOT** 发明 list semantics，可保留 source material并等待 future extension。
+
+#### 8.4.7 PreferenceValue equality
+
+PreferenceValue equality 由 kind discriminator 决定。
+
+不同 kind **MUST NOT** semantic-equivalent。
+
+CodedPreferenceValue：
+
+- 使用 §15 Coding canonical-information equality。
+
+TextPreferenceValue：
+
+- 使用 §8.1 Text equality。
+
+BooleanPreferenceValue：
+
+- 使用 exact boolean equality。
+
+NumericPreferenceValue：
+
+- operator token 必须相同；
+- value 使用 finite mathematical-number exact equality；
+- unit 同时缺失，或按 §15 Coding canonical-information equality semantic-equivalent。
+
+R2B3A 不定义 fuzzy PreferenceValue similarity。
+
+#### 8.4.8 Legacy PreferenceValue migration
+
+Legacy `Preference.preference_value` migration **MUST** 保留 source-supported type semantics。
+
+- source / binding 可靠支持 Coding → **MAY** 使用 coded；
+- source/category 可靠支持 boolean → **MAY** 使用 boolean；
+- source 可靠支持 numeric comparator / value / unit semantics → **MAY** 使用 number；
+- source 只保留 raw string，且无法可靠类型化 → 使用 text。
+
+Canonicalizer **MUST NOT**：
+
+- 根据字符串外观猜 boolean；
+- 发明 terminology code；
+- 猜 unit；
+- 猜 numeric comparator / scale；
+- 把无可靠类型信息的 legacy text 当作 typed value。
+
 仍为 **TODO** 的主要是：
 
-- PreferenceValue leaf type system；
-- Context / BehaviorFrequency / BehaviorFactor concrete internal fields；
-- 类型兼容与转换规则；
+- Context concrete internal fields；
+- BehaviorFactor concrete internal fields；
+- 类型兼容 / conversion rules；
 - JSON Schema 与 DSL syntax。
 
 ## 9. Patient / Subject
@@ -953,7 +1317,19 @@ Frequency assertion 继续继承该 Behavior 的 R1C source traceability；“�
 
 R1G 不把 recurrence semantic contract 扩张到 Preference 或 Relation。若未来出现明确需求，应另行审议。
 
-R2A 在 §17 冻结 Behavior.frequencies : BehaviorFrequency[0..*] 作为独立 structured qualifier ownership，并允许必要时具有 local provenance。BehaviorFrequency concrete fields、period representation、day-of-week / time-of-day structure、rate model、duration arithmetic、recurrence serialization、JSON Schema 与 DSL syntax 仍为 **TODO**。
+R2A 在 §17 冻结 Behavior.frequencies : BehaviorFrequency[0..*] 作为独立 structured qualifier ownership，并允许必要时具有 local provenance。
+
+R2B3A 在 §8.3 进一步冻结：
+
+- observed_count / rate / recurrence / qualitative 四种 discriminated variants；
+- count-only observed representation；
+- FrequencyPeriod；
+- exact / approximate precision token；
+- weekly weekday schedule 与 finite day-part token；
+- qualitative frequency token set；
+- BehaviorFrequency semantic content equality 与完整 qualifier equality。
+
+Duration arithmetic、hour-level recurrence、RRULE / cron、Preference recurrence、JSON Schema 与 DSL syntax 仍未冻结。
 
 ### 10.6 Legacy `reasoning_note` compatibility
 
@@ -1045,7 +1421,19 @@ Preference Annotation **MUST NOT** 自动成为 Evidence 或 Provenance，也 **
 
 R2A 在 §17 冻结 legacy Preference.note → Preference.annotations，并冻结 Annotation 的最小 text + provenance field inventory；更细的 serialization / author-generator representation 仍留待后续。
 
-R2A 在 §17 冻结 Preference 的 canonical field inventory；R2B1 已冻结 SourceDescriptor / Evidence concrete structure；R2B2 已冻结 Confidence concrete representation。PreferenceValue leaf type system、偏好类型词表、Preference recurrence model 与语法仍为 **TODO**。
+R2A 在 §17 冻结 Preference 的 canonical field inventory；R2B1 已冻结 SourceDescriptor / Evidence concrete structure；R2B2 已冻结 Confidence concrete representation；R2B3A 在 §8.4 冻结 PreferenceValue 的 coded / text / boolean / number tagged union。
+
+### 11.4 PreferenceValue representation boundary
+
+Preference.value **MUST** 使用 §8.4 PreferenceValue，而 **MUST NOT** 使用 arbitrary untyped JSON 或 untagged string 作为 canonical machine value。
+
+TextPreferenceValue 是 vocabulary / typing 无法可靠恢复时的保真 fallback，不是规避 structured semantics 的默认逃生口。
+
+Boolean false 是明确 value，不等于 missing Preference。
+
+NumericPreferenceValue 必须显式保留 comparator；dimensioned quantity 的 unit 不能被猜测。
+
+R2B3A 不设计 Preference recurrence、Preference conflict、ordinal / strength analytics、multi-select engine、JSON Schema 或 DSL syntax。
 
 ## 12. Context
 
@@ -1604,7 +1992,7 @@ R2B2 不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语 code。
 73. Annotation 与 structured canonical semantics 冲突时，conforming consumer **MUST NOT** 仅根据 Annotation 静默覆盖 structured semantics。
 74. PBDL-Core **MUST NOT** 要求 hidden chain-of-thought、private model reasoning trace、internal scratchpad 或 hidden model deliberation 作为规范性 Annotation 内容。
 
-跨文档 identity / reference protocol、BehaviorFrequency / Context / BehaviorFactor internals、PreferenceValue leaf type system、communication vocabulary、Constraint / Barrier model、normative relation vocabulary / codes / inverse conventions、derived relation-strength artifact Schema、JSON Schema、DSL syntax 与术语词表仍为 **TODO**。
+跨文档 identity / reference protocol、Context / BehaviorFactor internals、communication vocabulary、Constraint / Barrier model、normative relation vocabulary / codes / inverse conventions、derived relation-strength artifact Schema、JSON Schema、DSL syntax 与术语词表仍为 **TODO**。
 
 ## 17. Canonical Object Model
 
@@ -1827,21 +2215,29 @@ R1D 允许 relative time 带 anchor 保留或在 canonicalization 前解析。R2
 
 Behavior.frequencies 为 OPTIONAL BehaviorFrequency[0..*]。
 
-BehaviorFrequency 是独立 structured qualifier type，用于承载 R1G 已区分的 observed / reported count、recurrence pattern、qualitative frequency 等 frequency semantics。
+BehaviorFrequency concrete discriminated union、validity 与 equality 见 §8.3。
 
-BehaviorFrequency 的 exact fields、period structure、recurrence representation、qualitative vocabulary 与 serialization 留待 R2B。
+Behavior.frequencies collection **MAY** 同时包含不同 variant，例如：
 
-Canonical representation **MUST NOT** 使用 frequency : arbitrary string 作为最终机器语义替代。
+- recurrence = daily once；
+- observed_count = last week 3 occurrences。
 
-BehaviorFrequency **MAY** carry local Provenance。
+两者表达不同 semantic dimensions，**MUST NOT** 因指向同一 Behavior 而互相覆盖或自动 deduplicate。
 
-如果某个 frequency assertion 与 owner Behavior 具有不同 source、generator 或 DIRECT / INFERRED derivation，或者该 frequency assertion 只由 owner provenance 的真子集支持，则该 BehaviorFrequency **MUST** 携带自己的 local provenance。
+Canonical representation **MUST NOT** 使用 `frequency: "每天两次"` 等 arbitrary string 作为最终机器语义替代。
 
-BehaviorFrequency 只有在其 provenance semantics 与 owner 对该 qualifier 的**完整 applicable provenance set**一致时，才 **MAY** 省略 local provenance 并继承 owner provenance。
+每个 BehaviorFrequency variant **MAY** carry local Provenance。
 
-省略 local provenance **MUST NOT** 表示“任选 owner provenance 中的一条”或允许实现自行猜测支持该 qualifier 的 provenance。
+BehaviorFrequency local provenance 完全遵守 §17.10：
 
-Concrete provenance inheritance serialization 与 validation 留待 R2B，但 canonical model **MUST NOT** 丢失 DIRECT Behavior + INFERRED frequency，或 owner 多 provenance + qualifier subset support 的区别。
+- local absent → inherit complete current applicable owner provenance set；
+- local present → complete override；
+- additive merge → forbidden；
+- redundant explicit local set → canonical omission。
+
+ObservedCountFrequency.window 自身若携带 TemporalExtent.provenance，也继续独立遵守同一 §17.10 rules。
+
+Prescribed / expected schedule **MUST NOT** canonicalize 成 actual BehaviorFrequency，除非当前 Behavior assertion 本身描述的就是 schedule-following / prescribed behavior semantics。
 
 #### 17.4.5 Behavior.contexts
 
@@ -1934,7 +2330,7 @@ Canonical Preference field inventory：
 | provenance | Provenance | 1..* | REQUIRED |
 | annotations | Annotation | 0..* | OPTIONAL collection |
 
-PreferenceValue 是 named structured semantic type；其 complete leaf type system 留待 R2B。
+PreferenceValue concrete tagged union、validity、migration 与 equality 已由 R2B3A 在 §8.4 冻结。
 
 Legacy ownership：
 
@@ -2335,7 +2731,7 @@ Annotation.text 使用 §8.1 Text contract。
 
 Owner-level provenance 描述 owner assertion。
 
-R2B1 冻结 BehaviorFrequency / BehaviorFactor / Context 共用的 local provenance field contract：
+R2B1 冻结 BehaviorFrequency / BehaviorFactor / Context 共用的 local provenance field contract；R2B3A concrete BehaviorFrequency 继续原样复用该 contract：
 
     provenance? : Provenance[1..*]
 
@@ -2475,30 +2871,32 @@ Legacy input **MAY** 被迁移，但 canonical output **MUST** 只使用 R2A own
 
 这些 fields **MUST NOT** 为了历史兼容被重新塞回 canonical Core。
 
-### 17.14 Remaining deferred named types after R2B2
+### 17.14 Remaining deferred named types after R2B3A
 
 R2B1 已 concretize identity / reference / actor / source / generator / evidence foundations。
 
-R2B2 新 concretize：
+R2B2 已 concretize Text、TemporalValue、TemporalExtent local provenance、Coding、Confidence 与相关 equality foundation。
 
-- Text lexical contract + equality；
-- TemporalValue lexical profiles + equality；
-- TemporalExtent boundary validity / comparability；
-- TemporalExtent local provenance；
-- Coding concrete representation + identity / information equality；
-- Confidence concrete representation + equality；
-- Provenance equality 对 Text / TemporalValue / Confidence 的 concrete comparison。
+R2B3A 新 concretize：
+
+- BehaviorFrequency discriminated union；
+- QuantitativeFrequencyPrecision；
+- FrequencyPeriod；
+- Weekday / DayPart recurrence tokens；
+- QualitativeFrequencyToken；
+- BehaviorFrequency content / full qualifier equality；
+- PreferenceValue coded / text / boolean / number union；
+- NumericPreferenceValue comparator / unit semantics；
+- PreferenceValue equality 与 legacy migration boundary。
 
 仍需后续 R2B concretize：
 
-- BehaviorFrequency non-provenance fields；
 - Context non-provenance fields；
 - BehaviorFactor non-provenance fields；
-- PreferenceValue；
 - 类型兼容 / conversion details；
 - canonical global sorting key where final serialization requires it。
 
-R2B2 不设计 JSON Schema、EBNF、DSL syntax、parser、validator implementation 或 runtime。
+R2B3A 不设计 JSON Schema、EBNF、DSL syntax、parser、validator implementation 或 runtime。
 
 ## 18. 校验模型
 
@@ -2517,9 +2915,15 @@ R2B2 不设计 JSON Schema、EBNF、DSL syntax、parser、validator implementati
 - Interval start/end 在 §8.2.6 可判定 start definitely later than end 时必须 invalid；
 - TemporalExtent explicit local provenance 必须满足 §17.10 complete-override / no-additive-merge rules；
 - Coding required / non-empty constraints 必须满足 §15；
-- Confidence 必须满足 finite number、metric、optional scale range rules。
+- Confidence 必须满足 finite number、metric、optional scale range rules；
+- BehaviorFrequency 必须满足 §8.3 variant discrimination、count / rate / period / recurrence collection rules；
+- BehaviorFrequency quantitative precision 必须显式为 `"exact"` 或 `"approximate"`；
+- RateFrequency 缺少 period 必须 invalid；
+- RecurrenceFrequency weekday duplicate、非法 period/day schedule combination 必须 invalid；
+- PreferenceValue 必须满足 §8.4 tagged-union discrimination；
+- NumericPreferenceValue value 必须 finite，operator 必须为允许 token，unit 若存在必须为 valid Coding。
 
-R2B2 不定义 Validator implementation。
+R2B3A 不定义 Validator implementation。
 
 ## 19. 扩展机制
 

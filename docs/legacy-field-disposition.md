@@ -396,6 +396,14 @@ retained as candidate PBDL-Pathway extension
 
 ---
 
+### R2B3A representation cross-reference
+
+R1A primary disposition matrix 保持不变。
+
+Historical `Preference.preference_value` 的 KEEP_CORE capability 在 R2B3A 已具体化为 canonical `Preference.value : PreferenceValue`，并使用 coded / text / boolean / number tagged union。
+
+这是一项后续 representation concretization，**不修改** R1A 的 primary disposition row、count 或历史审计结论。
+
 ## 11. 尚未解决的 Open Questions
 
 R1A 不解决以下问题，只将其登记为后续规范设计输入。
@@ -479,6 +487,28 @@ R2B2 新冻结：
 仍未解决：
 
 - recurrence / frequency concrete fields；
+- duration arithmetic；
+- explicit ongoing / unbounded semantics；
+- relative-time DSL syntax；
+- JSON Schema；
+- textual DSL syntax。
+
+**R2B3A 状态：further partially resolved by R2B3A。**
+
+R2B3A 新冻结 Behavior frequency / recurrence representation：
+
+- BehaviorFrequency = observed_count / rate / recurrence / qualitative discriminated union；
+- observed count 允许 count-only，不发明缺失 observation window；
+- RateFrequency 显式要求 FrequencyPeriod denominator semantics；
+- FrequencyPeriod = positive integer + day/week/month/year；
+- quantitative exact / approximate precision token；
+- recurrence 的 weekday / day-part / times-per-period minimal structure；
+- qualitative frequency finite token set，不绑定 numeric threshold；
+- BehaviorFrequency content equality 与包含 effective provenance 的 full qualifier equality。
+
+R2B3A 后仍未解决：
+
+- hour-level / richer recurrence representation；
 - duration arithmetic；
 - explicit ongoing / unbounded semantics；
 - relative-time DSL syntax；
