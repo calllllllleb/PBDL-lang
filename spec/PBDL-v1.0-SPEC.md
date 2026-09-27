@@ -3700,7 +3700,7 @@ R2B4 冻结三个层次：
 
 Semantic-valid，但尚未达到 canonical normal form。例如：
 
-- optional普通 collection显式 `[]`；
+- cardinality = `0..*` 的 optional collection显式 `[]`；
 - full-equal no-id duplicate；
 - explicit local provenance 与 inherited complete set完全等价；
 - future serializer尚未统一 JSON number spelling / array ordering。
@@ -3709,7 +3709,7 @@ Semantic-valid，但尚未达到 canonical normal form。例如：
 
 Semantic-valid，并已执行当前规范要求的 semantic normalization：
 
-- optional empty collections omitted；
+- cardinality = `0..*` 的 optional empty collections omitted；
 - redundant local provenance omitted；
 - full-equal redundant no-id / embedded items deduplicated；
 - legacy aliases / unknown fields不存在。
@@ -3719,7 +3719,7 @@ Semantic-valid，并已执行当前规范要求的 semantic normalization：
 - JSON `null`；
 - unknown Core field；
 - explicit local `provenance: []`；
-- declared cardinality要求至少 1 item 的 collection为空（例如 `subjects: []`、required/local `provenance: []`）；required root `behaviors` / `preferences` / `relations` 可合法为 `[]`，但 **MUST NOT** omitted；
+- declared cardinality要求至少 1 item 的 collection为空（例如 `subjects: []`、`days_of_week: []`、required/local `provenance: []`）；required root `behaviors` / `preferences` / `relations` 可合法为 `[]`，但 **MUST NOT** omitted；
 - invalid union discriminator；
 - duplicate EntityId；
 - violated conditional invariant。
