@@ -95,7 +95,7 @@ R1B 冻结以下四类核心语义对象的最小边界：
 - Preference：对某个 Subject 已表达或已推断的倾向、选择、优先级、厌恶或偏好的表示。
 - Relation：在允许的端点类型之间显式表达语义联系的 Core 构造。
 
-Context 的最小语义职责已由 R1F 冻结：它用于对 Behavior / Preference 的语义解释提供情境性限定，但当前不作为具有独立 identity 的可引用一级 Core entity。R2A 冻结 Context 的 canonical ownership 为 Behavior / Preference 下的 embedded qualifier；其 concrete internal fields、cardinality details、JSON Schema 与 syntax 仍留待 R2B / 后续工作。Provenance 与 Evidence 的最小语义边界已由 R1C 冻结；R2A 在 §17 冻结 Provenance 的 field inventory、attachment pattern 与 Evidence 的 embedded ownership，具体 SourceDescriptor / Evidence leaf structure 仍留待 R2B。
+Context 的最小语义职责已由 R1F 冻结：它用于对 Behavior / Preference 的语义解释提供情境性限定，但当前不作为具有独立 identity 的可引用一级 Core entity。R2A 冻结 Context 的 canonical ownership 为 Behavior / Preference 下的 embedded qualifier；R2B3B 在 §8.5 / §12 / §17.4.5 冻结其 concrete fields、coded/text value architecture、local provenance 与 equality。JSON Schema 与 DSL syntax 仍留待后续。Provenance 与 Evidence 的最小语义边界已由 R1C 冻结；R2A 在 §17 冻结 Provenance 的 field inventory、attachment pattern 与 Evidence 的 embedded ownership，R2B1 已在 §17.8 冻结 SourceDescriptor / GeneratorDescriptor / Evidence concrete structure。
 
 ### 5.1 文档与 Subject 绑定
 
@@ -978,11 +978,245 @@ Canonicalizer **MUST NOT**：
 - 猜 numeric comparator / scale；
 - 把无可靠类型信息的 legacy text 当作 typed value。
 
+### 8.5 Context
+
+R2B3B 冻结 Context 为 lightweight embedded qualifier：
+
+    Context {
+        value       : ContextValue
+        provenance? : Provenance[1..*]
+    }
+
+value REQUIRED。
+
+provenance OPTIONAL，并继续遵守 §17.10 complete-current-set inheritance、complete override、no additive merge 与 redundant omission rules。
+
+Context **不**具有独立 identity，不进入 document root collection，也不是 Relation endpoint。
+
+#### 8.5.1 ContextValue
+
+ContextValue 使用与 PreferenceValue **不同的**最小 tagged union：
+
+    ContextValue =
+        CodedContextValue
+        | TextContextValue
+
+R2B3B 不复用 PreferenceValue，因为 Context 不具有 preference comparator、preference choice 或 preference-specific value semantics。
+
+##### CodedContextValue
+
+    CodedContextValue {
+        kind  : "coded"
+        value : Coding
+    }
+
+当 applicable terminology / context binding 能可靠表达 contextual concept 时，canonicalizer **SHOULD** 使用 coded variant。
+
+例如可以表达 traveling、work setting、family support present、home setting、communication via a particular channel 或 workday-like social context，前提是有可靠 Coding。
+
+R2B3B 不冻结这些具体 codes 或 vocabulary。
+
+##### TextContextValue
+
+    TextContextValue {
+        kind  : "text"
+        value : Text
+    }
+
+Text variant 是 fidelity fallback。
+
+当来源明确包含 contextual information，但无法可靠 terminology-map 时，canonicalizer **MAY** 使用 TextContextValue。
+
+如果 applicable normative binding 已经提供可靠 Coding，canonicalizer **SHOULD** 使用 coded variant，而 **MUST NOT** 仅为了实现方便把所有 Context 降级为 Text。
+
+Canonicalizer **MUST NOT** 为了避免 Text fallback 而发明 terminology code。
+
+TextContextValue **MUST NOT** 成为 arbitrary metadata bag，也 **MUST NOT** 要求 downstream NLP 才能恢复本可可靠结构化的所有 Context。
+
+R2B3B 不加入 boolean / numeric ContextValue variant，因为 C1–C10 stress cases 不需要它们；family-support-present 等 source concepts 可作为 coded context concept 表达，无法可靠 coding 时用 Text fidelity fallback。
+
+#### 8.5.2 Context semantic boundary
+
+Context 表达 co-occurring / situational / background qualification，而不表达 source-attributed reason、verified cause、Provenance、semantic temporal extent 或 workflow status。
+
+例如：
+
+- “旅行期间漏服”在只有 co-occurring situation 语义时 → Context(traveling)；
+- “因为旅行漏服”来源明确表达 reason → BehaviorFactor，而不是仅 Context；
+- “恶心时停药”若只支持 contextual coincidence → Context；
+- “因为恶心停药” → source-attributed BehaviorFactor。
+
+“工作日”只有在来源把它作为社会 / 生活情境概念时 **MAY** 表示为 Context；如果其唯一语义是 calendar recurrence / day filter，应使用已经适用的 temporal / frequency semantics，而 **MUST NOT** 为方便重复编码成 Context。
+
+Context **MUST NOT** 创建 Behavior↔Behavior、Behavior↔Preference 或 Preference↔Preference explicit entity link；这些继续使用 Relation。
+
+#### 8.5.3 Context equality
+
+Context semantic content equality **不包含 provenance**。
+
+两个 Context content semantic-equivalent 当且仅当：
+
+- ContextValue kind 相同；
+- coded value 使用 §15 Coding canonical-information equality；或
+- text value 使用 §8.1 Text equality。
+
+不同 ContextValue kind **MUST NOT** semantic-equivalent。
+
+Full Context qualifier equality 要求：
+
+1. Context content equality；
+2. effective provenance set 按 §17.10 / Provenance equality semantic-equivalent。
+
+Behavior.contexts / Preference.contexts collection ordering **MUST NOT** 表示 priority、causality 或其他 semantic ordering。
+
+两个 Context item 如果 full qualifier equality 相同，则在 canonical collection 中属于 redundant duplicate；canonical normalization **MUST** 至多保留一个。相同 content 但 effective provenance 不同的 Context 不属于 full-equal duplicate。
+
+R2B3B 不定义 fuzzy Context similarity。
+
+### 8.6 BehaviorFactor
+
+R2B3B 冻结 BehaviorFactor：
+
+    BehaviorFactor {
+        role        : FactorRole
+        factor      : FactorValue
+        direction   : FactorDirection
+        provenance? : Provenance[1..*]
+    }
+
+role、factor、direction REQUIRED。
+
+provenance OPTIONAL，并完全复用 §17.10 nested provenance rules。
+
+BehaviorFactor 是 Behavior-local non-Core factor qualifier，不具有独立 identity，也不是 Relation endpoint。
+
+#### 8.6.1 FactorRole
+
+Canonical FactorRole tokens：
+
+    "reported_reason"
+    "observed_association"
+    "antecedent"
+    "explanatory"
+
+语义：
+
+- `"reported_reason"`：来源明确把 factor 描述为该 Behavior 的理由 / 原因归因；这是 source-attributed semantics，不是 verified causal truth。
+- `"observed_association"`：来源只支持 factor 与 Behavior 的 recorded / observed association 或 co-occurrence，不声称 reason。
+- `"antecedent"`：来源支持 factor 在 Behavior 之前出现；temporal precedence 不等于 causality。
+- `"explanatory"`：外部 human / model / rule / analytic process 给出的 explanatory factor semantics。若该 explanation 超出 source direct content，其有效 provenance **MUST** 保持 `"inferred"` derivation。
+
+FactorRole **MUST NOT** 使用 `"inferred"` 作为 role；DIRECT / INFERRED / UNDETERMINED 属于 Provenance.derivation。
+
+R2B3B 不新增 `causes`、`causal_factor`、`verified_cause` 等 causal role。
+
+#### 8.6.2 FactorDirection
+
+Canonical FactorDirection tokens：
+
+    "factor_to_behavior"
+    "behavior_to_factor"
+    "unspecified"
+
+direction REQUIRED，从而显式区分“来源支持方向”与“来源没有足够方向信息”。
+
+`"factor_to_behavior"` 只表示 source-supported semantic orientation 从 factor 指向 owner Behavior，**MUST NOT** 自动表示 factor caused Behavior。
+
+`"behavior_to_factor"` 同理只表示相反 orientation，**MUST NOT** 自动表示 Behavior caused factor。
+
+`"unspecified"` 表示来源没有足够信息确定 orientation；canonicalizer **MUST NOT** 通过 legacy field name、token ordering、temporal proximity 或 NLP guess 补造方向。
+
+对于 `"antecedent"` role，direction **MUST** 为 `"factor_to_behavior"`，因为该 role 定义的是 factor precedes owner Behavior。
+
+对于 `"reported_reason"` role，direction **MUST** 为 `"factor_to_behavior"`，因为 source attribution 表达 factor 被报告为 owner Behavior 的理由。
+
+`"observed_association"` 与 `"explanatory"` 可以根据来源 / inference 支持使用任一 direction token，包括 `"unspecified"`。
+
+Direction 与 causality 始终是不同维度。
+
+#### 8.6.3 FactorValue
+
+FactorValue 使用 tagged union：
+
+    FactorValue =
+        CodedFactorValue
+        | TextFactorValue
+
+##### CodedFactorValue
+
+    CodedFactorValue {
+        kind  : "coded"
+        value : Coding
+    }
+
+当 factor 可以可靠 terminology-map，例如 dizziness / nausea 等 source concept 时，canonicalizer **SHOULD** 使用 coded variant。
+
+##### TextFactorValue
+
+    TextFactorValue {
+        kind  : "text"
+        value : Text
+    }
+
+当 factor 只有 source wording、无法可靠 terminology-map 时，TextFactorValue 用于 fidelity preservation。
+
+Canonicalizer **MUST NOT** 发明 factor Coding。
+
+Factor text **MUST NOT** 被仅塞入 Annotation 后再要求下游 NLP 恢复 BehaviorFactor machine semantics。
+
+R2B3B 不新增 Symptom Core entity。
+
+#### 8.6.4 BehaviorFactor causality boundary
+
+BehaviorFactor 本身 **MUST NOT** 创建 causal Relation，也 **MUST NOT** 创建 Relation.weight。
+
+以下都不等价于 verified causality：
+
+- reported_reason；
+- antecedent；
+- observed_association；
+- direction；
+- inferred / explanatory factor。
+
+如果未来需要 normative causal Relation vocabulary，必须由单独 Relation vocabulary 工作冻结；R2B3B 不做该设计。
+
+#### 8.6.5 BehaviorFactor vs Relation
+
+BehaviorFactor 只用于 Behavior-local non-Core factor。
+
+如果 factor 实际是已有 document-local Behavior 或 Preference entity，并且语义是 explicit typed entity relationship，canonical representation **MUST** 使用 Relation，而不是把该 entity 的 display / label 降级成 BehaviorFactor。
+
+BehaviorFactor **MUST NOT** 成为绕过 R1B/R1H Relation endpoint / type contract 的第二套 entity-link mechanism。
+
+#### 8.6.6 BehaviorFactor equality
+
+BehaviorFactor semantic content equality **不包含 provenance**。
+
+两个 BehaviorFactor content semantic-equivalent 当且仅当：
+
+- role token 相同；
+- direction token 相同；
+- factor kind 相同；
+- coded factor 使用 §15 Coding canonical-information equality；或
+- text factor 使用 §8.1 Text equality。
+
+因此 nausea + reported_reason 与 nausea + observed_association **MUST NOT** semantic-equivalent。
+
+Full BehaviorFactor qualifier equality 要求：
+
+1. BehaviorFactor content equality；
+2. effective provenance set 按 §17.10 / Provenance equality semantic-equivalent。
+
+Behavior.factors collection ordering **MUST NOT** 表示 priority、causality、temporal order 或其他 semantic ordering。
+
+两个 BehaviorFactor item 如果 full qualifier equality 相同，则在 canonical collection 中属于 redundant duplicate；canonical normalization **MUST** 至多保留一个。
+
+R2B3B 不定义 fuzzy factor similarity。
+
 仍为 **TODO** 的主要是：
 
-- Context concrete internal fields；
-- BehaviorFactor concrete internal fields；
 - 类型兼容 / conversion rules；
+- canonical global sorting key；
 - JSON Schema 与 DSL syntax。
 
 ## 9. Patient / Subject
@@ -1128,7 +1362,18 @@ R1E 不新增 Symptom 一级 PBDL-Core entity，也不修改 R1B Relation endpoi
 
 R1E 不冻结新的 normative Relation vocabulary。`related_to`、`associated_with`、`reported_reason_for`、`precedes`、`follows` 等仍保持此前的非规范性候选状态，除非后续规范另行冻结。
 
-R2A 在 §17 将 Behavior-local、非 Core-entity 的 trigger / symptom / reason association ownership 冻结到 Behavior.factors；若两端均为允许的 Core entities 且表达 explicit typed entity relationship，仍使用 Relation。BehaviorFactor concrete fields、symptom terminology、Relation type vocabulary 与 JSON / DSL syntax 仍为 **TODO**。
+R2A 在 §17 将 Behavior-local、非 Core-entity 的 trigger / symptom / reason association ownership 冻结到 Behavior.factors；若两端均为允许的 Core entities 且表达 explicit typed entity relationship，仍使用 Relation。
+
+R2B3B 在 §8.6 冻结 BehaviorFactor concrete representation：
+
+- role = reported_reason / observed_association / antecedent / explanatory；
+- factor = coded / text FactorValue；
+- direction = factor_to_behavior / behavior_to_factor / unspecified；
+- provenance? 继续复用 §17.10。
+
+Legacy `behavior_trigger` / `symptom_triggered` 的 canonicalization **MUST** 依据真实 source semantics 选择 Context、BehaviorFactor 或 Relation，而 **MUST NOT** 仅根据 legacy field name 猜测 reason、direction 或 causality。
+
+Normative Relation vocabulary、具体 symptom terminology profile、JSON Schema 与 DSL syntax 仍未冻结。
 
 ### 10.4 Legacy `communication_status` compatibility
 
@@ -1158,7 +1403,11 @@ R1F 不冻结 communication behavior 的具体 behavior type、actor、recipient
 
 该类语义 **MUST** 与 actual communication Behavior、Provenance information、workflow / application state 保持可区分。
 
-R1F 当时未冻结其最终 representation。R2A 在 §17 明确 canonical Behavior 不保留 communication_status 字段，并继续按 actual communication Behavior / Context / Provenance / workflow-application state 四路分流；Context / communication concrete vocabulary 仍未冻结。
+R1F 当时未冻结其最终 representation。R2A 在 §17 明确 canonical Behavior 不保留 communication_status 字段，并继续按 actual communication Behavior / Context / Provenance / workflow-application state 四路分流。
+
+R2B3B 在 §8.5 冻结 Context 可用 coded / text ContextValue 表达 contextual communication concept，例如 communication-via-WeChat；这 **MUST NOT** 被解释为 workflow status，也不重新引入 `communication_status : string`。
+
+具体 communication vocabulary / Communication extension 仍未冻结。
 
 #### 10.4.3 Communication-related Provenance
 
@@ -1437,11 +1686,18 @@ R2B3A 不设计 Preference recurrence、Preference conflict、ordinal / strength
 
 ## 12. Context
 
-R1F 冻结 Context 的最小语义职责。
+R1F 冻结 Context 的最小语义职责；R2B3B 在 §8.5 冻结 concrete canonical representation。
 
 Context 用于表达解释某个 Behavior / Preference 时，与其发生、成立或被理解相关的情境性背景或条件限定。它的职责是 **qualify semantic interpretation**，而不是证明原因、执行推理、记录来源或承载软件工作流。
 
-概念上，Context 可以帮助表达类似“旅行期间发生漏服”“工作场景中避免用药”“存在家庭支持时愿意接受某方案”等情境，但这些只是说明性例子；R1F 不冻结具体 Context 类别、字段或 vocabulary。
+Canonical Context：
+
+    Context {
+        value       : ContextValue
+        provenance? : Provenance[1..*]
+    }
+
+ContextValue 为 coded / text tagged union，详见 §8.5。
 
 ### 12.1 Context is not a catch-all container
 
@@ -1451,11 +1707,11 @@ Context **MUST NOT** 被当作“无法分类的信息都放进 Context”的默
 
 - 信息从哪里来、如何产生，属于 R1C Provenance；
 - Behavior / Preference / Relation 何时发生、成立或适用，属于 R1D semantic temporal semantics；
-- source-attributed reason、observed antecedent 与 inferred explanation 继续遵守 R1E trigger / reason boundary；
+- source-attributed reason、observed antecedent 与 inferred explanation 继续使用 R1E / R2B3B BehaviorFactor semantics；
 - risk、conflict、recommendation、score、causal inference 等 derived analysis 属于 Core 外部的 derived / application result；
-- `pending review`、`assigned`、`escalated`、`resolved`、system acknowledgment、notification state 等默认属于 workflow / application layer。
+- workflow / application state 默认属于 Core 外。
 
-Context **MUST NOT** 作为绕过既有 Provenance、temporal、trigger / reason 或 derived-analysis 边界的替代容器。
+Context **MUST NOT** 作为绕过既有 Provenance、temporal、BehaviorFactor / reason 或 derived-analysis 边界的替代容器。
 
 ### 12.2 Context does not establish causality
 
@@ -1463,11 +1719,31 @@ Context **MUST NOT** 作为绕过既有 Provenance、temporal、trigger / reason
 
 例如，Behavior 发生在 traveling context 中，只说明该 Behavior 具有 traveling contextual qualification；它 **MUST NOT** 自动推出 traveling caused the Behavior。
 
-如果来源明确表达“因为旅行忘记服药”，该 reason attribution 继续遵守 R1E，而不是仅靠 Context 获得 reason / causal semantics。
+如果来源明确表达“因为旅行忘记服药”，应使用 BehaviorFactor reported_reason semantics，而不是仅靠 Context 获得 reason / causal semantics。
 
-同样，Context **MUST NOT** 仅因为某因素影响或限制行为，就自动把它定义为 objective Constraint / Barrier。Constraint / Barrier model 仍为 future work。
+Context **MUST NOT** 仅因为某因素影响或限制行为，就自动把它定义为 objective Constraint / Barrier。
 
-### 12.3 Missing Context
+### 12.3 Context fidelity fallback
+
+当 contextual concept 可可靠 terminology-map 时，canonicalizer **SHOULD** 使用 CodedContextValue。
+
+当来源有 contextual information，但无法可靠 terminology-map 时，TextContextValue 提供 fidelity fallback。
+
+Canonicalizer **MUST NOT** 发明 terminology code。
+
+Text fallback **MUST NOT** 让所有 Context 退化成自由文本，也不能成为 arbitrary metadata bag。
+
+### 12.4 Context and temporal/frequency boundary
+
+Calendar / date-time semantic extent 属于 TemporalExtent。
+
+Behavior recurrence / weekday schedule 属于 BehaviorFrequency。
+
+“工作日”只有在来源语义是社会 / 生活情境概念时 **MAY** 作为 Context；如果它只是 recurrence / calendar filter，**MUST NOT** 因实现方便重复编码成 Context。
+
+Context 不设计 rule / predicate engine。
+
+### 12.5 Missing Context
 
 Behavior / Preference **MAY** 没有显式 Context information。
 
@@ -1480,17 +1756,17 @@ Behavior / Preference **MAY** 没有显式 Context information。
 
 它只表示 canonical semantics 当前没有提供额外 contextual qualification。
 
-### 12.4 Context identity and reference boundary
+### 12.6 Context identity, reference, and collection boundary
 
-R1F 不要求 Context 具有独立 identity。
+Context 不要求独立 identity，不加入 Subject / Behavior / Preference document-local identity namespace，不进入 root collection，也不成为 Relation endpoint。
 
-Context 不加入 Subject / Behavior / Preference 的 document-local identity namespace，也不成为当前 Relation endpoint。
+Behavior.contexts / Preference.contexts 的 collection ordering **MUST NOT** 产生 semantic priority。
 
-R1B identity / reference rules 与 Relation endpoint matrix 保持不变。
+Full-equal Context duplicate 的 canonical normalization 见 §8.5.3。
 
-如果未来出现 shared context、context reuse 或稳定 context reference 等真实需求，可以在后续设计轮次重新审议 identity / reference model；R1F 不冻结这些机制。
+R2B3B 不新增 shared Context identity、ContextRef、Constraint / Barrier entity 或 Communication entity。
 
-Context 的 concrete fields、cardinality、nesting、identity / reuse mechanics、JSON Schema 与 DSL syntax 仍为 **TODO**。
+Context JSON Schema 与 DSL syntax 仍未冻结。
 
 ## 13. Evidence 与 Provenance
 
@@ -2243,50 +2519,58 @@ Prescribed / expected schedule **MUST NOT** canonicalize 成 actual BehaviorFreq
 
 Behavior.contexts 为 OPTIONAL Context[0..*]。
 
-Context 不是 identity-bearing entity，不进入 document root collection。
+Preference.contexts 同样使用 §8.5 Context concrete type。
 
-R2A 冻结 Context canonical ownership 至少包括：
+Context 不是 identity-bearing entity，不进入 document root collection，也不是 Relation endpoint。
 
-- Behavior.contexts；
-- Preference.contexts。
+Context concrete fields：
 
-Context concrete internal fields、cardinality / nesting details 留待 R2B。
+    Context {
+        value       : ContextValue
+        provenance? : Provenance[1..*]
+    }
 
-Context **MUST NOT** 成为 arbitrary metadata bag。
+ContextValue / equality / text fallback 见 §8.5。
 
-Context **MAY** carry local provenance。
+Context local provenance 完全遵守 §17.10：
 
-如果 Context 的 source、generator、derivation 与 owner assertion 不同，或者该 Context 只由 owner provenance 的真子集支持，则 Context **MUST** 携带自己的 local provenance。
+- local absent → inherit complete current applicable owner provenance set；
+- local present → complete override；
+- additive merge → forbidden；
+- redundant explicit complete set → canonical omission。
 
-只有当 Context 的 provenance semantics 与 owner 对该 Context 的完整 applicable provenance set 一致时，才 **MAY** 省略 local provenance 并继承 owner provenance。
+如果 Context 只由 owner provenance 的真子集支持，local provenance **MUST** 存在。
+
+Context collection ordering **MUST NOT** 表示 priority、causality 或 temporal order。
+
+Context **MUST NOT** 成为 arbitrary metadata bag，也 **MUST NOT** 替代 TemporalExtent、BehaviorFrequency、BehaviorFactor、Provenance、Relation 或 workflow/application metadata。
 
 #### 17.4.6 Behavior.factors
 
 Behavior.factors 为 OPTIONAL BehaviorFactor[0..*]。
 
-BehaviorFactor 承载 R1E 中 Behavior-local、不能自然表示成两个 Core entities 之间 Relation 的 structured factor semantics，例如：
+BehaviorFactor concrete type 见 §8.6：
 
-- source-attributed reason；
-- observed / recorded association or antecedent；
-- inferred explanation；
-- symptom-related association / direction；
-- non-Core semantic factor。
+    BehaviorFactor {
+        role        : FactorRole
+        factor      : FactorValue
+        direction   : FactorDirection
+        provenance? : Provenance[1..*]
+    }
+
+BehaviorFactor 承载 Behavior-local、non-Core factor semantics，包括 source-attributed reason、observed association、antecedence、external explanatory factor 与 legacy symptom-related direction。
 
 BehaviorFactor **MUST NOT** 成为 generic Relation replacement。
 
-如果 source 与 target 都是允许的 Core entities，且语义是 explicit typed entity relationship，则 canonical model 仍 **MUST** 使用 Relation。
-
-R2A 不冻结 BehaviorFactor concrete leaf fields、factor vocabulary 或 symptom terminology；这些留待 R2B。
+如果 factor 实际是当前 document 中的 Behavior / Preference entity，并表达 explicit typed entity relationship，canonical model **MUST** 使用 Relation。
 
 BehaviorFactor **MUST** 是 structured qualifier，而不是 arbitrary reasoning string。
 
-BehaviorFactor representation **MUST** 支持 local provenance。
+BehaviorFactor local provenance 完全遵守 §17.10。
 
-当 BehaviorFactor 的 source、generator、derivation 与 owner Behavior 不同，或者该 factor 只由 owner provenance 的真子集支持时，local provenance **MUST** 被保留。
+特别地，如果 owner Behavior 为 DIRECT，而 explanatory factor 是 model / analytic inference，则 factor **MUST** materialize local provenance，使 effective derivation 保持 `"inferred"`，不能继承成 owner DIRECT。
 
-只有当 BehaviorFactor 的 provenance semantics 与 owner 对该 factor 的完整 applicable provenance set 一致时，才 **MAY** 省略 local provenance 并继承 owner provenance。
-
-这既防止 inferred explanation 因 owner Behavior 为 DIRECT 而伪装成 DIRECT，也防止 owner 的无关 provenance 被错误解释为共同支持该 factor。
+FactorRole、FactorDirection、FactorValue、causality boundary 与 equality 详见 §8.6。
 
 #### 17.4.7 Legacy Behavior ownership
 
@@ -2313,7 +2597,7 @@ Canonical Behavior **MUST NOT** 保留 risk_tag、validity_flag 或 reasoning_no
 | executor | Behavior.executor |
 | temporal_scope | Behavior.temporal |
 | evidence_source | Behavior.provenance |
-| behavior_trigger / symptom_triggered | Behavior.factors when Behavior-local non-Core factor; Relation when both endpoints are Core entities and semantics are explicit typed relation |
+| behavior_trigger / symptom_triggered | Context when source supports only situational / co-occurring qualification; Behavior.factors when source supports Behavior-local non-Core reason / association / antecedent / explanation / direction semantics; Relation when both endpoints are Core entities and semantics are explicit typed relation |
 
 ### 17.5 Preference
 
@@ -2731,7 +3015,7 @@ Annotation.text 使用 §8.1 Text contract。
 
 Owner-level provenance 描述 owner assertion。
 
-R2B1 冻结 BehaviorFrequency / BehaviorFactor / Context 共用的 local provenance field contract；R2B3A concrete BehaviorFrequency 继续原样复用该 contract：
+R2B1 冻结 BehaviorFrequency / BehaviorFactor / Context 共用的 local provenance field contract；R2B3A concrete BehaviorFrequency 与 R2B3B concrete Context / BehaviorFactor 均原样复用该 contract：
 
     provenance? : Provenance[1..*]
 
@@ -2871,32 +3155,38 @@ Legacy input **MAY** 被迁移，但 canonical output **MUST** 只使用 R2A own
 
 这些 fields **MUST NOT** 为了历史兼容被重新塞回 canonical Core。
 
-### 17.14 Remaining deferred named types after R2B3A
+### 17.14 Remaining deferred named types after R2B3B
 
 R2B1 已 concretize identity / reference / actor / source / generator / evidence foundations。
 
 R2B2 已 concretize Text、TemporalValue、TemporalExtent local provenance、Coding、Confidence 与相关 equality foundation。
 
-R2B3A 新 concretize：
+R2B3A 已 concretize BehaviorFrequency 与 PreferenceValue。
 
-- BehaviorFrequency discriminated union；
-- QuantitativeFrequencyPrecision；
-- FrequencyPeriod；
-- Weekday / DayPart recurrence tokens；
-- QualitativeFrequencyToken；
-- BehaviorFrequency content / full qualifier equality；
-- PreferenceValue coded / text / boolean / number union；
-- NumericPreferenceValue comparator / unit semantics；
-- PreferenceValue equality 与 legacy migration boundary。
+R2B3B 新 concretize：
 
-仍需后续 R2B concretize：
+- Context；
+- ContextValue coded / text union；
+- Context content / full qualifier equality；
+- FactorRole；
+- FactorDirection；
+- FactorValue coded / text union；
+- BehaviorFactor；
+- BehaviorFactor content / full qualifier equality；
+- Context vs BehaviorFactor vs Relation decision boundary。
 
-- Context non-provenance fields；
-- BehaviorFactor non-provenance fields；
+R2B concrete semantic types 的主要业务复合类型至此已完成本阶段具体化。
+
+仍需后续阶段处理的不是 R2B3B type design，而包括：
+
 - 类型兼容 / conversion details；
-- canonical global sorting key where final serialization requires it。
+- canonical global serialization ordering；
+- normative Relation vocabulary / inverse conventions；
+- JSON Schema integration；
+- DSL / EBNF syntax；
+- implementation。
 
-R2B3A 不设计 JSON Schema、EBNF、DSL syntax、parser、validator implementation 或 runtime。
+R2B3B 不进入这些后续工作。
 
 ## 18. 校验模型
 
@@ -2921,9 +3211,15 @@ R2B3A 不设计 JSON Schema、EBNF、DSL syntax、parser、validator implementat
 - RateFrequency 缺少 period 必须 invalid；
 - RecurrenceFrequency weekday duplicate、非法 period/day schedule combination 必须 invalid；
 - PreferenceValue 必须满足 §8.4 tagged-union discrimination；
-- NumericPreferenceValue value 必须 finite，operator 必须为允许 token，unit 若存在必须为 valid Coding。
+- NumericPreferenceValue value 必须 finite，operator 必须为允许 token，unit 若存在必须为 valid Coding；
+- Context 必须满足 §8.5 coded/text tagged-union discrimination；
+- full-equal Context duplicate 不得在 canonical context collection 中重复保留；
+- BehaviorFactor role / direction / factor variant 必须满足 §8.6；
+- `antecedent` 与 `reported_reason` 的 direction 必须为 `factor_to_behavior`；
+- inferred explanatory factor 若不能与 owner provenance 保持相同 derivation / applicable set，必须 materialize local provenance；
+- BehaviorFactor 指向已有 Core entity 的 explicit typed relationship 必须使用 Relation，而不得通过 factor text/code 规避。
 
-R2B3A 不定义 Validator implementation。
+R2B3B 不定义 Validator implementation。
 
 ## 19. 扩展机制
 

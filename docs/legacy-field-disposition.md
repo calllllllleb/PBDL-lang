@@ -552,7 +552,29 @@ R1F 后仍未解决：
 
 R2A 冻结 canonical Behavior **不重新引入** `communication_status`；legacy value 继续依 R1F 按 actual communication Behavior / Context / Provenance / workflow-application state 四路分流。
 
-Context / communication concrete vocabulary、actor / recipient / channel 与 Context internal structure 仍未具体化，因此 OQ-002 保持 partially resolved。
+Context / communication concrete vocabulary、actor / recipient / channel 与 Context internal structure 在 R2A 后仍未完全具体化，因此 OQ-002 保持 partially resolved。
+
+**R2B3B 状态：further partially resolved by R2B3B。**
+
+R2B3B 已解决：
+
+- Context concrete shape = required ContextValue + optional local provenance；
+- ContextValue = coded / text tagged union；
+- communication channel 等 contextual communication concept 可作为 Context value 表达；
+- Context text 是 fidelity fallback，不是 arbitrary metadata bag；
+- Context content equality 与包含 effective provenance 的 full qualifier equality；
+- multiple Context collection ordering 不具有 semantic priority；
+- communication_status 继续四路分流，不重新建立通用 status field。
+
+OQ-002 仍保持 partially resolved。
+
+仍未解决：
+
+- normative communication vocabulary / code profile；
+- communication actor / recipient / channel 的更完整 domain extension；
+- 是否未来建立 Communication extension；
+- Context 与 future Constraint / Barrier model 的结构关系；
+- JSON Schema / DSL syntax。
 
 ### OQ-003 — 统一 Evidence / Provenance
 
@@ -716,7 +738,30 @@ R2A 新冻结：
 - 如果两端均为允许的 Core entities，且表达 explicit typed entity relationship，仍使用 Relation；
 - BehaviorFactor 必须为 structured qualifier，并必须能够保留必要的 local provenance。
 
-仍未解决 BehaviorFactor concrete leaf fields、factor / symptom terminology、normative Relation vocabulary 与 JSON / DSL syntax。
+R2A 后仍未解决 BehaviorFactor concrete leaf fields、factor / symptom terminology、normative Relation vocabulary 与 JSON / DSL syntax。
+
+**R2B3B 状态：further partially resolved by R2B3B。**
+
+R2B3B 已解决：
+
+- BehaviorFactor concrete shape = role + factor + direction + optional provenance；
+- FactorRole = reported_reason / observed_association / antecedent / explanatory；
+- FactorDirection = factor_to_behavior / behavior_to_factor / unspecified；
+- FactorValue = coded / text；
+- derivation 保持在 Provenance，不新增 role=inferred；
+- source-attributed reason / antecedent / association / explanation / direction 全部保持 non-causal boundary；
+- existing Core Behavior / Preference factor 必须使用 Relation；
+- BehaviorFactor content equality 与 full qualifier equality；
+- legacy behavior_trigger / symptom_triggered 必须按 source semantics 决定 role / direction / Context-vs-Factor-vs-Relation，不能从字段名猜测。
+
+OQ-005 仍保持 partially resolved。
+
+仍未解决：
+
+- normative factor / symptom terminology profile；
+- normative Relation vocabulary / concrete relation type codes；
+- causal Relation vocabulary（若未来真的需要）；
+- JSON Schema / DSL syntax。
 
 ### OQ-006 — Preference 到 Behavior 的关联方式
 

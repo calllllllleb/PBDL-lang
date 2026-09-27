@@ -1002,3 +1002,163 @@ Legacy raw string 如果无法可靠类型化，必须保留为 Text，而不是
 完全禁止 Text 会迫使 legacy migration 发明不存在的类型信息；完全放任 Text 又会让 consumer 必须重新 NLP 所有 preference values。
 
 因此 R2B3A 采用“可靠结构化优先、无法可靠类型化则 Text 保真”的单向边界。
+
+## DR-047 — Context uses a dedicated coded/text value union
+
+### 决策
+
+Context concrete shape：
+
+    Context {
+        value       : ContextValue
+        provenance? : Provenance[1..*]
+    }
+
+ContextValue 只包含：
+
+    coded | text
+
+不采用 generic metadata object，也不复用 PreferenceValue。
+
+### Stress-test 结果
+
+| Case | Canonical decision |
+|---|---|
+| C1 traveling + frequent misses | traveling → Context；frequency → BehaviorFrequency |
+| C2 work setting + phone preference | work setting → Context；value → PreferenceValue |
+| C3 family support present | Context；不自动表示 family support caused preference |
+| C4 communication via WeChat | contextual communication concept → Context；不是 workflow status |
+| C5 because nausea stopped medication | BehaviorFactor reported_reason，不是 merely Context |
+| C6 stopped medication while traveling | Context when only co-occurrence is supported |
+| C7 owner {P1,P2}, Context only P1 | local provenance required |
+| C8 complete applicable provenance same as owner | local provenance omitted canonical form |
+| C9 only free-text “在家里比较规律” | TextContextValue fidelity fallback |
+| C10 traveling + workday + family support | multiple Context items coexist；collection order no priority |
+
+### 理由
+
+当前 stress cases 需要的是 contextual concept，而不是一个跨领域 predicate engine。
+
+单个 coded concept 可以表达 machine-interpretable context；text fallback 保留暂时无法 terminology-map 的来源信息。
+
+额外 boolean / number variants 当前没有必要，type+value schema 也会提前要求一个尚未存在的 context-dimension ontology。
+
+## DR-048 — Context text is a fidelity fallback, not a catch-all
+
+### 决策
+
+可靠 Context Coding 存在时 SHOULD 使用 coded variant。
+
+无法可靠 terminology-map 时允许 TextContextValue。
+
+不得发明 code，也不得把所有 Context 退化成 text。
+
+### 理由
+
+完全强迫 Coding 会让 legacy / narrative context 被迫发明 terminology；完全放任 text 会让 downstream 必须重新 NLP 本可可靠结构化的语义。
+
+该边界沿用 PreferenceValue 的“可靠结构化优先、否则保真”，但不引入 preference comparator / choice semantics。
+
+## DR-049 — BehaviorFactor separates role, factor value, direction, and derivation
+
+### 决策
+
+BehaviorFactor 使用四个独立 semantic dimensions：
+
+    role
+    factor
+    direction
+    provenance.derivation
+
+FactorRole：
+
+    reported_reason
+    observed_association
+    antecedent
+    explanatory
+
+FactorDirection：
+
+    factor_to_behavior
+    behavior_to_factor
+    unspecified
+
+FactorValue：
+
+    coded | text
+
+`inferred` 不作为 FactorRole；它继续属于 Provenance.derivation。
+
+### Stress-test 结果
+
+| Case | Canonical decision |
+|---|---|
+| B1 “因为头晕，我停药了” | reported_reason + factor_to_behavior；source attribution ≠ verified cause |
+| B2 nausea then medication stopped | antecedent + factor_to_behavior；not reason |
+| B3 model says work stress may explain misses | explanatory + factor_to_behavior + local inferred provenance |
+| B4 nausea co-occurs with stopping | observed_association；direction per source or unspecified |
+| B5 symptom → behavior explicit | preserve factor_to_behavior |
+| B6 behavior → symptom explicit | preserve behavior_to_factor |
+| B7 direction unclear | direction=unspecified |
+| B8 dizziness/nausea reliably mapped | coded FactorValue |
+| B9 only source wording | text FactorValue |
+| B10 factor is existing Behavior/Preference | use Relation |
+
+### 理由
+
+把 role、direction 与 derivation 压成一个 `type` string 会再次混淆 source attribution、temporal orientation 与 inference status。
+
+独立 axes 可以保留 R1E 边界，同时避免新增 `factor.inferred=true` 之类重复字段。
+
+## DR-050 — Factor direction is orientation, not causality
+
+### 决策
+
+FactorDirection REQUIRED，并显式提供 `unspecified`。
+
+`factor_to_behavior` / `behavior_to_factor` 只记录 source-supported semantic orientation。
+
+reported_reason / antecedent 要求 factor_to_behavior，但这仍不等于 verified causal direction。
+
+### 理由
+
+Legacy `symptom_triggered` 本身有方向歧义。
+
+如果 direction optional，省略可能被误解为 default direction；required + unspecified 可以明确表示“来源没有方向”。
+
+同时，不把 direction 当 causality 能保留 R1E 已冻结的 non-causal boundary。
+
+## DR-051 — Factor value stays non-Core; Core entity relationships remain Relation
+
+### 决策
+
+FactorValue 仅为 coded / text non-Core semantic factor。
+
+如果 factor 实际是当前 document 中已有 Behavior / Preference entity，则必须使用 Relation。
+
+不新增 Symptom entity，也不允许 factor text/code 冒充 CoreEntityRef。
+
+### 理由
+
+BehaviorFactor 的职责是 Behavior-local non-Core factor。
+
+若允许它同时指向 Core entity，就会形成与 Relation 平行的第二套 entity-link system，破坏 R1B/R1H endpoint / provenance / relation-type contract。
+
+## DR-052 — Context vs BehaviorFactor is decided by source semantics, not keywords
+
+### 决策
+
+同一个 lexical concept 可以根据 source semantics进入不同 structure：
+
+- “旅行期间漏服” → Context；
+- “因为旅行漏服” → reported_reason BehaviorFactor；
+- “恶心时停药”若只是 contextual coincidence → Context；
+- “因为恶心停药” → reported_reason BehaviorFactor。
+
+不得根据 traveling / nausea / because-like keyword list 自动分类。
+
+### 理由
+
+Context 表达 situation qualification；BehaviorFactor 表达 factor-role semantics。
+
+Lexical concept 本身不能证明 reason / causality。分类必须依据 source assertion 的 semantic relation，而不是单词。
