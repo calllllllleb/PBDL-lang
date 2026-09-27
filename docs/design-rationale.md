@@ -563,7 +563,7 @@ R2A 因此把 identity-bearing graph entities 与 embedded semantic qualifiers �
 
 Behavior、Preference、Relation 与 Annotation 都具有明确 provenance attachment。
 
-Owner assertion 的 Provenance 不能粗暴覆盖 independently derived nested qualifier。
+Owner assertion 的 Provenance 不能粗暴覆盖 independently derived nested qualifier，也不能在 owner 具有多条 provenance 时，把与 qualifier 无关的 provenance 一并继承给 qualifier。
 
 例如：
 
@@ -571,6 +571,10 @@ Owner assertion 的 Provenance 不能粗暴覆盖 independently derived nested q
 - BehaviorFrequency：usually daily → model inferred → INFERRED。
 
 Canonical model 必须允许 frequency qualifier 保留 local INFERRED provenance，而不是因为 owner Behavior 为 DIRECT 就把 frequency 也错误标成 DIRECT。
+
+同样，如果 Behavior provenance 包含 P1 patient report 与 P2 device record，而 frequency 只有 P1 支持，则 frequency 必须具有 local provenance；省略 local provenance 不能被解释为 P1 与 P2 都支持该 frequency。
+
+因此，nested qualifier 只有在其 provenance semantics 与 owner 对该 qualifier 的完整 applicable provenance set 一致时，才可以省略 local provenance并继承 owner provenance。
 
 同样原则适用于 BehaviorFactor 与 Context；Temporal qualifier 是否需要同样 local mechanism 留待 R2B。
 

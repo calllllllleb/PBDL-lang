@@ -994,11 +994,19 @@ R2A 在 §17 冻结 Evidence 为 optional Provenance.evidence embedded collectio
 
 ### 13.2.1 Provenance time boundary
 
-Provenance 可以包含报告、记录、抽取、观测或生成发生的时间信息。
+Provenance-related time 可以涉及报告、记录、观测、抽取或生成等不同 event roles。
 
 这类 Provenance time **MUST NOT** 自动承担 Behavior / Preference / Relation 的 semantic temporal extent。
 
 同一条信息的 semantic time 与 provenance time 可以不同，也可以只提供其中之一。
+
+R2A canonical Provenance **不提供** 无角色的 generic top-level `time` field，因为单一 TemporalValue 无法在 source 与 generator 共存时无歧义地区分 reporting / recording / observation time 与 extraction / generation time。
+
+Source / reporting / recording / observation related time 的具体 canonical ownership 留给 R2B 在 SourceDescriptor / Evidence concrete structure 中决定。
+
+Extraction / generation related time 的具体 canonical ownership留给 R2B 在 GeneratorDescriptor concrete structure 中决定。
+
+如果未来需要 provenance-level event timeline，应采用具有 explicit role semantics 的结构，而 **MUST NOT** 重新引入无角色 generic provenance time。
 
 ### 13.3 DIRECT 与 INFERRED
 
@@ -1537,11 +1545,13 @@ Canonical representation **MUST NOT** 使用 frequency : arbitrary string 作为
 
 BehaviorFrequency **MAY** carry local Provenance。
 
-如果某个 frequency assertion 与 owner Behavior 具有不同 source、generator 或 DIRECT / INFERRED derivation，则该 BehaviorFrequency **MUST** 携带自己的 local provenance。
+如果某个 frequency assertion 与 owner Behavior 具有不同 source、generator 或 DIRECT / INFERRED derivation，或者该 frequency assertion 只由 owner provenance 的真子集支持，则该 BehaviorFrequency **MUST** 携带自己的 local provenance。
 
-如果没有 local provenance，它 **MAY** inherit owner Behavior provenance semantics。
+BehaviorFrequency 只有在其 provenance semantics 与 owner 对该 qualifier 的**完整 applicable provenance set**一致时，才 **MAY** 省略 local provenance 并继承 owner provenance。
 
-Concrete provenance inheritance serialization 与 validation 留待 R2B，但 canonical model **MUST NOT** 丢失 DIRECT Behavior + INFERRED frequency 的区别。
+省略 local provenance **MUST NOT** 表示“任选 owner provenance 中的一条”或允许实现自行猜测支持该 qualifier 的 provenance。
+
+Concrete provenance inheritance serialization 与 validation 留待 R2B，但 canonical model **MUST NOT** 丢失 DIRECT Behavior + INFERRED frequency，或 owner 多 provenance + qualifier subset support 的区别。
 
 #### 17.4.5 Behavior.contexts
 
@@ -1558,7 +1568,11 @@ Context concrete internal fields、cardinality / nesting details 留待 R2B。
 
 Context **MUST NOT** 成为 arbitrary metadata bag。
 
-当 Context 的 source / generator / derivation 与 owner assertion 不同时，Context **MAY** carry local provenance；若该 distinction 对 canonical semantics 必要，则 local provenance **MUST** 被保留。
+Context **MAY** carry local provenance。
+
+如果 Context 的 source、generator、derivation 与 owner assertion 不同，或者该 Context 只由 owner provenance 的真子集支持，则 Context **MUST** 携带自己的 local provenance。
+
+只有当 Context 的 provenance semantics 与 owner 对该 Context 的完整 applicable provenance set 一致时，才 **MAY** 省略 local provenance 并继承 owner provenance。
 
 #### 17.4.6 Behavior.factors
 
@@ -1580,7 +1594,13 @@ R2A 不冻结 BehaviorFactor concrete leaf fields、factor vocabulary 或 sympto
 
 BehaviorFactor **MUST** 是 structured qualifier，而不是 arbitrary reasoning string。
 
-BehaviorFactor representation **MUST** 支持 local provenance；当其 source / generator / derivation 与 owner Behavior 不同时，local provenance **MUST** 被保留，使 inferred explanation 不会因 owner Behavior 为 DIRECT 而伪装成 DIRECT。
+BehaviorFactor representation **MUST** 支持 local provenance。
+
+当 BehaviorFactor 的 source、generator、derivation 与 owner Behavior 不同，或者该 factor 只由 owner provenance 的真子集支持时，local provenance **MUST** 被保留。
+
+只有当 BehaviorFactor 的 provenance semantics 与 owner 对该 factor 的完整 applicable provenance set 一致时，才 **MAY** 省略 local provenance 并继承 owner provenance。
+
+这既防止 inferred explanation 因 owner Behavior 为 DIRECT 而伪装成 DIRECT，也防止 owner 的无关 provenance 被错误解释为共同支持该 factor。
 
 #### 17.4.7 Legacy Behavior ownership
 
@@ -1684,7 +1704,6 @@ Canonical Provenance 最小 field inventory：
 | derivation | DerivationKind | 1 | REQUIRED |
 | source | SourceDescriptor | 0..1 | OPTIONAL, conditionally required |
 | generator | GeneratorDescriptor | 0..1 | OPTIONAL, conditionally required |
-| time | TemporalValue | 0..1 | OPTIONAL |
 | evidence | Evidence | 0..* | OPTIONAL collection |
 | confidence | Confidence | 0..1 | OPTIONAL |
 
@@ -1731,6 +1750,12 @@ Conditional invariants：
 因此 generator 的存在 **MUST NOT** 自动意味着 inferred。
 
 SourceDescriptor / GeneratorDescriptor concrete fields 留待 R2B。
+
+R2A **MUST NOT** 在 Provenance 顶层使用无角色 generic `time : TemporalValue`。
+
+Source / reporting / recording / observation related time 的 concrete ownership 由 R2B 在 SourceDescriptor / Evidence 中决定；extraction / generation related time 的 concrete ownership 由 R2B 在 GeneratorDescriptor 中决定。
+
+R2A 不设计 ProvenanceTime Schema；未来若需要 provenance event timeline，必须具有 explicit role semantics。
 
 #### 17.8.3 Provenance.evidence
 
@@ -1788,7 +1813,18 @@ Text lexical constraints 留待 R2B。
 
 Owner-level provenance 描述 owner assertion。
 
-Nested semantic qualifier 如果具有不同 source、generator 或 derivation，则 canonical representation **MUST** 能够保留 local provenance。
+Nested semantic qualifier **MAY** 省略 local provenance，**仅当**该 qualifier 的 provenance semantics 与 owner 对该 qualifier 的完整 applicable provenance set 一致。
+
+如果 qualifier：
+
+- source 不同；
+- generator 不同；
+- derivation 不同；
+- 或仅由 owner provenance 的真子集支持；
+
+则该 qualifier **MUST** 携带 local provenance。
+
+省略 local provenance **MUST** 表示继承 owner assertion 对该 qualifier 完整适用的 provenance set，**MUST NOT** 表示“任选一条 owner provenance”或允许实现自行猜测支持 provenance。
 
 该规则至少适用于：
 
@@ -1798,7 +1834,9 @@ Nested semantic qualifier 如果具有不同 source、generator 或 derivation�
 
 Temporal local provenance 是否采用相同机制留待 R2B。
 
-Canonical model **MUST NOT** 用单一 owner-level DIRECT / INFERRED label 粗暴覆盖内部 derivation 实际不同的 nested qualifier。
+Concrete serialization 与 inheritance validation 留待 R2B。
+
+Canonical model **MUST NOT** 用单一 owner-level DIRECT / INFERRED label 粗暴覆盖内部 derivation 实际不同的 nested qualifier，也 **MUST NOT** 把 owner 中不支持该 qualifier 的 provenance 错误继承给 qualifier。
 
 ### 17.11 Identity-bearing entities vs embedded structures
 
@@ -1865,9 +1903,9 @@ R2A 冻结以下名称 / ownership，但其具体 leaf structure 或 serializati
 - Context；
 - BehaviorFactor；
 - PreferenceValue；
-- SourceDescriptor；
-- GeneratorDescriptor；
-- Evidence；
+- SourceDescriptor（包括 source / reporting / recording / observation related time ownership）；
+- GeneratorDescriptor（包括 extraction / generation related time ownership）；
+- Evidence（包括其可能承载的 source-related time information）；
 - Confidence；
 - Text lexical constraints；
 - Coding concrete JSON serialization；
