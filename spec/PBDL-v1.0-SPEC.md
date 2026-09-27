@@ -1856,7 +1856,27 @@ Conditional invariants：
 
 - DIRECT provenance **MUST** have source；
 - INFERRED provenance **MUST** have generator；
-- UNDETERMINED provenance **MUST** have source，以保留最小 traceable source path；generator **MAY** 存在，例如 migration / transformation process。
+- UNDETERMINED provenance **MUST** have source；generator **MAY** 存在，例如 migration / transformation process。
+
+仅有 SourceDescriptor.kind **不足以** 满足 UNDETERMINED 的 traceable source-path requirement。
+
+对于 derivation = `"undetermined"`，除了 source field REQUIRED 之外，还 **MUST** 至少满足以下一项：
+
+1. `source.locator` 存在；
+2. `Provenance.evidence` 至少包含一个能够保留 source material 的 Evidence item。
+
+Evidence item 继续遵守 §17.8.5：`content` / `locator` 至少一个存在。
+
+因此，以下结构 **MUST NOT** 被视为已经满足 traceable source-path requirement：
+
+    {
+        "derivation": "undetermined",
+        "source": {
+            "kind": "legacy_record"
+        }
+    }
+
+该附加 traceability requirement **只适用于** `"undetermined"`；R2B1 **MUST NOT** 因此把所有 DIRECT provenance 扩大为必须具有 locator。
 
 一个 Provenance **MAY** 同时具有 source 与 generator。
 
@@ -1972,7 +1992,11 @@ Evidence.kind 为 REQUIRED，并使用以下 canonical lowercase tokens：
 
 content 与 locator 均 OPTIONAL，但一个 Evidence **MUST** 至少提供二者之一。
 
+如果 locator 存在，其值 **MUST** 为 non-empty string。
+
 content 用于 inline human-readable excerpt / response；locator 用于 external material locator。二者 **MAY** 同时存在。
+
+R2B1 不冻结 Text lexical contract；content 的最终 lexical validity 留待后续 Text concrete work。
 
 Evidence.times **MAY** 使用 SourceTimeEvent 保存只属于该 evidence item 的 reported / recorded / observed time。
 
@@ -1985,7 +2009,7 @@ Evidence 继续：
 - **MUST NOT** 与 Annotation 合并；
 - **MUST NOT** 要求复制完整 EHR / source document 进入 PBDL Core。
 
-#### 17.8.4 Provenance.confidence
+#### 17.8.6 Provenance.confidence
 
 如果 canonical Core 需要保留 inference confidence，其 canonical ownership 为 optional Provenance.confidence。
 

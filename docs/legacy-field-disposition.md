@@ -540,7 +540,29 @@ R2A 新冻结：
 - Evidence canonical ownership 为 optional `Provenance.evidence[0..*]`；
 - 不建立 document-level Evidence pool 或 Evidence identity。
 
-仍未解决 SourceDescriptor / GeneratorDescriptor / Evidence concrete fields、shared provenance、provenance chaining、JSON Schema 与 serialization。
+R2A 后仍未解决 SourceDescriptor / GeneratorDescriptor / Evidence concrete fields、shared provenance、provenance chaining、JSON Schema 与 serialization。
+
+**R2B1 状态：further partially resolved by R2B1。**
+
+R2B1 已冻结：
+
+- SourceDescriptor concrete structure，包括 kind、locator?、display?、role-explicit SourceTimeEvent[0..*]；
+- GeneratorDescriptor concrete structure，包括 kind、identifier?、version?、display?、role-explicit GeneratorTimeEvent[0..*]；
+- Evidence concrete structure，包括 kind、content?、locator?、SourceTimeEvent[0..*]，且 content / locator 至少一个存在；
+- source / reporting / recording / observation related time → SourceDescriptor / Evidence；
+- extraction / generation / transformation / migration related time → GeneratorDescriptor；
+- `"undetermined"` provenance 的 traceable source-path condition：除 required source 外，还必须有 source.locator，或至少一个 material-bearing Evidence item。
+
+OQ-003 仍保持 partially resolved。
+
+仍未解决：
+
+- shared provenance identity / pool；
+- provenance chaining；
+- Confidence concrete semantics；
+- TemporalValue lexical representation；
+- final JSON Schema / serialization；
+- 其他尚未冻结的 provenance-related leaf serialization details。
 
 ### OQ-004 — Confidence 的语义归属
 

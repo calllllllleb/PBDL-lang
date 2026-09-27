@@ -664,7 +664,7 @@ DerivationKind 增加受限语义状态 UNDETERMINED。
 
 如果 producer 已能判断 DIRECT / INFERRED，则不得使用 UNDETERMINED。
 
-UNDETERMINED 必须保留至少一条 traceable source path；validator 应产生 provenance-quality warning。
+UNDETERMINED 必须保留至少一条 traceable source path；仅有 SourceDescriptor.kind 不足以满足该要求。R2B1 将其操作化为：source.locator 存在，或 Provenance.evidence 至少包含一个保留 source material 的 Evidence item。validator 应产生 provenance-quality warning。
 
 ### 理由
 
