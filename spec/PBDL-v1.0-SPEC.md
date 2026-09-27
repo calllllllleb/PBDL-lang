@@ -282,11 +282,22 @@ Relative temporal expression 可以出现在来源中，例如：
 
 R1D 不冻结 relative-time DSL syntax。
 
-#### 5.7.7 Frequency / recurrence 留待后续
+#### 5.7.7 Frequency / recurrence 与 temporal extent 是不同维度
 
-`daily`、`weekly`、`often`、`sometimes`、`three_times_per_week`、`every_morning`、`intermittent` 等表达涉及 frequency / recurrence / pattern，而不仅仅是 temporal extent。
+R1G 冻结 Behavior frequency / recurrence 的最小语义边界。
 
-Frequency / recurrence semantics 在 R1D 中保持为未来工作，**MUST NOT** 因为了复用 Interval 而被隐式压缩成 Interval 语义。
+Semantic temporal extent 回答“Behavior 在什么时候发生、持续或适用”；frequency / recurrence 回答“某类 Behavior occurrence 以什么重复模式或频度发生”。
+
+二者 **MUST** 保持可区分，并 **MAY** 同时存在。
+
+例如，“2026 年 1 月至 3 月，每周漏服两次”中：
+
+- “2026 年 1 月至 3 月”属于 R1D semantic temporal extent；
+- “每周漏服两次”属于 R1G Behavior frequency / recurrence information。
+
+“持续三个月” **MUST NOT** 被解释为“每三个月一次”；“每天”也 **MUST NOT** 被当作一个 Interval。
+
+R1G 不把 recurrence semantics 扩张到 Preference 或 Relation，也不冻结 RRULE、cron-like language、calendar engine 或具体 temporal / recurrence serialization。
 
 ## 6. 词法结构
 
@@ -532,6 +543,134 @@ Information communicated **MUST NOT** 自动等价为 information verified。
 例如患者已经告诉医生“我每天都按时服药”，只说明发生过报告 / 沟通，不表示该内容已经被认证为现实真值。该边界继续遵守 R1C “PBDL records sourced information, not certified truth”。
 
 如果来源同时包含沟通行为、其他 Behavior 和 source-attributed reason，canonical transformation **MUST NOT** 仅压缩成一个 `communication_status` 而丢失其余可区分语义；legacy migration **MUST** 以实际来源含义为准。
+
+### 10.5 Behavior frequency / recurrence semantics
+
+Behavior semantic content **MAY** 描述：
+
+- 一个具体 occurrence；
+- 一个 behavior state；
+- 来源明确描述的 summarized / recurring behavior pattern。
+
+Canonical semantics **MUST** 保留来源描述的是具体 occurrence、已观察 occurrence 汇总，还是 recurring / qualitative pattern。
+
+Canonicalization **MUST NOT** 仅因为来源描述了 pattern，就自动展开出来源没有提供的 concrete observed occurrence timestamps；也 **MUST NOT** 仅因为存在若干独立 occurrence records，就自动把它们压缩为 recurring pattern。
+
+#### 10.5.1 Observed / reported count within a reference window
+
+来源可以描述一个 reference window 中实际观察或报告的 occurrence count，例如“过去 7 天漏服 3 次”。
+
+这表示在该 reference window 中存在 count information。
+
+Observed / reported count within a reference window **MUST NOT** 仅通过 canonicalization 自动变成 recurrence rule 或稳定 frequency pattern。
+
+例如：
+
+- “过去 7 天漏服 3 次” **MUST NOT** 自动等价为“每周固定漏服 3 次”；
+- “漏服 3 次”在没有 reference period 时 **MUST NOT** 被转换为 `3/week`、`3/month` 或其他 rate。
+
+Count、rate 与 recurrence pattern 是不同语义。R1G 不冻结具体 rate field。
+
+#### 10.5.2 Recurring / periodic pattern
+
+如果来源明确描述某项 Behavior 具有重复模式，例如“每天吸烟”“每周运动三次”“每天早晨测血压”，canonical semantics **MAY** 保留 recurring / periodic pattern。
+
+Recurring pattern **MUST NOT** 被强制展开成未来或过去的 concrete observed occurrence timestamps。
+
+“每天”描述的是 pattern，不表示来源已经观察或确认每一天都存在一个具体 occurrence。
+
+如果多个独立 occurrence records 被外部 model / analytic process 总结为 recurring pattern，而来源本身没有表达该 pattern，则该 pattern 属于 INFERRED provenance semantics。
+
+#### 10.5.3 Qualitative frequency
+
+来源可以使用 `often`、`sometimes`、`rarely`、`frequently`、`occasionally`、`intermittently` 等 qualitative frequency / pattern information。
+
+Canonicalization **MUST NOT** 仅为了数值化或规范化方便，把 qualitative frequency 擅自映射到来源未提供的具体阈值、概率、rate 或 recurrence interval。
+
+例如：
+
+- `often` **MUST NOT** 无来源依据地变成 `>= 5 times/week`、`70%` 或 `daily`；
+- `intermittent` **MUST NOT** 自动变成 `every N hours` 或固定的 `N times/week`。
+
+#### 10.5.4 Exact, approximate, and qualitative precision
+
+Canonicalization **MUST** 在语义层面保留 frequency information 是 exact、approximate 还是 qualitative。
+
+例如：
+
+- “每周大约 3 次” **MUST NOT** 被转换为“exactly 3 times/week”；
+- “几乎每天” **MUST NOT** 被转换为“exactly daily”；
+- “偶尔” **MUST NOT** 被转换为来源未提供的固定 rate。
+
+R1G 不冻结具体 approximation field。
+
+#### 10.5.5 Expected / prescribed schedule is not actual Behavior frequency
+
+Expected / prescribed schedule 与 actual patient Behavior frequency **MUST** 保持可区分。
+
+例如，“医生要求每天服药两次”描述 prescribed / expected regimen，不表示患者实际每天服药两次。
+
+Canonical semantics **MUST NOT** 仅根据 expected / prescribed schedule 自动生成 actual Behavior frequency。
+
+反过来，actual Behavior frequency **MUST NOT** 自动被解释成 prescribed schedule。
+
+即使同时知道 prescribed schedule 与 actual Behavior frequency，PBDL-Core **MUST NOT** 因此自动生成 adherence percentage、poor adherence、noncompliant 或其他 derived adherence judgment。
+
+R1G 不设计 Prescription、Regimen 或 adherence analysis model。
+
+#### 10.5.6 Denominator and rate boundary
+
+当来源只提供 occurrence count 而没有 reference period 时，canonicalization **MUST NOT** 发明 frequency rate。
+
+当来源缺少 expected opportunities / doses 或其他 denominator 时，canonicalization **MUST NOT** 发明 adherence ratio、adherence percentage、nonadherence rate 或其他比例。
+
+例如“过去 7 天漏服 3 次”只直接支持 missed count 与 reference window；它本身不提供该期间应服药的总次数。
+
+#### 10.5.7 Occurrence records do not automatically establish a pattern
+
+若来源只提供多个 concrete occurrence records，canonical transformation **MUST NOT** 自动宣称存在 recurring pattern。
+
+例如 Monday、Tuesday、Wednesday 各记录一次 exercise，不自动等价为“patient exercises daily”。
+
+如果来源明确总结为 daily，则可以保留 source-described pattern；如果 pattern 是 model / rule / analytic process 根据 occurrences 推断所得，则该 pattern **MUST** 保留 INFERRED provenance semantics，并 **MUST NOT** 静默表示为 DIRECT source-described frequency。
+
+如果 LLM / NLP 只忠实抽取来源已经明确表达的 frequency / recurrence，例如“我基本每天都会测血压”，结果仍 **MAY** 属于 DIRECT provenance semantics。
+
+#### 10.5.8 Missing frequency and scope
+
+Behavior **MAY** 没有 frequency / recurrence information。
+
+缺少 frequency / recurrence information **MUST NOT** 被解释为：
+
+- once；
+- only once；
+- non-recurring；
+- irregular；
+- continuous；
+- daily；
+- unknown but frequent。
+
+它只表示 canonical semantics 没有提供 repetition / frequency information。
+
+Frequency / recurrence **MUST NOT** 成为所有 Behavior 的强制属性。
+
+`never`、`always` 等具有强 scope 含义的 frequency expressions **MUST NOT** 在缺少来源支持的 temporal / contextual scope 时被自动解释为 lifetime scope、从出生至今或未来永久成立。
+
+#### 10.5.9 Duration, Context, reason, and Provenance boundaries
+
+Duration / temporal extent 与 frequency **MUST** 保持可区分。
+
+“持续 3 小时”描述 duration / temporal extent；“每 3 小时一次”描述 recurring interval / pattern。R1G 不设计完整 duration arithmetic。
+
+Frequency / recurrence information 属于 Behavior semantic content 的限定，但它与 Context、source-attributed reason 和 Provenance 是不同维度。
+
+例如“工作日经常忘记服药”可以同时包含 qualitative frequency 与 workday Context；若来源另说“因为工作忙所以忘记”，还包含 R1E source-attributed reason。Canonical semantics **MUST NOT** 把这些语义压成一个 frequency 字符串。
+
+Frequency assertion 继续继承该 Behavior 的 R1C source traceability；“谁报告该 frequency”或“谁根据日志推断该 pattern”属于 Provenance，而不是 frequency value 本身。
+
+R1G 不把 recurrence semantic contract 扩张到 Preference 或 Relation。若未来出现明确需求，应另行审议。
+
+Behavior frequency / recurrence 的 concrete fields、period representation、day-of-week / time-of-day structure、rate model、duration arithmetic、recurrence serialization、JSON Schema 与 DSL syntax 仍为 **TODO**。
 
 ## 11. Preference
 
@@ -934,8 +1073,17 @@ R0 阶段不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语编�
 44. Legacy `communication_status` **MUST NOT** 仅凭字段名决定 canonical semantic category，也 **MUST NOT** 默认冻结为单一通用 Behavior status。
 45. Actual communication Behavior、contextual communication metadata、Provenance information 与 workflow / application state **MUST** 保持语义可区分。
 46. `communicated` / `reported` / `acknowledged` **MUST NOT** 自动等价为 `verified`、`true`、`agreed` 或来源内容已得到事实认证。
+47. Behavior frequency / recurrence **MUST** 与 R1D semantic temporal extent 保持可区分；duration / applicability interval **MUST NOT** 自动等价为 recurrence pattern。
+48. Observed / reported occurrence count within a reference window **MUST NOT** 自动等价为 recurring pattern 或稳定 recurrence rule。
+49. Qualitative 或 approximate frequency **MUST NOT** 被 canonicalization 擅自数值化、阈值化或提高到来源未提供的精确度。
+50. Expected / prescribed schedule **MUST NOT** 自动表示 actual patient Behavior frequency；actual Behavior frequency **MUST NOT** 自动表示 prescribed schedule。
+51. Recurring pattern **MUST NOT** 被 canonicalization 自动展开成来源没有提供的 fabricated concrete observed occurrences。
+52. 多个 observed occurrence records **MUST NOT** 自动被总结为 recurring pattern；若 pattern 来自外部推断，该 pattern **MUST** 保留 INFERRED provenance semantics，并 **MUST NOT** 静默表示为 DIRECT source-described frequency。
+53. 缺少 frequency / recurrence information **MUST NOT** 被解释为 once、only once、non-recurring、irregular、continuous 或任何具体 repetition pattern。
+54. Canonicalization **MUST NOT** 在缺少 reference period 时发明 frequency rate，也 **MUST NOT** 在缺少 denominator / expected opportunities 时发明 adherence ratio、adherence percentage 或其他比例。
+55. Frequency / recurrence semantics **MUST NOT** 成为所有 Behavior 的强制属性。
 
-跨文档 identity / reference protocol、frequency / recurrence、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom concrete structure、symptom terminology representation、communication canonical fields / vocabulary、Context concrete fields / cardinality / nesting、Constraint / Barrier model、术语词表仍为 **TODO**。
+跨文档 identity / reference protocol、Behavior frequency / recurrence concrete fields / serialization、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom concrete structure、symptom terminology representation、communication canonical fields / vocabulary、Context concrete fields / cardinality / nesting、Constraint / Barrier model、术语词表仍为 **TODO**。
 
 ## 17. 规范化表示
 

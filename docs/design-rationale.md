@@ -383,3 +383,50 @@ Canonical semantics 必须保持这些类别可区分，不能仅因为历史上
 如果不拆分这四类语义，未来 Schema 会重新把患者行为、语义上下文、来源追踪和软件工作流混在一起。
 
 这不仅会削弱 PBDL-Core 的描述边界，也会让下游系统无法判断一个状态究竟描述患者做了什么、信息怎么进入系统、某项语义如何被沟通，还是后台流程已经走到哪一步。
+
+## DR-019 — Frequency / recurrence 与 temporal extent 是不同维度
+
+### 决策
+
+R1D semantic temporal extent 与 R1G Behavior frequency / recurrence 必须保持独立。
+
+Temporal extent 回答“Behavior 在什么时候发生、持续或适用”；frequency / recurrence 回答“某类 Behavior occurrence 以什么重复模式或频度发生”。
+
+因此：
+
+- “持续三个月”描述 temporal duration / extent；
+- “每三个月一次”描述 recurrence pattern；
+- “2026 年 1 月至 3 月，每天晨起测血压”可以同时具有 temporal extent 与 recurring pattern。
+
+两者不能共享一个模糊 temporal 字段，也不能互相替代。
+
+### 理由
+
+Duration、applicability window 与 repetition pattern 对下游系统具有完全不同的解释。
+
+如果把“持续三个月”与“每三个月一次”压成同一类值，规范化过程会失去来源真正表达的是持续性还是重复性，并容易制造并不存在的 occurrence 或 schedule。
+
+## DR-020 — Observed counts、recurring patterns、qualitative frequency 与 expected schedules 必须可区分
+
+### 决策
+
+以下四类语义必须保持可区分：
+
+1. “过去一周发生 3 次”——observed / reported count within a reference window；
+2. “通常每周发生 3 次”——recurring / summarized pattern；
+3. “经常发生”——qualitative frequency；
+4. “计划 / 处方要求每周发生 3 次”——expected / prescribed schedule。
+
+它们不能为了统一表示而全部归一化成 `frequency = 3/week`。
+
+同样，多个具体 occurrence 不能自动证明 pattern；pattern 也不能自动生成 concrete observed events。
+
+如果 pattern 是模型或分析过程从 occurrence records 推断出来的，它必须保留 INFERRED provenance semantics。来源明确表达 frequency，而 LLM / NLP 只忠实抽取时，则仍可以是 DIRECT。
+
+### 理由
+
+这四类信息的证据基础、时间含义和行为学解释不同。
+
+把 observed count 当成 recurrence 会把历史窗口错误外推到未来；把 qualitative frequency 强制数值化会伪造精度；把 expected schedule 当成 actual Behavior 会把治疗计划误写成患者实际行为；而把多个 observed events 自动总结成 pattern 会把 derived inference 伪装成 source-described information。
+
+R1G 因此冻结语义区分，而不设计 RRULE、cron、regimen、adherence scoring 或完整 scheduling language。

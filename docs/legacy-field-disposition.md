@@ -421,7 +421,7 @@ R1D 已解决：
 - Behavior / Preference / Relation 共享最小 Core temporal abstraction；
 - semantic time 与 provenance / reporting time 明确分离；
 - Instant 与 Interval 的最小语义；
-- open-ended Interval 的允许条件；
+- single-boundary Interval 允许仅有一个已知边界，未提供的 opposite boundary 只表示 unspecified / not provided，而不自动表示 ongoing / unbounded；
 - missing semantic time 只表示未提供时间，不表示永久或当前成立；
 - relative time 的 anchor 原则；
 - temporal precision 与 timezone 信息不得在 canonicalization 中凭空补造；
@@ -435,6 +435,35 @@ R1D 已解决：
 - recurrence / frequency；
 - exact date/time serialization；
 - partial-date representation details。
+
+**R1G 状态：further partially resolved by R1G。**
+
+R1G 新解决：
+
+- Behavior frequency / recurrence 与 R1D semantic temporal extent 分离；
+- observed / reported count 与 recurring pattern 分离；
+- exact / approximate / qualitative frequency 的语义精度必须保留；
+- expected / prescribed schedule 与 actual Behavior frequency 分离；
+- recurrence pattern 不自动展开成 fabricated concrete occurrences；
+- occurrence records 不自动升级成 recurring pattern；
+- missing frequency 只表示未提供 repetition / frequency information；
+- frequency / recurrence inference 继续遵守 R1C DIRECT / INFERRED provenance boundary；
+- frequency / recurrence 不成为所有 Behavior 的强制属性；
+- recurrence semantic contract 本轮不扩张到 Preference / Relation。
+
+R1G 后仍未解决：
+
+- concrete frequency fields；
+- recurrence serialization；
+- exact period representation；
+- day-of-week / time-of-day structure；
+- numeric rate model；
+- duration arithmetic；
+- explicit ongoing semantics；
+- exact date/time serialization；
+- partial-date representation details；
+- JSON Schema；
+- textual DSL syntax。
 
 ### OQ-002 — `communication_status` 的最终归属
 
