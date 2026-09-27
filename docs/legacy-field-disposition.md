@@ -499,6 +499,28 @@ R1C 已冻结：
 - 转为 Context；
 - 或拆分为多种明确语义。
 
+**R1E 状态：partially resolved by R1E。**
+
+R1E 已解决：
+
+- legacy `trigger` / `triggered` 字段名不产生因果语义；
+- source-attributed reason 与 causal truth 明确分离；
+- observed association / antecedent 不自动升级为 reason 或 causal claim；
+- inferred explanation 必须保留 INFERRED provenance semantics，不能伪装为 DIRECT reported reason；
+- `symptom_triggered` 的方向不得从 legacy field name 推断，来源不支持方向时不得自动补方向；
+- 已知 temporal direction / precedence 不自动表示 causality；
+- symptom-related information 不因 R1E 新增为一级 PBDL-Core entity；
+- R1B Relation endpoint matrix 保持不变。
+
+仍未解决：
+
+- concrete canonical fields；
+- Context vs Behavior-local field vs extension 的最终结构归属；
+- symptom terminology representation；
+- normative relation vocabulary；
+- concrete relation type names；
+- concrete JSON / DSL syntax。
+
 ### OQ-006 — Preference 到 Behavior 的关联方式
 
 `associated_behavior` 应采用：

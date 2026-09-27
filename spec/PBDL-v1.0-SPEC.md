@@ -393,7 +393,84 @@ Behavior **MAY** 具有 semantic temporal extent，用于描述该 Behavior sema
 
 Behavior 缺少 semantic time **MUST NOT** 被解释为永久行为、当前行为或反复行为；它只表示该 Behavior 的 semantic time 未指定。
 
-Behavior 的具体字段、行为类型词表、trigger / symptom 模型、Provenance / Evidence 的 surface 结构、frequency / recurrence 模型和语法仍为 **TODO**。
+### 10.3 Trigger / Symptom association semantics
+
+R1E 保留历史 `Behavior.behavior_trigger` 与 `Behavior.symptom_triggered` 所表达的“原因 / 诱因 / 症状关联”能力，但不继承 legacy 名称中 `trigger` / `triggered` 的默认因果含义。
+
+Legacy trigger / triggered naming **MUST NOT** 单独建立以下任一语义：
+
+- A caused B；
+- A clinically caused B；
+- A is a verified causal factor of B。
+
+字段名称本身 **MUST NOT** 被视为因果证据。
+
+R1E 至少区分以下三类非等价语义情况。
+
+#### 10.3.1 Source-attributed reason
+
+当来源明确把某因素描述为 Behavior 的原因、理由或诱因时，canonical semantics **MAY** 保留“该来源把 X 归因为 / 描述为 Y 的原因或理由”这一 source-attributed reason。
+
+例如患者明确说“因为头晕，我停药了”，可以表示“患者报告头晕是其停药理由”。
+
+source-attributed reason **MUST NOT** 被 canonical semantics 自动等价为 verified causal relation。
+
+如果来源本身明确表达该原因，而 LLM / NLP 只进行忠实 extraction、parsing、normalization 或 terminology mapping，没有新增来源未表达的解释，该结构化结果仍 **MAY** 具有 DIRECT provenance semantics。
+
+Source attribution 的来源身份 **MUST** 能够通过 R1C Provenance 保持可追踪。
+
+#### 10.3.2 Observed / recorded association or antecedent
+
+如果来源只记录某因素与 Behavior 共现、在其之前出现、在相近 Context 中出现，或存在记录上的关联，但来源没有明确声称“这是 Behavior 的原因”，canonical semantics **MUST NOT** 自动把该信息升级为 source-attributed reason。
+
+Observed / recorded association or antecedent **MUST NOT** 自动成为 causal claim。
+
+特别地，temporal precedence 只说明时间顺序。A precedes B **MUST NOT** 自动推出 A caused B。
+
+#### 10.3.3 Inferred explanation
+
+如果来源本身没有明确表达原因，但 LLM、ML model、rule engine、analytic process 或其他推导过程根据输入生成“X 可能解释 / 导致 Y”之类的解释，该信息属于 INFERRED explanatory information。
+
+INFERRED explanation **MUST NOT** 静默表示为 DIRECT source-attributed reason，也 **MUST NOT** 被伪装成 verified causal relation。
+
+DIRECT / INFERRED 的判断继续遵守 R1C：依据 semantic content 是否相对于来源内容经过推导，而不是处理链路中是否出现 LLM / NLP / model / tool。
+
+#### 10.3.4 Legacy `behavior_trigger` compatibility
+
+历史 `Behavior.behavior_trigger` 的表达能力继续保留。
+
+Canonical transformation **MUST NOT** 仅因为 legacy 字段名为 `behavior_trigger` 就赋予 causal semantics。
+
+只有来源语义足够明确时，legacy value 才可以被解释为更具体的 source-attributed reason、observed antecedent、contextual association 或 inferred explanation 等语义类别。
+
+如果 legacy value 的真实含义不清楚，canonical transformation **MUST NOT** 擅自升级为 reported / source-attributed reason 或 causal explanation。
+
+R1E 不冻结这些未来类别的 surface names、具体字段或 enum。
+
+#### 10.3.5 Legacy `symptom_triggered` compatibility and direction
+
+历史 `Behavior.symptom_triggered` 的表达能力继续保留，但该 legacy 字段名本身存在方向歧义，例如：
+
+- symptom → behavior；
+- behavior → symptom；
+- symptom 与 behavior 仅有关联而来源没有明确方向。
+
+`symptom_triggered` 字段名 **MUST NOT** 单独决定 semantic direction。
+
+如果 canonical semantics 表达 symptom-related direction，该 direction **MUST** 有来源内容支持。
+
+如果来源不支持方向，canonicalization **MUST NOT** 发明方向。
+
+Direction 与 causality 是两个不同维度：
+
+- symptom precedes behavior **MUST NOT** 自动推出 symptom caused behavior；
+- symptom follows behavior **MUST NOT** 自动推出 behavior caused symptom。
+
+R1E 不新增 Symptom 一级 PBDL-Core entity，也不修改 R1B Relation endpoint matrix。Symptom-related information 的最终结构归属仍未冻结；它未来可以由 Behavior-local structured information、Context、external coded concept、extension 或其他结构承担。
+
+R1E 不冻结新的 normative Relation vocabulary。`related_to`、`associated_with`、`reported_reason_for`、`precedes`、`follows` 等仍保持此前的非规范性候选状态，除非后续规范另行冻结。
+
+Behavior 的具体 trigger / symptom canonical fields、Context 归属、symptom terminology representation、Relation type names、JSON / DSL syntax 仍为 **TODO**。
 
 ## 11. Preference
 
@@ -734,8 +811,13 @@ R0 阶段不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语编�
 33. Relation 在 v1 Core 最小模型中不要求 identity，且 Relation **MUST NOT** 作为 Relation endpoint。
 34. PBDL-Core **MUST NOT** 将未经证据支持的因果权重作为来源直接描述的信息或默认 Core 语义。
 35. Treatment Pathway 不属于初始重新设计中的 PBDL-Core。
+36. Legacy `trigger` / `triggered` naming **MUST NOT** 单独建立 causal semantics；字段名称本身 **MUST NOT** 被视为因果证据。
+37. Source-attributed reason **MUST** 与 verified causal semantics 保持可区分，canonical semantics **MUST NOT** 自动把“某来源声称 X 是 Y 的原因 / 理由”升级为 verified causal relation。
+38. Observed / recorded association、co-occurrence 或 temporal antecedence **MUST NOT** 自动升级为 source-attributed reason 或 causal claim；temporal precedence **MUST NOT** 自动推出 causality。
+39. INFERRED explanation **MUST NOT** 静默表示为 DIRECT source-attributed reason，并继续遵守 R1C 关于 semantic derivation 的 DIRECT / INFERRED 判定规则。
+40. 如果来源不支持 symptom-related direction，canonicalization **MUST NOT** 从 `symptom_triggered` 字段名或时间顺序中发明 direction；已知 direction **MUST NOT** 自动等价为 causality。
 
-跨文档 identity / reference protocol、frequency / recurrence、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom、术语词表、Context 详细结构和 Constraint 模型仍为 **TODO**。
+跨文档 identity / reference protocol、frequency / recurrence、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom concrete structure、symptom terminology representation、术语词表、Context 详细结构和 Constraint 模型仍为 **TODO**。
 
 ## 17. 规范化表示
 

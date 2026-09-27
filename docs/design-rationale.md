@@ -293,3 +293,46 @@ Preference 尤其不能因为没有时间信息就被解释为永久偏好。
 ### 理由
 
 伪造精度会把格式便利误当成来源知识，并可能让下游误以为一个人为补全的日期、时刻或时区是真实观测值。R1D 因此只冻结信息保真原则，不提前冻结具体序列化。
+
+## DR-015 — Trigger terminology 不建立因果关系
+
+### 决策
+
+历史 `behavior_trigger` 与 `symptom_triggered` 的表达能力继续保留，但 `trigger` / `triggered` 这些名称本身不构成因果证据，也不自动表示 verified causal relation。
+
+PBDL 需要区分至少四件不同的事情：
+
+1. 来源明确说“因为 X，所以 Y”；
+2. 记录只显示 X 与 Y 共现或 X 先于 Y；
+3. 模型 / 规则 / 分析过程推断“可能因为 X，所以 Y”；
+4. 独立方法已经建立 X 对 Y 的真实因果效应。
+
+R1E 只冻结前 3 类信息在 PBDL 中不得被压缩成第 4 类因果真值。
+
+同样，`symptom_triggered` 不能依靠字段名自行决定 symptom → behavior 或 behavior → symptom 的方向。
+
+### 理由
+
+旧字段承载的业务能力仍然有价值，但“trigger”在自然语言中常同时混合 reason、association、antecedence 与 causality。
+
+如果把 legacy 字段名直接冻结成因果语义，会使患者陈述、记录时序、模型推断和真实因果证据失去可区分性，并违反 PBDL-Core“描述而非因果推断”的既有边界。
+
+## DR-016 — Source-attributed reason 与 inferred explanation 必须可区分
+
+### 决策
+
+当患者、临床记录、问卷或访谈等来源明确表达“因为 X，所以 Y”时，PBDL 可以保留“该来源把 X 归因为 / 描述为 Y 的原因”这一 source attribution。
+
+这并不表示 PBDL 独立认证 X caused Y。
+
+当来源未表达原因，而模型、规则或分析过程根据其他信息生成解释时，该解释属于 INFERRED semantics，并不得伪装为 DIRECT reported / source-attributed reason。
+
+如果 LLM / NLP 只忠实抽取来源已经明确表达的原因，而没有新增解释语义，该结果仍可以是 DIRECT；这延续 R1C 中“工具参与 extraction 不等于 automatic inference”的规则。
+
+Temporal precedence 与 co-occurrence 同样不能自动升级成 reported reason 或 causality。
+
+### 理由
+
+“患者说因为 X”、“记录显示 X 先出现”、“模型猜测因为 X”以及“方法学上证明 X 导致 Y”具有不同证据层级和 provenance。
+
+将它们统一压成一个 `trigger` 会破坏来源语义、推断边界与因果边界，因此 R1E 保留 legacy 能力，但要求 canonical semantics 保持这些情况可区分。
