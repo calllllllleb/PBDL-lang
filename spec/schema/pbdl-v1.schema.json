@@ -1,6 +1,20 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "PBDL 规范化表示占位 Schema",
-  "description": "本 Schema 仅作为 PBDL 规范化表示的占位文件，目前尚未在字段级形成规范性约束。",
-  "type": "object"
+  "$defs": {
+    "VersionToken": {
+      "title": "PBDL VersionToken",
+      "type": "string",
+      "const": "1.0"
+    },
+    "EntityId": {
+      "title": "PBDL EntityId",
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9._-]*$"
+    },
+    "Text": {
+      "title": "PBDL Text",
+      "type": "string",
+      "pattern": "^(?s:.*\\S.*)$"
+    }
+  }
 }
