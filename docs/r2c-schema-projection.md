@@ -123,7 +123,144 @@ A PARTIAL type is not permission to weaken its structural projection. R2C must i
 | FactorValue | §8.6.3; §22.4 | coded\|text tagged union | PARTIAL | oneOf closed variants | semantic validator; terminology layer | No CoreEntityRef variant. |
 | BehaviorFactor | §8.6; §22.13 | closed qualifier; required role,factor,direction; optional provenance[1..*]; antecedent/reported_reason require factor_to_behavior | PARTIAL | object/required/$ref; if role in {antecedent,reported_reason} then direction const factor_to_behavior; minItems:1 local provenance | semantic validator; canonicalizer | Explanatory inferred semantics, causality boundary, entity-vs-factor classification and provenance inheritance are non-Schema. |
 
-## 4. Cardinality projection contract
+## 4. Field-level mechanical projection inventory
+
+This section makes the frozen field inventory directly implementable without re-deciding field ownership or token sets. It contains **124 field/constraint projection entries**.
+
+Field-level counts:
+
+- SCHEMA: **59**
+- PARTIAL: **65**
+- NOT_SCHEMA: **0**
+
+| Type / field | Normative source | Frozen rule | Status | Draft 2020-12 mechanism | Non-Schema owner | Notes / traps |
+|---|---|---|---|---|---|---|
+| PBDLDocument.pbdl_version | §17.1 | required VersionToken; exactly "1.0" | SCHEMA | required + $ref VersionToken | — | No build/schema/model version here. |
+| PBDLDocument.subjects | §17.1–17.2 | required Subject[1..*] | PARTIAL | required; array/items $ref; minItems:1 | resolver / semantic equality | Order-insensitivity and shared-id uniqueness are outside Schema. |
+| PBDLDocument.behaviors | §17.1–17.2 | required Behavior[0..*], [] valid | PARTIAL | required; array/items $ref; no minItems:1 | resolver / canonicalizer | No uniqueItems; root order is not semantic. |
+| PBDLDocument.preferences | §17.1–17.2 | required Preference[0..*], [] valid | PARTIAL | required; array/items $ref; no minItems:1 | resolver / canonicalizer | No uniqueItems. |
+| PBDLDocument.relations | §17.1–17.2; §22.9.3 | required Relation[0..*], [] valid | PARTIAL | required; array/items $ref; no minItems:1 | Relation Vocabulary / canonicalizer | No uniqueItems; Relation equality is vocabulary-aware. |
+| Subject.id | §17.3 | required EntityId | PARTIAL | required + $ref EntityId | resolver / semantic validator | Shared namespace uniqueness is document-wide. |
+| Behavior.id | §17.4 | required EntityId | PARTIAL | required + $ref EntityId | resolver / semantic validator | Shared namespace uniqueness outside Schema. |
+| Behavior.subject | §17.4; §17.7.1 | required SubjectRef | PARTIAL | required + $ref SubjectRef | resolver | Must resolve exactly one Subject. |
+| Behavior.type | §17.4.1; §15 | required Coding | PARTIAL | required + $ref Coding | terminology layer | Schema does not validate concrete terminology membership. |
+| Behavior.executor | §17.4.2 | optional ActorRef | PARTIAL | $ref ActorRef; omit from required | resolver | null invalid. |
+| Behavior.temporal | §17.4.3 | optional TemporalExtent | PARTIAL | $ref TemporalExtent; omit from required | semantic validator / canonicalizer | null invalid. |
+| Behavior.frequencies | §17.4.4; §22.3.3 | optional BehaviorFrequency[0..*]; [] noncanonical but valid | PARTIAL | array/items $ref; no minItems:1 | canonicalizer | Empty field must remain structurally valid. |
+| Behavior.contexts | §17.4.5; §22.3.3 | optional Context[0..*] | PARTIAL | array/items $ref; no minItems:1 | semantic validator / canonicalizer | No uniqueItems. |
+| Behavior.factors | §17.4.6; §22.3.3 | optional BehaviorFactor[0..*] | PARTIAL | array/items $ref; no minItems:1 | semantic validator / canonicalizer | No uniqueItems. |
+| Behavior.provenance | §17.4; §17.8 | required Provenance[1..*] | PARTIAL | required; array/items $ref; minItems:1 | semantic validator / canonicalizer | No uniqueItems; equality not structural. |
+| Behavior.annotations | §17.4; §22.3.3 | optional Annotation[0..*] | PARTIAL | array/items $ref; no minItems:1 | canonicalizer | Full-equal duplicate removal is normalization. |
+| Preference.id | §17.5 | required EntityId | PARTIAL | required + $ref EntityId | resolver / semantic validator | Shared namespace uniqueness outside Schema. |
+| Preference.subject | §17.5; §17.7.1 | required SubjectRef | PARTIAL | required + $ref SubjectRef | resolver | Must resolve exactly one Subject. |
+| Preference.category | §17.5; §15 | required Coding | PARTIAL | required + $ref Coding | terminology layer | Category vocabulary not frozen here. |
+| Preference.value | §17.5; §8.4 | required PreferenceValue | PARTIAL | required + $ref PreferenceValue | semantic validator / terminology layer | Category/value compatibility is non-Schema. |
+| Preference.temporal | §17.5 | optional TemporalExtent | PARTIAL | $ref TemporalExtent | semantic validator / canonicalizer | Omission means absent semantic time. |
+| Preference.contexts | §17.5; §22.3.3 | optional Context[0..*] | PARTIAL | array/items $ref; no minItems:1 | semantic validator / canonicalizer | [] valid-but-noncanonical. |
+| Preference.provenance | §17.5; §17.8 | required Provenance[1..*] | PARTIAL | required; array/items $ref; minItems:1 | semantic validator / canonicalizer | No uniqueItems. |
+| Preference.annotations | §17.5 | optional Annotation[0..*] | PARTIAL | array/items $ref; no minItems:1 | canonicalizer | No uniqueItems. |
+| Relation.source | §17.6–17.7; §22.14 | required CoreEntityRef | PARTIAL | required + $ref CoreEntityRef | resolver / Relation Vocabulary | Endpoint role/kind contract is non-Schema. |
+| Relation.target | §17.6–17.7; §22.14 | required CoreEntityRef | PARTIAL | required + $ref CoreEntityRef | resolver / Relation Vocabulary | Endpoint role/kind contract is non-Schema. |
+| Relation.type | §17.6; §14.6; §22.14 | required Coding | PARTIAL | required + $ref Coding | Relation Vocabulary / terminology layer | Directionality/inverse/causal status not Schema. |
+| Relation.temporal | §17.6 | optional TemporalExtent | PARTIAL | $ref TemporalExtent | semantic validator / canonicalizer | Independent of endpoint ordering. |
+| Relation.provenance | §17.6; §17.8 | required Provenance[1..*] | PARTIAL | required; array/items $ref; minItems:1 | semantic validator / canonicalizer | Endpoint provenance does not substitute. |
+| Relation.annotations | §17.6; §17.9 | optional Annotation[0..*] | PARTIAL | array/items $ref; no minItems:1 | canonicalizer | Annotation difference is not identity. |
+| Annotation.text | §17.9; §8.1 | required Text | SCHEMA | required + $ref Text | — | Structured semantics cannot be hidden here. |
+| Annotation.provenance | §17.9 | required Provenance[1..*] | PARTIAL | required; array/items $ref; minItems:1 | semantic validator / canonicalizer | Own provenance; owner provenance cannot replace it. |
+| Coding.system | §15; §22.6 | required nonblank semantic string | SCHEMA | required; type:string + nonblank pattern | terminology layer | Not required to be URI. |
+| Coding.code | §15; §22.6 | required nonblank semantic string | SCHEMA | required; type:string + nonblank pattern | terminology layer | No invented code enum. |
+| Coding.display | §15 | optional Text | SCHEMA | $ref Text | — | Does not change basic machine identity. |
+| Coding.version | §15; §22.6 | optional nonblank semantic string | SCHEMA | type:string + nonblank pattern | terminology layer | Version is canonical information. |
+| Confidence.value | §17.8.6 | required number | PARTIAL | required; type:number | semantic validator | If scale exists, sibling-dependent range check remains non-Schema. |
+| Confidence.metric | §17.8.6; §22.6 | required nonblank semantic string | SCHEMA | required; type:string + nonblank pattern | — | No implicit probability meaning. |
+| Confidence.scale | §17.8.6 | optional closed {min:number,max:number} | PARTIAL | object; required min,max; closure | semantic validator | min<max and value∈[min,max] are non-Schema. |
+| SubjectRef.ref | §17.7.1 | required EntityId; exactly one Subject resolution | PARTIAL | required + $ref EntityId | resolver | Do not encode existence with pattern. |
+| CoreEntityRef.ref | §17.7.2 | required EntityId; exactly one Behavior/Preference resolution | PARTIAL | required + $ref EntityId | resolver / Relation Vocabulary | Endpoint compatibility non-Schema. |
+| ExternalActorRef.kind | §17.4.2 | required person\|device\|software\|other | SCHEMA | required + enum | — | Exact tokens. |
+| ExternalActorRef.external_id | §17.4.2 | optional closed object with required system,value | SCHEMA | object/properties/required/closure | — | External namespace, not EntityId namespace. |
+| ExternalActorRef.external_id.system | §17.4.2; §22.6 | required nonblank string | SCHEMA | type:string + nonblank pattern | — | No URI assumption. |
+| ExternalActorRef.external_id.value | §17.4.2; §22.6 | required nonblank string | SCHEMA | type:string + nonblank pattern | — | External stable identifier. |
+| ExternalActorRef.display | §17.4.2 | optional Text | SCHEMA | $ref Text | — | Text sameness does not establish actor identity. |
+| ExternalActorRef.role | §17.4.2 | optional Text | SCHEMA | $ref Text | — | Role is descriptive. |
+| Provenance.derivation | §17.8.1 | required direct\|inferred\|undetermined | SCHEMA | required + enum | semantic validator | Whether producer legitimately uses undetermined is semantic. |
+| Provenance.source | §17.8.2 | optional SourceDescriptor, conditionally required for direct/undetermined | PARTIAL | $ref + if/then required | semantic validator | Undetermined traceability adds structural alternative plus semantic quality rule. |
+| Provenance.generator | §17.8.2 | optional GeneratorDescriptor, required for inferred | PARTIAL | $ref + if/then required | semantic validator | Presence alone does not imply inferred. |
+| Provenance.evidence | §17.8; §22.3.3 | optional Evidence[0..*]; [] noncanonical | PARTIAL | array/items $ref; no minItems by default | canonicalizer | Undetermined branch may require nonempty evidence as one traceability alternative. |
+| Provenance.confidence | §17.8 | optional Confidence | PARTIAL | $ref Confidence | semantic validator | Not truth field. |
+| SourceDescriptor.kind | §17.8.3 | required patient_self_report\|questionnaire\|clinician_documentation\|ehr_record\|device_observation\|legacy_record\|other | SCHEMA | required + enum | — | Exact frozen tokens. |
+| SourceDescriptor.locator | §17.8.3; §22.6 | optional nonblank string | SCHEMA | type:string + nonblank pattern | — | Not Core reference. |
+| SourceDescriptor.display | §17.8.3 | optional Text | SCHEMA | $ref Text | — | Human-readable only. |
+| SourceDescriptor.times | §17.8.3; §22.3.3 | optional SourceTimeEvent[0..*] | PARTIAL | array/items $ref; no minItems:1 | canonicalizer | Order-insensitive semantics and duplicate normalization non-Schema. |
+| SourceTimeEvent.role | §17.8.3 | required reported\|recorded\|observed | SCHEMA | required + enum | — | No generic time role. |
+| SourceTimeEvent.at | §17.8.3 | required TemporalValue | PARTIAL | required + $ref TemporalValue | semantic validator | TemporalValue partial projection. |
+| GeneratorDescriptor.kind | §17.8.4 | required human\|llm\|rule_engine\|analytic_model\|migration_process\|other | SCHEMA | required + enum | — | Generator presence does not imply inferred. |
+| GeneratorDescriptor.identifier | §17.8.4; §22.6 | optional nonblank string | SCHEMA | type:string + nonblank pattern | — | Not EntityId. |
+| GeneratorDescriptor.version | §17.8.4; §22.6 | optional nonblank string | SCHEMA | type:string + nonblank pattern | — | No product-version semantics added. |
+| GeneratorDescriptor.display | §17.8.4 | optional Text | SCHEMA | $ref Text | — | Human-readable. |
+| GeneratorDescriptor.times | §17.8.4; §22.3.3 | optional GeneratorTimeEvent[0..*] | PARTIAL | array/items $ref; no minItems:1 | canonicalizer | Order/equality non-Schema. |
+| GeneratorTimeEvent.role | §17.8.4 | required extracted\|generated\|transformed\|migrated | SCHEMA | required + enum | — | Exact frozen tokens. |
+| GeneratorTimeEvent.at | §17.8.4 | required TemporalValue | PARTIAL | required + $ref TemporalValue | semantic validator | TemporalValue partial projection. |
+| Evidence.kind | §17.8.5 | required text_excerpt\|document_reference\|questionnaire_response\|device_observation\|legacy_material\|other | SCHEMA | required + enum | — | Exact frozen tokens. |
+| Evidence.content | §17.8.5 | optional Text | SCHEMA | $ref Text | — | At least content or locator handled by object conditional. |
+| Evidence.locator | §17.8.5; §22.6 | optional nonblank string | SCHEMA | type:string + nonblank pattern | — | At least content or locator. |
+| Evidence.times | §17.8.5; §22.3.3 | optional SourceTimeEvent[0..*] | PARTIAL | array/items $ref; no minItems:1 | canonicalizer | [] valid-but-noncanonical. |
+| Evidence.(content\|locator) | §17.8.5 | at least one present; both allowed | SCHEMA | anyOf required content / required locator | — | Use anyOf, not oneOf. |
+| Instant.kind | §17.4.3; §22.4 | required const instant | SCHEMA | required + const | — | Mechanical discriminator. |
+| Instant.at | §17.4.3 | required TemporalValue | PARTIAL | required + $ref TemporalValue | semantic validator | Calendar validity partial. |
+| Instant.provenance | §17.4.3; §17.10 | optional Provenance[1..*] | PARTIAL | array/items $ref + minItems:1 if present | canonicalizer / semantic validator | Omission means inheritance. |
+| Interval.kind | §17.4.3; §22.4 | required const interval | SCHEMA | required + const | — | Mechanical discriminator. |
+| Interval.start | §17.4.3 | optional TemporalValue | PARTIAL | $ref TemporalValue | semantic validator | At least start/end separately enforced. |
+| Interval.end | §17.4.3 | optional TemporalValue | PARTIAL | $ref TemporalValue | semantic validator | Conservative ordering non-Schema. |
+| Interval.(start\|end) | §17.4.3 | at least one boundary present | SCHEMA | anyOf required start / required end | — | Both allowed. |
+| Interval.provenance | §17.4.3; §17.10 | optional Provenance[1..*] | PARTIAL | array/items $ref + minItems:1 if present | canonicalizer / semantic validator | Omission means inheritance. |
+| FrequencyPeriod.value | §8.3.2 | required positive integer >=1 | SCHEMA | required; type:integer; minimum:1 | — | No non-integer periods. |
+| FrequencyPeriod.unit | §8.3.2 | required day\|week\|month\|year | SCHEMA | required + enum | — | No hour token. |
+| ObservedCountFrequency.kind | §8.3.3 | required const observed_count | SCHEMA | required + const | — | — |
+| ObservedCountFrequency.count | §8.3.3 | required integer >=0 | SCHEMA | required; type:integer; minimum:0 | — | 0 is valid. |
+| ObservedCountFrequency.precision | §8.3.1, §8.3.3 | required exact\|approximate | SCHEMA | required + enum | — | Not confidence. |
+| ObservedCountFrequency.window | §8.3.3 | optional Interval | PARTIAL | $ref Interval | semantic validator / canonicalizer | Not a rate denominator. |
+| ObservedCountFrequency.provenance | §8.3; §17.10 | optional Provenance[1..*] | PARTIAL | minItems:1 if present + $ref | canonicalizer / semantic validator | Omission inherits. |
+| RateFrequency.kind | §8.3.4 | required const rate | SCHEMA | required + const | — | — |
+| RateFrequency.value | §8.3.4 | required number >=0 | SCHEMA | required; type:number; minimum:0 | — | JSON number, no fuzzy tolerance. |
+| RateFrequency.period | §8.3.4 | required FrequencyPeriod | SCHEMA | required + $ref FrequencyPeriod | — | Must be explicit. |
+| RateFrequency.precision | §8.3.1, §8.3.4 | required exact\|approximate | SCHEMA | required + enum | — | — |
+| RateFrequency.provenance | §8.3; §17.10 | optional Provenance[1..*] | PARTIAL | minItems:1 if present + $ref | canonicalizer / semantic validator | Omission inherits. |
+| RecurrenceFrequency.kind | §8.3.5 | required const recurrence | SCHEMA | required + const | — | — |
+| RecurrenceFrequency.period | §8.3.5 | required FrequencyPeriod | SCHEMA | required + $ref FrequencyPeriod | — | Conditional exact 1 week when days_of_week present. |
+| RecurrenceFrequency.precision | §8.3.1, §8.3.5 | required exact\|approximate | SCHEMA | required + enum | — | — |
+| RecurrenceFrequency.times_per_period | §8.3.5 | optional integer >=1 | SCHEMA | type:integer; minimum:1 | — | Must be absent when days_of_week present. |
+| RecurrenceFrequency.days_of_week | §8.3.5 | optional Weekday[1..*], duplicate token invalid | SCHEMA | array/items Weekday; minItems:1; uniqueItems:true | — | Safe uniqueItems case. |
+| RecurrenceFrequency.day_part | §8.3.5 | optional morning\|afternoon\|evening\|night | SCHEMA | enum | — | No clock thresholds. |
+| RecurrenceFrequency.provenance | §8.3; §17.10 | optional Provenance[1..*] | PARTIAL | minItems:1 if present + $ref | canonicalizer / semantic validator | Omission inherits. |
+| QualitativeFrequency.kind | §8.3.6 | required const qualitative | SCHEMA | required + const | — | — |
+| QualitativeFrequency.value | §8.3.6 | required never\|rarely\|occasionally\|sometimes\|often\|frequently\|usually\|intermittently\|always | SCHEMA | required + enum | — | No numeric ordering. |
+| QualitativeFrequency.provenance | §8.3; §17.10 | optional Provenance[1..*] | PARTIAL | minItems:1 if present + $ref | canonicalizer / semantic validator | Scope semantics non-Schema. |
+| CodedPreferenceValue.kind | §8.4.1 | required const coded | SCHEMA | required + const | — | — |
+| CodedPreferenceValue.value | §8.4.1 | required Coding | PARTIAL | required + $ref Coding | terminology layer / semantic validator | Reliable binding non-Schema. |
+| TextPreferenceValue.kind | §8.4.2 | required const text | SCHEMA | required + const | — | — |
+| TextPreferenceValue.value | §8.4.2; §22.12 | required Text | PARTIAL | required + $ref Text | semantic validator / canonicalizer | Legitimate fallback cannot be decided structurally. |
+| BooleanPreferenceValue.kind | §8.4.3 | required const boolean | SCHEMA | required + const | — | — |
+| BooleanPreferenceValue.value | §8.4.3 | required boolean | PARTIAL | required; type:boolean | semantic validator | Category must actually support binary semantics. |
+| NumericPreferenceValue.kind | §8.4.4 | required const number | SCHEMA | required + const | — | — |
+| NumericPreferenceValue.operator | §8.4.4 | required eq\|lt\|lte\|gt\|gte | SCHEMA | required + enum | — | Preserves comparator. |
+| NumericPreferenceValue.value | §8.4.4 | required number | SCHEMA | required; type:number | — | NaN/Infinity are not JSON numeric instances. |
+| NumericPreferenceValue.unit | §8.4.4 | optional Coding; may be semantically required by source/category | PARTIAL | $ref Coding | semantic validator / terminology layer | Do not require universally or guess unit. |
+| CodedContextValue.kind | §8.5.1 | required const coded | SCHEMA | required + const | — | — |
+| CodedContextValue.value | §8.5.1 | required Coding | PARTIAL | required + $ref Coding | terminology layer / semantic validator | Reliable contextual coding non-Schema. |
+| TextContextValue.kind | §8.5.1 | required const text | SCHEMA | required + const | — | — |
+| TextContextValue.value | §8.5.1; §22.12 | required Text | PARTIAL | required + $ref Text | semantic validator / canonicalizer | Cannot hide frequency/temporal/factor/workflow semantics. |
+| Context.value | §8.5 | required ContextValue | PARTIAL | required + $ref ContextValue | semantic validator / terminology layer | Context-vs-Factor classification non-Schema. |
+| Context.provenance | §8.5; §17.10 | optional Provenance[1..*] | PARTIAL | minItems:1 if present + $ref | canonicalizer / semantic validator | Omission inherits. |
+| CodedFactorValue.kind | §8.6.3 | required const coded | SCHEMA | required + const | — | — |
+| CodedFactorValue.value | §8.6.3 | required Coding | PARTIAL | required + $ref Coding | terminology layer / semantic validator | Reliable factor coding non-Schema. |
+| TextFactorValue.kind | §8.6.3 | required const text | SCHEMA | required + const | — | — |
+| TextFactorValue.value | §8.6.3; §22.12 | required Text | PARTIAL | required + $ref Text | semantic validator / canonicalizer | Must not hide existing Core entity relationship. |
+| BehaviorFactor.role | §8.6.1 | required reported_reason\|observed_association\|antecedent\|explanatory | SCHEMA | required + enum | — | Role is not derivation. |
+| BehaviorFactor.factor | §8.6.3 | required FactorValue | PARTIAL | required + $ref FactorValue | semantic validator / terminology layer | Entity relationship may require Relation instead. |
+| BehaviorFactor.direction | §8.6.2 | required factor_to_behavior\|behavior_to_factor\|unspecified; conditional role rule | SCHEMA | required + enum + if/then const for reported_reason/antecedent | — | Direction is not causality. |
+| BehaviorFactor.provenance | §8.6; §17.10 | optional Provenance[1..*] | PARTIAL | minItems:1 if present + $ref | canonicalizer / semantic validator | Explanatory source-exceeding inference needs inferred effective provenance. |
+
+## 5. Cardinality projection contract
 
 | Frozen cardinality | Field presence | Empty collection | Schema projection | Canonical-normalization consequence |
 |---|---|---|---|---|
@@ -136,7 +273,7 @@ A PARTIAL type is not permission to weaken its structural projection. R2C must i
 
 Important consequence: JSON Schema validation alone cannot label optional `0..*` `[]` as “valid but normalization-required.” It must accept it structurally; the canonicalizer owns the normal-form omission.
 
-### 4.1 Root collections
+### 5.1 Root collections
 
 - `subjects`: required, `minItems:1`.
 - `behaviors`: required, may be `[]`.
@@ -145,7 +282,7 @@ Important consequence: JSON Schema validation alone cannot label optional `0..*`
 
 R2C **MUST NOT** add `minItems:1` to behaviors/preferences/relations.
 
-## 5. Mechanical union projection
+## 6. Mechanical union projection
 
 | Union | Variants | Projection |
 |---|---|---|
@@ -158,7 +295,7 @@ R2C **MUST NOT** add `minItems:1` to behaviors/preferences/relations.
 
 No new discriminator may be introduced for convenience.
 
-## 6. Cross-cutting invariant projection matrix
+## 7. Cross-cutting invariant projection matrix
 
 This matrix contains **40 projection entries**.
 
@@ -211,7 +348,7 @@ Invariant counts:
 | Canonical field aliases | §17.12; §22.2 | legacy aliases cannot coexist in canonical Core | SCHEMA | closed object field sets | — | No special alias properties. |
 | Deterministic byte-level JSON ordering | §22.11 | not frozen; future profile owns key/array ordering, number spelling, whitespace | NOT_SCHEMA | none | serialization profile | R2C must not design sorting/pretty-print rules. |
 
-## 7. Non-Schema Responsibilities
+## 8. Non-Schema Responsibilities
 
 | Responsibility | Owner | Required R2C behavior |
 |---|---|---|
@@ -236,7 +373,7 @@ Invariant counts:
 
 No new subsystem architecture is introduced by these owner labels; they reuse frozen architectural responsibilities.
 
-## 8. Explicit no-approximation rules
+## 9. Explicit no-approximation rules
 
 The following are prohibited:
 
@@ -251,7 +388,7 @@ The following are prohibited:
 9. Confidence range semantics → **do not** assume all metrics use 0..1;
 10. TemporalValue validity → **do not** rely on `format` alone or fabricate timezone / precision.
 
-## 9. R2C1–R2C4 construction partition
+## 10. R2C1–R2C4 construction partition
 
 The partition is dependency-driven and preserves the requested four-round architecture.
 
@@ -329,16 +466,17 @@ Rationale: core entity objects depend on R2C1 references/primitives and R2C2 sha
 
 Rationale: root validation depends on all entity schemas. The conformance corpus belongs here so root cardinality, closure, valid/noncanonical boundaries and invalid structural cases can be tested without redesigning lower-level types.
 
-## 10. Projection counts and acceptance summary
+## 11. Projection counts and acceptance summary
 
 Named-type inventory: **54**
+Field/constraint projection entries: **124**
 Cross-cutting invariant entries: **40**
-Total projection entries in this contract: **94**
+Total projection entries in this contract: **218**
 
 Overall status counts:
 
-- SCHEMA: **32**
-- PARTIAL: **42**
+- SCHEMA: **91**
+- PARTIAL: **107**
 - NOT_SCHEMA: **20**
 
 Construction sets:
@@ -355,7 +493,7 @@ Audit conclusion:
 - Formal Schema modified by R2C0: **NO**
 - Schema approximation of non-Schema semantics permitted: **NO**
 
-## 11. R2C0 closure condition
+## 12. R2C0 closure condition
 
 This contract is sufficient for R2C1–R2C4 to implement Draft 2020-12 structure without making new PBDL language-design decisions. If a later Schema implementation appears to require a stronger rule than this contract permits, that is not permission to approximate; it must be routed to the frozen non-Schema owner or controller review.
 
