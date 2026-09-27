@@ -269,6 +269,8 @@ Behavior、Preference 与 Relation 可以没有 semantic temporal information。
 
 Preference 尤其不能因为没有时间信息就被解释为永久偏好。
 
+同样，Interval 只有一个已知边界时，另一个 boundary 的缺失只表示 unspecified / not provided，不自动表示 ongoing、永久延续、从无限过去开始或数学意义上的 unbounded interval。显式 ongoing / unbounded semantics 留待后续 temporal design。
+
 ### 理由
 
 “未记录时间”与“永久有效”是完全不同的语义。把二者混为一谈会给下游系统制造不存在的持续性信息，也会妨碍多个时期的不同 Preference 或 Behavior 陈述并存。
