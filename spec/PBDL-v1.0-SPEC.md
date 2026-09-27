@@ -692,13 +692,29 @@ Preference category 或显示标签 **MUST NOT** 自动充当 Preference identit
 
 ### 11.1 Legacy `associated_behavior` compatibility
 
-历史 `Preference.associated_behavior` 所表达的“偏好与行为之间存在关联”继续保留兼容价值。
+历史 `Preference.associated_behavior` 所表达的“偏好与行为之间存在关联”继续保留兼容价值，但 R1H 冻结其 canonical ownership。
 
-规范性方向是显式 entity reference 或 Relation，而不是依赖自由文本字符串标签。
+在 canonical PBDL semantics 中，`Preference.associated_behavior` **MUST NOT** 继续作为与 Core Relation 平行的第二套 first-class association mechanism。
 
-如果旧输入使用字符串标签表达 `associated_behavior`，在进入规范化语义之前，该标签 **MUST** 被解析到恰好一个 Behavior identity；无法解析或存在歧义时，该引用无效。
+Legacy `Preference.associated_behavior` **MUST** canonicalize 为显式的 Preference–Behavior Relation。
 
-R1B 不冻结 `associated_behavior` 最终采用专用引用字段还是统一 Relation，也不冻结具体 Relation type。
+因此，历史字段继续作为 legacy compatibility input concept 保留，但 canonical Preference 不再同时维护：
+
+- dedicated `associated_behavior` link；
+- 与其表达同一语义的 Relation。
+
+如果旧输入使用自由文本 Behavior label 表达 `associated_behavior`，canonical transformation **MUST** 先将其解析到恰好一个 Behavior identity。
+
+- 0 个匹配：unresolved / invalid；
+- 多个匹配：ambiguous / invalid。
+
+Canonical transformation **MUST NOT** 通过数组位置、最近文本、第一个匹配或 LLM 猜测静默选择一个 Behavior。
+
+Legacy `associated_behavior` 本身只证明来源声明 Preference 与某个 Behavior 存在某种 association。它 **MUST NOT** 自动意味着 Preference caused Behavior、Behavior caused Preference、Preference resulted from Behavior、Preference conflicts with Behavior 或 Preference explains Behavior。
+
+如果 legacy/source material 支持更具体的 relation meaning，canonical semantics **SHOULD** 保留来源支持的最具体语义；但 canonicalization **MUST NOT** 生成来源没有支持的更强 relation type。
+
+R1H 不冻结该 Relation 的具体 normative type code 或 vocabulary token。
 
 每个 canonical Preference instance **MUST** 实际具有至少一条 provenance linkage，使下游能够判断该 Preference 是直接表达还是外部推断所得。
 
@@ -995,10 +1011,124 @@ Relation semantic temporal extent 与 Relation type ordering semantics 相互独
 
 - concrete temporal fields；
 - temporal serialization；
-- normative relation vocabulary；
-- derived relation strength；
-- directionality details；
+- normative relation vocabulary 与 concrete relation type codes；
+- inverse relation conventions；
+- derived relation-strength artifact structure；
+- canonical field names；
 - syntax。
+
+### 14.5 Explicit Relation boundary
+
+Relation 表示两个允许 endpoint 之间由 canonical semantics **显式声明**的 typed semantic link。
+
+仅仅因为两个实体：
+
+- 属于同一 Subject；
+- 同时出现或时间相近；
+- 具有相同 Context；
+- 出现在同一 Evidence / source material；
+- 出现在同一句话或相邻字段；
+- 使用相同 terminology code / category；
+
+canonicalization **MUST NOT** 自动创建 Relation。
+
+如果上游 model、rule engine 或 analytic process 基于这些信息推断存在 Relation，该 Relation 是 INFERRED relation assertion，并继续遵守 R1C provenance / derivation boundary。
+
+### 14.6 Relation type semantic contract and directionality
+
+每个 canonical Relation **MUST** 使用具有稳定、机器可解释语义定义的 relation type。
+
+Relation type 定义 source / target 在该关系中的 semantic roles，并 **MUST** 使 conforming implementation 能够判断该关系的 directionality semantics，例如 directional 或 symmetric / non-directional。
+
+Relation type **MUST NOT** 只是一段自由文本说明、显示标签或 UI 文案。
+
+A conforming canonical Relation **MUST** 使用其语义由适用 PBDL vocabulary / terminology binding 定义的 relation type。Undefined 或 free-text-only relation type semantics **MUST NOT** 被当作规范性 machine semantics。
+
+R1H 不冻结 complete relation vocabulary、concrete code、field name、serialization 或 open-vs-closed vocabulary policy。
+
+对于 directional relation type，交换 source / target 会改变或破坏该 relation type 所定义的语义。
+
+对于 symmetric / non-directional relation type，交换 endpoint ordering **MUST NOT** 被解释为一个不同的 semantic relation meaning。
+
+Canonicalization **MUST NOT** 在不知道 relation type directionality semantics 时自行猜测、反转或重排 endpoint。
+
+Source → target 的 endpoint ordering 本身 **MUST NOT** 自动建立 causality、temporal precedence、influence、priority、evidence-for 或 parent/child semantics；这些只能由 relation type definition 明确规定。
+
+Directional Relation **MUST NOT** 因其 directionality 自动等价为 causal Relation。
+
+### 14.7 Relation assertion Provenance
+
+每个 canonical Relation assertion **MUST** 具有至少一条 provenance linkage 或等价的可追踪 provenance semantics。
+
+Relation assertion 的 provenance **MUST NOT** 被 source endpoint 或 target endpoint 的 provenance 自动替代。
+
+Endpoint assertions 与 relation assertion 是不同语义陈述。例如：
+
+- Behavior A 可以来自 device observation；
+- Preference B 可以来自 patient self-report；
+- A 与 B 之间的 relation 可以由 model 推断。
+
+此时两个 endpoint 可以分别具有 DIRECT provenance，而 Relation assertion 本身仍属于 INFERRED。
+
+Relation assertion 的 DIRECT / INFERRED 判定继续遵守 R1C：依据 relation semantic content 是否相对于来源内容经过推导，而不是处理链路中是否使用了 LLM / NLP / tool。
+
+如果来源明确表达某 Relation，而 LLM / NLP 只忠实抽取该关系且没有新增语义推断，该 Relation assertion **MAY** 是 DIRECT / source-described。
+
+如果 Relation 来自 model、rule engine、statistical process 或其他 analytic inference，它 **MUST** 保持 INFERRED provenance semantics，并 **MUST NOT** 静默表示为 DIRECT source-described Relation。
+
+如果 Relation 表达 source-attributed reason，它仍继续遵守 R1E：source-attributed reason 不等价于 verified causality。
+
+同一个 Relation semantic assertion **MAY** 具有多条 provenance linkage，但更多 provenance **MUST NOT** 自动意味着 Relation 更真实、更强或更 causal。
+
+### 14.8 Distinct Relation assertions and deduplication
+
+相同 endpoint pair 不代表相同 Relation assertion。
+
+不同的：
+
+- relation type；
+- direction；
+- temporal applicability；
+- DIRECT / INFERRED derivation semantics；
+- provenance-supported meaning；
+
+都可以使 Relation assertions 在语义上不同。
+
+Semantically distinct Relation assertions **MUST** 保持可区分，canonicalization **MUST NOT** 仅因为 source / target 相同就静默合并。
+
+Canonicalization **MAY** 合并真正语义等价、endpoint 相同、type 相同、direction 相同、temporal applicability 相同，且合并不会丢失 provenance distinction 或 derivation distinction 的重复 Relation assertion。
+
+R1H 不冻结具体 deduplication algorithm。
+
+### 14.9 Relation identity remains unchanged
+
+R1H 不改变 R1B identity decision：Relation 在当前 v1 Core minimum 中仍然 **不要求自身具有 identity**。
+
+新增 Relation provenance requirement **MUST NOT** 被解释为 Relation 因此获得 required identity。
+
+Relation 继续 **MUST NOT** 作为 Relation endpoint，R1B endpoint matrix 保持不变。
+
+### 14.10 Relation temporal independence
+
+Relation semantic temporal extent 继续表示 Relation 本身何时成立或适用。
+
+Temporal extent、relation type 与 directionality 是三个不同维度。
+
+存在 temporal metadata **MUST NOT** 自动把 relation type 推断为 `precedes` / `follows`；relation type 是 directional 也 **MUST NOT** 自动生成 temporal ordering semantics。
+
+### 14.11 Relation weight remains derived
+
+历史 `Relation.weight` 的 R1A disposition 保持为 **MOVE_DERIVED**。
+
+`Relation.weight` **MUST NOT** 重新成为默认 PBDL-Core Relation intrinsic semantic strength。
+
+旧 `weight` 可能代表 correlation coefficient、model score、ranking weight、confidence-like value、association strength、causal effect estimate 等彼此不同的语义，不能被 Core 当成一个统一概念。
+
+如果外部分析提供 relation strength、statistic、score 或 effect estimate，该结果属于 derived / analytic artifact。其 metric semantics、derivation method、model / algorithm、provenance、version 与 applicable endpoints / relation 需要由未来 derived-result design 明确；R1H 不设计该 Schema。
+
+Source-described qualitative strength 与 derived numeric relation strength **MUST** 保持可区分。
+
+例如来源中的“患者强烈偏好口服药”不能仅因为出现“强烈”就被转换成 `Relation.weight = 0.9`；文本中的“二者高度相关”也不能在没有统计定义时被伪造成 numeric relation weight。
 
 ## 15. 术语绑定
 
@@ -1082,8 +1212,19 @@ R0 阶段不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语编�
 53. 缺少 frequency / recurrence information **MUST NOT** 被解释为 once、only once、non-recurring、irregular、continuous 或任何具体 repetition pattern。
 54. Canonicalization **MUST NOT** 在缺少 reference period 时发明 frequency rate，也 **MUST NOT** 在缺少 denominator / expected opportunities 时发明 adherence ratio、adherence percentage 或其他比例。
 55. Frequency / recurrence semantics **MUST NOT** 成为所有 Behavior 的强制属性。
+56. Relation **MUST NOT** 仅因为实体共现、属于同一 Subject、时间相近、Context 相同或共享来源材料而被隐式创建。
+57. Relation type **MUST** 具有定义明确的机器语义并决定 endpoint roles / directionality semantics；source / target ordering 本身 **MUST NOT** 建立 causality、temporal precedence、importance 或其他未由 relation type 定义的语义。
+58. Directional Relation **MUST NOT** 自动等价为 causal Relation；对于 symmetric / non-directional relation type，交换 endpoint ordering **MUST NOT** 被解释为不同 semantic relation meaning。
+59. Legacy `Preference.associated_behavior` 在 canonical semantics 中 **MUST** 统一表示为 explicit Preference–Behavior Relation，**MUST NOT** 继续形成与 Relation 平行的 canonical link mechanism。
+60. Legacy `associated_behavior` reference **MUST** 解析到恰好一个 Behavior identity；undefined / unresolved 或 ambiguous mapping 无效，canonical transformation **MUST NOT** 静默猜测目标。
+61. Canonical transformation **MUST NOT** 仅凭 legacy `associated_behavior` 发明比来源支持更强的 relation semantics。
+62. 每个 canonical Relation assertion **MUST** 具有至少一条 provenance linkage 或等价可追踪 provenance semantics；endpoint provenance **MUST NOT** 自动替代 Relation assertion provenance。
+63. INFERRED Relation assertion **MUST NOT** 静默表示为 DIRECT source-described Relation，即使其 endpoints 分别具有 DIRECT provenance。
+64. Semantically distinct Relation assertions **MUST NOT** 仅因为 endpoints 相同而被静默合并；relation type、direction、temporal applicability 与 derivation / provenance distinction 必须得到保留。
+65. `Relation.weight` **MUST NOT** 作为默认 Core Relation intrinsic semantic strength；derived numeric strength / statistic **MUST** 与 source-described relation semantics 保持可区分。
+66. Undefined 或 free-text-only relation type semantics **MUST NOT** 被当作 canonical machine semantics。
 
-跨文档 identity / reference protocol、Behavior frequency / recurrence concrete fields / serialization、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom concrete structure、symptom terminology representation、communication canonical fields / vocabulary、Context concrete fields / cardinality / nesting、Constraint / Barrier model、术语词表仍为 **TODO**。
+跨文档 identity / reference protocol、Behavior frequency / recurrence concrete fields / serialization、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom concrete structure、symptom terminology representation、communication canonical fields / vocabulary、Context concrete fields / cardinality / nesting、Constraint / Barrier model、normative relation vocabulary / codes / inverse conventions、derived relation-strength artifact Schema、术语词表仍为 **TODO**。
 
 ## 17. 规范化表示
 

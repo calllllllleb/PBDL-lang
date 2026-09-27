@@ -583,6 +583,19 @@ R1E 已解决：
 - generic Relation；
 - 特定 Relation type。
 
+**R1H 状态：resolved by R1H。**
+
+R1H 已解决：
+
+- canonical semantics 不保留 dedicated `associated_behavior` link field；
+- legacy `Preference.associated_behavior` 统一迁移为 explicit Preference–Behavior Relation；
+- legacy free-text Behavior label 必须解析到恰好一个 Behavior identity；
+- unresolved / ambiguous mapping 无效，不得通过位置、首个匹配或模型猜测静默选择；
+- legacy field name 本身不得发明 causal、directional、conflict 或 explanatory semantics；
+- 如果来源支持更具体 relation meaning，应保留来源支持的更具体语义，但不得发明更强 relation type。
+
+Exact relation type code / normative vocabulary 仍由 OQ-008 与后续 vocabulary 工作处理；这不再影响“dedicated field 还是 Relation”这一架构问题已经解决。
+
 ### OQ-007 — Pathway condition 表达
 
 `path_condition` 未来在 PBDL-Pathway 中使用：
@@ -601,6 +614,34 @@ R1E 已解决：
 - causal semantics 是否允许；
 - externally derived strength 的单独表达；
 - metric / model / provenance 的绑定方式。
+
+**R1H 状态：partially resolved by R1H。**
+
+R1H 已解决：
+
+- Relation type 是 Relation 的机器语义核心；
+- relation type definition 必须明确 endpoint semantic roles 与 directionality semantics；
+- endpoint order 本身不自动表示 causality、temporal precedence、importance 或其他未定义语义；
+- directional Relation 不等于 causal Relation；
+- symmetric / non-directional type 的 endpoint ordering 不应产生不同 semantic meaning；
+- 每个 canonical Relation assertion 必须具有自身可追踪 provenance；
+- endpoint provenance 不自动替代 Relation provenance；
+- DIRECT / INFERRED Relation assertion 必须保持可区分；
+- `Relation.weight` 继续保持 MOVE_DERIVED，不回到 Core intrinsic relation strength；
+- source-described qualitative strength 与 derived numeric weight / statistic 必须保持可区分；
+- same endpoints 不意味着 same Relation assertion。
+
+仍未解决：
+
+- exact normative relation vocabulary；
+- concrete relation type codes；
+- open vs closed vocabulary policy；
+- inverse relation conventions；
+- canonical field names；
+- relation vocabulary serialization；
+- derived relation-strength artifact Schema；
+- metric / method representation；
+- JSON / DSL syntax。
 
 ### OQ-009 — Note / Annotation 收敛
 

@@ -430,3 +430,55 @@ Duration、applicability window 与 repetition pattern 对下游系统具有完�
 把 observed count 当成 recurrence 会把历史窗口错误外推到未来；把 qualitative frequency 强制数值化会伪造精度；把 expected schedule 当成 actual Behavior 会把治疗计划误写成患者实际行为；而把多个 observed events 自动总结成 pattern 会把 derived inference 伪装成 source-described information。
 
 R1G 因此冻结语义区分，而不设计 RRULE、cron、regimen、adherence scoring 或完整 scheduling language。
+
+## DR-021 — Canonical Preference–Behavior association 使用单一 Relation mechanism
+
+### 决策
+
+历史 `Preference.associated_behavior` 的表达能力继续作为 legacy compatibility input 保留，但 canonical PBDL semantics 不再维护 dedicated `associated_behavior` link 与 generic Relation 两套平行机制。
+
+Legacy `associated_behavior` 必须解析到唯一 Behavior identity，并 canonicalize 为 explicit Preference–Behavior Relation。
+
+Legacy field 本身不自动决定 causal、directional、conflict 或 explanatory semantics；canonicalization 只能保留来源实际支持的 relation meaning。
+
+### 理由
+
+如果 canonical Preference 同时保留 dedicated `associated_behavior` reference 和 `Relation(Preference, Behavior, type)`，同一语义会有两个互相竞争的表达入口，造成校验、去重、provenance 与后续 vocabulary 绑定的不一致。
+
+统一到 Relation 后，Preference–Behavior association 使用与其他合法 Core entity link 相同的语义合同，同时仍保留 legacy input 的迁移能力。
+
+## DR-022 — Relation type 定义语义与方向；endpoint order 本身不建立因果
+
+### 决策
+
+Relation type 是 Relation 的机器语义核心。
+
+每个 type 必须具有稳定定义，并说明 endpoint semantic roles 与 directionality semantics。Directional type 中 endpoint 交换会改变或破坏语义；symmetric / non-directional type 中 endpoint 交换不能被解释为另一种 semantic relation meaning。
+
+Source → target 的箭头本身不表示 cause、precedes、influence、priority 或 importance。
+
+Directional 也不等于 causal。
+
+### 理由
+
+如果 endpoint order 自带隐式语义，下游系统会在没有 relation type 定义的情况下自行猜测“箭头是什么意思”，从而把 directionality、causality、temporal ordering 与 importance 混为一谈。
+
+把语义放在 relation type contract 中，才能使 Relation 机器可解释且可验证，同时避免把 Preference → Behavior 误读成 Preference caused Behavior。
+
+## DR-023 — Relation assertion 需要自己的 Provenance；derived weight 不属于 Core relation truth
+
+### 决策
+
+每个 canonical Relation assertion 必须具有可追踪 Provenance。
+
+Endpoint provenance 不能自动充当 Relation provenance，因为“两个 endpoint 分别存在”与“两个 endpoint 之间存在某种关系”是不同 assertion。
+
+因此，即使 Behavior 与 Preference endpoints 都是 DIRECT，模型根据它们推断出的 Relation 仍然是 INFERRED。
+
+同时，历史 `Relation.weight` 继续保持 MOVE_DERIVED，不作为 Core Relation intrinsic truth / strength。外部分析产生的 score、statistic、correlation、association strength 或 effect estimate 属于 derived / analytic artifact。
+
+### 理由
+
+Relation assertion 可以来自不同于 endpoint 的信息来源或推理过程。如果直接继承 endpoint provenance，会把模型推断的关系伪装成来源明确陈述的关系。
+
+同理，一个无语义约束的 numeric `weight` 无法同时代表 correlation、confidence、ranking score、association strength 与 causal effect。把它重新放入 Core 会再次混淆 source-described semantics 与 derived analysis。
