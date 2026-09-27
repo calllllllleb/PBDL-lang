@@ -14,7 +14,7 @@
     "Text": {
       "title": "PBDL Text",
       "type": "string",
-      "pattern": "^[\\s\\S]*\\S[\\s\\S]*$"
+      "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]"
     },
     "Coding": {
       "title": "PBDL Coding",
@@ -22,15 +22,15 @@
       "properties": {
         "system": {
           "type": "string",
-          "pattern": "^[\\s\\S]*\\S[\\s\\S]*$"
+          "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]"
         },
         "code": {
           "type": "string",
-          "pattern": "^[\\s\\S]*\\S[\\s\\S]*$"
+          "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]"
         },
         "version": {
           "type": "string",
-          "pattern": "^[\\s\\S]*\\S[\\s\\S]*$"
+          "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]"
         },
         "display": {
           "$ref": "#/$defs/Text"
@@ -51,7 +51,7 @@
         },
         "metric": {
           "type": "string",
-          "pattern": "^[\\s\\S]*\\S[\\s\\S]*$"
+          "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]"
         },
         "scale": {
           "type": "object",
