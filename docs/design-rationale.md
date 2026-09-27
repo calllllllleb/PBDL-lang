@@ -234,3 +234,60 @@ R1C 暂不强制 Provenance 自身具有独立 identity。
 强制实例级来源追踪关闭了 R0 中“可追踪”究竟是语言能力还是实例要求的歧义，并使 DIRECT / INFERRED 区分具有可实现基础。
 
 同时，不提前强制 Provenance identity 可以避免在没有共享 provenance、provenance chaining 或稳定反向引用需求时过度设计对象模型。
+
+## DR-012 — Semantic time 与 Provenance time 必须分离
+
+### 决策
+
+PBDL-Core 将对象本身的时间语义与来源过程的时间语义明确区分：
+
+- Semantic time：Behavior 发生、持续或适用的时间；Preference 适用的时间；Relation 成立或适用的时间。
+- Provenance time：信息被报告、记录、观测、抽取或生成的时间。
+
+两者不能互相自动替代。
+
+例如，患者在 9 月 20 日说“上周漏服了三次药”时，“上周”是 Behavior semantic time，而“9 月 20 日”是 reporting / provenance time。
+
+### 理由
+
+记录时间经常晚于、早于或仅部分覆盖被描述事件的真实时间范围。若把记录时间直接当作 semantic time，会改变来源原本表达的时间含义，并制造错误的临床或行为时间线。
+
+## DR-013 — 缺少时间信息不意味着永久成立
+
+### 决策
+
+Behavior、Preference 与 Relation 可以没有 semantic temporal information。
+
+缺少时间只表示 PBDL 当前没有提供该项 semantic time，不自动表示：
+
+- 永久成立；
+- 当前仍成立；
+- 从出生至今；
+- 始终如此；
+- 反复发生；
+- 时间无关。
+
+Preference 尤其不能因为没有时间信息就被解释为永久偏好。
+
+### 理由
+
+“未记录时间”与“永久有效”是完全不同的语义。把二者混为一谈会给下游系统制造不存在的持续性信息，也会妨碍多个时期的不同 Preference 或 Behavior 陈述并存。
+
+## DR-014 — Canonicalization 不得发明时间精度
+
+### 决策
+
+规范化转换必须保留来源实际支持的 temporal precision，不得仅为了满足某个固定格式而补造更高精度。
+
+例如：
+
+- “2026-09”不能自动变成“2026-09-01T00:00:00”；
+- “2026 年”不能自动变成某个具体日期；
+- 来源未提供 timezone / offset 时，不能凭空补充；
+- relative time 若保留在 canonical semantics 中，必须具有明确 anchor。
+
+具体 ISO 8601 serialization、partial-date 表示与 relative-time syntax 留待后续。
+
+### 理由
+
+伪造精度会把格式便利误当成来源知识，并可能让下游误以为一个人为补全的日期、时刻或时区是真实观测值。R1D 因此只冻结信息保真原则，不提前冻结具体序列化。

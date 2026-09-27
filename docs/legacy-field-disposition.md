@@ -414,6 +414,28 @@ R1A 不解决以下问题，只将其登记为后续规范设计输入。
 - 相对时间
 - 有效期
 
+**R1D 状态：partially resolved by R1D。**
+
+R1D 已解决：
+
+- Behavior / Preference / Relation 共享最小 Core temporal abstraction；
+- semantic time 与 provenance / reporting time 明确分离；
+- Instant 与 Interval 的最小语义；
+- open-ended Interval 的允许条件；
+- missing semantic time 只表示未提供时间，不表示永久或当前成立；
+- relative time 的 anchor 原则；
+- temporal precision 与 timezone 信息不得在 canonicalization 中凭空补造；
+- Behavior.`temporal_scope` 与 Relation.`temporal` 的历史能力继续保留并映射到共享 temporal semantics。
+
+仍未解决：
+
+- concrete temporal fields；
+- JSON Schema；
+- textual DSL syntax；
+- recurrence / frequency；
+- exact date/time serialization；
+- partial-date representation details。
+
 ### OQ-002 — `communication_status` 的最终归属
 
 需要判断它是：

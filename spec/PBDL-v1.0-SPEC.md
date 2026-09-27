@@ -176,6 +176,106 @@ R1B 不允许 Relation→Relation，是为了避免在没有明确使用场景�
 
 精确的引用字段名、序列化结构与 DSL syntax 仍为 **TODO**。
 
+### 5.7 Temporal semantics foundation
+
+R1D 冻结 PBDL-Core 的最小 temporal semantics，用于回答：
+
+- Behavior 在什么时候发生、持续或适用；
+- Preference 在什么时候适用；
+- Relation 在什么时候成立或适用。
+
+R1D 区分两类不同的时间语义：
+
+- **Semantic time**：描述 Behavior / Preference / Relation 本身发生、成立或适用的时间；
+- **Provenance time**：描述相关信息何时被报告、记录、抽取、观测或生成。
+
+Semantic time 与 Provenance time **MUST NOT** 被视为同一个时间概念。记录时间 **MUST NOT** 自动替代 Behavior / Preference / Relation 的 semantic time。
+
+例如，患者在 9 月 20 日报告“上周漏服了三次药”时：
+
+- “上周”属于 Behavior semantic time；
+- “9 月 20 日”属于 provenance / reporting time。
+
+Behavior、Preference 与 Relation **SHOULD** 基于同一套 Core temporal abstraction 表达 semantic temporal extent，但三者使用该 abstraction 的语义角色不同。
+
+#### 5.7.1 Instant
+
+Instant 表示一个时间点。
+
+Instant 可以具有不同的来源精度，例如只精确到年、月、日，或更高精度的具体时刻。R1D 不冻结具体日期时间序列化格式。
+
+#### 5.7.2 Interval
+
+Interval 表示一个时间区间。
+
+Interval 可以具有：
+
+- start 与 end；
+- start 与开放 / 未知 end；
+- 开放 / 未知 start 与 end。
+
+一个 Interval **MUST** 至少具有一个有效边界。两个边界都不存在时，该结构 **MUST NOT** 被解释为有意义的 temporal extent。
+
+如果 start 与 end 同时存在且能够比较，则 start **MUST NOT** 晚于 end。
+
+#### 5.7.3 Unspecified semantic time
+
+Behavior、Preference 或 Relation **MAY** 没有 semantic temporal information。
+
+R1D 不要求引入显式的 UNKNOWN token；缺少 temporal information 可以表示 semantic time 未提供。
+
+缺少 semantic temporal information **MUST NOT** 被解释为：
+
+- 永久成立；
+- 从出生至今；
+- 当前仍成立；
+- 始终如此；
+- 反复发生；
+- 时间不重要。
+
+它只表示 canonical semantics 当前没有提供该项时间信息。
+
+#### 5.7.4 Temporal precision preservation
+
+对时间信息进行 canonicalization 或其他规范化转换时，转换结果 **MUST** 保留来源实际支持的时间精度，并 **MUST NOT** 发明来源未提供的精度。
+
+例如，来源只有“2026-09”时，canonicalization **MUST NOT** 仅为了获得完整 timestamp 而将其伪造成“2026-09-01T00:00:00”。
+
+同样，“2026 年” **MUST NOT** 被自动伪造成某一个具体日期。
+
+具体 partial-date representation 与 ISO 8601 serialization 仍为 **TODO**。
+
+#### 5.7.5 Timezone preservation
+
+如果来源未提供 timezone / offset，canonicalization **MUST NOT** 凭空声明一个具体 timezone / offset。
+
+如果来源已经提供 timezone / offset，canonical representation **MUST** 能够保留该来源提供的信息。
+
+R1D 不冻结 timezone / offset 的具体 serialization。
+
+#### 5.7.6 Relative time
+
+Relative temporal expression 可以出现在来源中，例如：
+
+- 昨天；
+- 上周；
+- 治疗后三天；
+- 出院后一个月。
+
+如果 relative temporal expression 保留在 canonical semantic representation 中，它 **MUST** 具有足以解释其含义的明确 anchor。
+
+或者，在形成 canonical PBDL semantics 之前，上游转换已经将其解析为足够明确的 absolute / anchored temporal expression。
+
+无法确定 anchor 的裸相对时间 **MUST NOT** 被假装成唯一确定的 absolute temporal extent。
+
+R1D 不冻结 relative-time DSL syntax。
+
+#### 5.7.7 Frequency / recurrence 留待后续
+
+`daily`、`weekly`、`often`、`sometimes`、`three_times_per_week`、`every_morning`、`intermittent` 等表达涉及 frequency / recurrence / pattern，而不仅仅是 temporal extent。
+
+Frequency / recurrence semantics 在 R1D 中保持为未来工作，**MUST NOT** 因为了复用 Interval 而被隐式压缩成 Interval 语义。
+
 ## 6. 词法结构
 
 词法结构尚未冻结。
@@ -273,7 +373,15 @@ R1B 不引入完整 Participant model，也不冻结 `executor` 的最终字段�
 
 每个 canonical Behavior instance **MUST** 实际具有至少一条 provenance linkage，使其来源能够被追踪。仅仅“语言理论上支持 provenance”不足以满足该要求。
 
-Behavior 的具体字段、行为类型词表、时间模型、trigger / symptom 模型、Provenance / Evidence 的 surface 结构和语法仍为 **TODO**。
+### 10.2 Behavior temporal semantics
+
+Behavior **MAY** 具有 semantic temporal extent，用于描述该 Behavior semantic content 发生、持续或适用的时间范围。
+
+历史 `Behavior.temporal_scope` 的时间表达能力继续保留，其规范方向是映射到共享 Core temporal abstraction，而不是冻结旧 string 表达。
+
+Behavior 缺少 semantic time **MUST NOT** 被解释为永久行为、当前行为或反复行为；它只表示该 Behavior 的 semantic time 未指定。
+
+Behavior 的具体字段、行为类型词表、trigger / symptom 模型、Provenance / Evidence 的 surface 结构、frequency / recurrence 模型和语法仍为 **TODO**。
 
 ## 11. Preference
 
@@ -307,7 +415,19 @@ R1B 不冻结 `associated_behavior` 最终采用专用引用字段还是统一 R
 
 直接表达与推断出的 Preference 可以具有相同的 preference category 与 preference value，但其 provenance semantics **MUST** 保持可区分，不得仅依赖自然语言 note 来判断。
 
-Preference 的具体字段、偏好类型词表、取值模型、confidence surface、Provenance / Evidence 的具体结构、时间模型和语法仍为 **TODO**。
+### 11.2 Preference temporal semantics
+
+Preference **MAY** 具有 semantic temporal extent，用于描述该 Preference 的适用时间范围。
+
+Preference 的表达时间、记录时间、抽取时间或生成时间属于 Provenance time；这些时间 **MUST NOT** 自动替代 Preference 的 applicability time。
+
+Preference 缺少 semantic temporal information **MUST NOT** 被解释为永久偏好。
+
+不同时期的不同 Preference 信息可以作为不同 Preference instances 共存，例如某一时期拒绝注射、另一时期接受注射。
+
+历史 Preference 正式字段表虽然没有独立 temporal 字段，但 v1 Core **MAY** 表达 Preference temporal applicability，以避免把可随时间变化的偏好误解为永久状态。
+
+Preference 的具体字段、偏好类型词表、取值模型、confidence surface、Provenance / Evidence 的具体结构、frequency / recurrence 模型和语法仍为 **TODO**。
 
 ## 12. Context
 
@@ -367,6 +487,14 @@ Provenance 说明“信息如何产生以及从哪里来”；Evidence 说明“
 Evidence **MAY** 作为 Provenance 指向或关联的支持材料，但二者 **MUST NOT** 被视为完全同义的概念。
 
 R1C 不冻结 Evidence 的具体字段、identity requirement、嵌套方式或外部引用格式。
+
+### 13.2.1 Provenance time boundary
+
+Provenance 可以包含报告、记录、抽取、观测或生成发生的时间信息。
+
+这类 Provenance time **MUST NOT** 自动承担 Behavior / Preference / Relation 的 semantic temporal extent。
+
+同一条信息的 semantic time 与 provenance time 可以不同，也可以只提供其中之一。
 
 ### 13.3 DIRECT 与 INFERRED
 
@@ -493,7 +621,21 @@ R1B 不允许 Subject 作为 Core Relation endpoint。
 
 R1B 不允许 Relation 作为 source 或 target，因此不支持 Relation→Relation 或 entity→Relation。
 
-### 14.2 Relation identity
+### 14.2 Relation temporal semantics
+
+Relation **MAY** 具有 semantic temporal extent，用于描述该 Relation 本身成立或适用的时间范围。
+
+历史 `Relation.temporal` 的时间能力继续保留，其规范方向是映射到共享 Core temporal abstraction，而不是冻结旧 string 表达。
+
+Relation temporal metadata 与 Relation type semantics 是不同维度。
+
+Relation temporal metadata **MUST NOT** 自动被解释为 `precedes`、`follows`、before、after 或其他 ordering relation。
+
+如果未来 Relation vocabulary 定义 `precedes`、`follows` 等类型，其先后语义属于 Relation type 本身，而不是 temporal metadata 的隐式解释。
+
+对于历史 `Relation.temporal` 中混合了“适用时间”和“关系先后类型”的数据，canonical transformation **MUST NOT** 在未区分真实含义时直接把旧值视为单一 temporal extent。
+
+### 14.3 Relation identity
 
 Relation 在 v1 Core 最小模型中**不要求自身具有 identity**。
 
@@ -501,7 +643,7 @@ Relation 在 v1 Core 最小模型中**不要求自身具有 identity**。
 
 未来若 Evidence / Provenance、extension 或其他明确使用场景需要稳定引用 Relation，可在后续设计轮次增加 relation identity requirement；R1B 不提前冻结。
 
-### 14.3 Relation type is not causality by default
+### 14.4 Relation type is not causality by default
 
 Relation type concept 用于说明 source 与 target 之间“是什么关系”，但 Relation type **MUST NOT** 因其名称或存在本身就被解释为因果关系。
 
@@ -545,23 +687,32 @@ R0 阶段不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语编�
 7. Behavior 与 Preference **MUST** 各自绑定到恰好一个 Subject。
 8. 每个 canonical Behavior **MUST** 实际具有至少一条 provenance linkage。
 9. 每个 canonical Preference **MUST** 实际具有至少一条 provenance linkage。
-10. canonical semantic representation **MUST** 能区分 DIRECT 与 INFERRED provenance semantics；该判断依据 semantic content 相对于来源内容是否经过推导，而不是处理链路中是否使用 LLM、NLP 或其他工具。
-11. 仅使用 LLM、NLP 或其他工具进行 extraction、parsing、normalization、terminology mapping 或 serialization transformation **MUST NOT** 自动使信息成为 INFERRED；INFERRED information **MUST NOT** 静默表示成 DIRECT/source-described information。
+10. canonical semantic representation **MUST** 能区分 DIRECT 与 INFERRED provenance semantics。
+11. INFERRED information **MUST NOT** 静默表示成 DIRECT / source-described information。
 12. 同一个 Behavior / Preference **MAY** 具有多条 provenance linkage，但多来源 **MUST NOT** 自动表示更高真值或可信度。
-13. 如果不同来源表达的 semantic content 实质不同或冲突，canonical representation **MUST NOT** 通过 provenance 合并、对象折叠或其他方式丢失、掩盖或使冲突语义不可区分；默认 **SHOULD** 使用不同 Behavior / Preference instances。PBDL-Core 不自动裁决冲突。
+13. 如果不同来源表达的 semantic content 实质不同或冲突，canonical representation **MUST NOT** 通过来源合并或对象折叠掩盖这些冲突语义。
 14. Provenance 与 Evidence **MUST NOT** 被当作完全同义概念。
 15. confidence **MUST NOT** 成为所有 Preference 的强制属性，DIRECT self-report **MUST NOT** 被迫赋予模型式 confidence。
 16. Provenance 在 R1C 中不要求独立 identity。
-17. Behavior type、Preference category、显示标签与 Relation type **MUST NOT** 自动充当 entity instance identity。
-18. Core reference **MUST** 在当前文档 reference scope 内解析到恰好一个实体。
-19. undefined reference 与 ambiguous reference 均无效。
-20. Relation source / target **MUST** 使用明确 entity reference，不能使用未解析的自由文本标签。
-21. Core Relation endpoint 仅允许 Behavior 与 Preference；Subject 与 Relation 均不是 R1B 中的 Relation endpoint。
-22. Relation 在 v1 Core 最小模型中不要求 identity，且 Relation **MUST NOT** 作为 Relation endpoint。
-23. PBDL-Core **MUST NOT** 将未经证据支持的因果权重作为来源直接描述的信息或默认 Core 语义。
-24. Treatment Pathway 不属于初始重新设计中的 PBDL-Core。
+17. Semantic time 与 Provenance time **MUST NOT** 被视为同一个时间概念，Provenance / reporting time **MUST NOT** 自动替代 Behavior / Preference / Relation 的 semantic time。
+18. Behavior、Preference 与 Relation **SHOULD** 使用共享 Core temporal abstraction 表达 semantic temporal extent。
+19. Core temporal abstraction 至少支持 Instant、Interval 与未提供 semantic time 三种最小语义情况。
+20. Interval **MUST** 至少具有一个有效边界；若 start 与 end 同时存在且可比较，start **MUST NOT** 晚于 end。
+21. 缺少 semantic temporal information **MUST NOT** 被解释为永久、当前、始终、反复或“时间不重要”。
+22. Canonicalization **MUST** 保留来源实际支持的 temporal precision，并 **MUST NOT** 发明来源未提供的时间精度。
+23. 来源未提供 timezone / offset 时，canonicalization **MUST NOT** 凭空补充；来源已提供时，canonical representation **MUST** 能够保留。
+24. canonical semantics 中保留的 relative temporal expression **MUST** 具有明确 anchor；无明确 anchor 的裸相对时间 **MUST NOT** 被假装成唯一确定的 absolute temporal extent。
+25. Relation temporal metadata **MUST NOT** 自动承担 `precedes` / `follows` 等 Relation type ordering semantics。
+26. Behavior type、Preference category、显示标签与 Relation type **MUST NOT** 自动充当 entity instance identity。
+27. Core reference **MUST** 在当前文档 reference scope 内解析到恰好一个实体。
+28. undefined reference 与 ambiguous reference 均无效。
+29. Relation source / target **MUST** 使用明确 entity reference，不能使用未解析的自由文本标签。
+30. Core Relation endpoint 仅允许 Behavior 与 Preference；Subject 与 Relation 均不是 R1B 中的 Relation endpoint。
+31. Relation 在 v1 Core 最小模型中不要求 identity，且 Relation **MUST NOT** 作为 Relation endpoint。
+32. PBDL-Core **MUST NOT** 将未经证据支持的因果权重作为来源直接描述的信息或默认 Core 语义。
+33. Treatment Pathway 不属于初始重新设计中的 PBDL-Core。
 
-跨文档 identity / reference protocol、temporal model、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom、术语词表、Context 详细结构和 Constraint 模型仍为 **TODO**。
+跨文档 identity / reference protocol、frequency / recurrence、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom、术语词表、Context 详细结构和 Constraint 模型仍为 **TODO**。
 
 ## 17. 规范化表示
 
