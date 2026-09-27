@@ -575,14 +575,23 @@ R2B1 已冻结：
 
 OQ-003 仍保持 partially resolved。
 
-仍未解决：
+**R2B2 状态：further partially resolved by R2B2。**
+
+R2B2 已解决：
+
+- Confidence concrete structure 与 semantic equality；
+- TemporalValue lexical representation 与 canonical information equality；
+- Text / TemporalValue / Confidence-based Provenance equality dependencies。
+
+OQ-003 仍保持 partially resolved。
+
+真实 remaining items：
 
 - shared provenance identity / pool；
 - provenance chaining；
-- Confidence concrete semantics；
-- TemporalValue lexical representation；
 - final JSON Schema / serialization；
-- 其他尚未冻结的 provenance-related leaf serialization details。
+- canonical deterministic sorting / remaining provenance serialization integration；
+- 其他尚未冻结的 provenance integration details。
 
 ### OQ-004 — Confidence 的语义归属
 

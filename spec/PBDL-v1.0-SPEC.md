@@ -1338,14 +1338,24 @@ PBDL-Core 当前不将 `causal_effect` 定义为默认关系，也不把未经�
 
 Relation semantic temporal extent 与 Relation type ordering semantics 相互独立的边界已由 R1D 冻结。
 
+R2B2 已冻结：
+
+- TemporalValue lexical profiles；
+- temporal precision preservation；
+- numeric offset / ZoneToken representation；
+- canonical information equality；
+- minimum Interval comparability。
+
+因此上述 TemporalValue representation details 不再属于本节 TODO。
+
 仍为 **TODO** 的是：
 
-- TemporalValue lexical / precision / timezone details 与 temporal serialization；
+- final JSON Schema integration；
+- DSL syntax / serialization；
 - normative relation vocabulary 与 concrete relation type codes；
 - inverse relation conventions；
 - derived relation-strength artifact structure；
-- relation vocabulary serialization；
-- syntax。
+- relation vocabulary serialization。
 
 ### 14.5 Explicit Relation boundary
 
