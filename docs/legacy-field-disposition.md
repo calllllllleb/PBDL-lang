@@ -831,17 +831,19 @@ R1H 已解决：
 - source-described qualitative strength 与 derived numeric weight / statistic 必须保持可区分；
 - same endpoints 不意味着 same Relation assertion。
 
+**R2A / R2B 后续状态：** canonical Relation field inventory 已冻结为 `source`、`target`、`type`、`temporal`、`provenance`、`annotations`；canonical field names 不再属于 unresolved work。
+
 仍未解决：
 
 - exact normative relation vocabulary；
 - concrete relation type codes；
 - open vs closed vocabulary policy；
 - inverse relation conventions；
-- canonical field names；
+- causal status；
 - relation vocabulary serialization；
 - derived relation-strength artifact Schema；
 - metric / method representation；
-- JSON / DSL syntax。
+- JSON Schema / DSL syntax。
 
 ### OQ-009 — Note / Annotation 收敛
 
@@ -868,16 +870,20 @@ R1I 已解决：
 
 架构问题“是否统一到 Annotation semantics”已关闭。
 
-R2 / 后续 representation work 仍需决定：
+**R2A / R2B 后续状态：** Core Annotation canonical shape 已冻结：
 
-- concrete canonical annotation field names；
-- embedded vs list structure；
-- annotation cardinality；
-- optional author / generator representation；
-- concrete provenance attachment structure；
-- plain-text serialization；
+    Annotation {
+        text : Text
+        provenance : Provenance[1..*]
+    }
+
+Annotation 为 embedded no-id object；Behavior / Preference / Relation 通过各自 `annotations` collections 持有 Annotation；每个 Annotation own required provenance。Concrete canonical field names、embedded ownership、annotation cardinality 与 concrete provenance attachment 已不再属于 unresolved work。
+
+当前 remaining work 仅包括：
+
 - JSON Schema；
-- DSL syntax。
+- DSL syntax；
+- future optional author-specific extension（仅在出现真实需求时）。
 
 ### OQ-010 — Pathway runtime boundary
 

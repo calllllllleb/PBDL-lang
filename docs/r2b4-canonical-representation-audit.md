@@ -16,7 +16,7 @@ R2B4没有发现需要重开 frozen business architecture 的 mechanical contrad
 
 | Type | Required fields / value | Optional fields | Collections | Union discriminator | Identity-bearing | Provenance-bearing | Equality / ordering |
 |---|---|---|---|---|---|---|---|
-| PBDLDocument | pbdl_version, subjects, behaviors, preferences, relations | — | 5 root arrays | — | document root | via contained assertions | root order-insensitive |
+| PBDLDocument | pbdl_version, subjects, behaviors, preferences, relations | — | 4 root arrays | — | document root | via contained assertions | root order-insensitive |
 | Subject | id | — | — | — | YES | NO | identity=id; info=id |
 | Behavior | id, subject, type, provenance | executor, temporal | frequencies, contexts, factors, annotations | — | YES | YES | identity=id; full fields |
 | Preference | id, subject, category, value, provenance | temporal | contexts, annotations | — | YES | YES | identity=id; full fields |
@@ -88,8 +88,10 @@ R2B4没有发现需要重开 frozen business architecture 的 mechanical contrad
 | optional field absent | canonical absence |
 | optional field = null | invalid |
 | required root array empty | behaviors/preferences/relations allowed; subjects not allowed |
-| optional ordinary array empty | semantic-valid but normalization-required → omit |
-| local provenance=[] | invalid; omission means inheritance |
+| optional collection cardinality 0..* and empty | MAY be semantic-valid but normalization-required → omit |
+| optional collection cardinality 1..* and present empty | invalid |
+| days_of_week=[] | invalid; field is 1..* when present |
+| local provenance=[] | invalid; field is 1..* when present and omission means inheritance |
 | required provenance=[] | invalid |
 
 ## 3. Union discrimination
@@ -110,7 +112,7 @@ Closed field sets prevent one object matching multiple variants.
 | Collection | Ordered? | Duplicate policy |
 |---|---|---|
 | subjects/behaviors/preferences | no | duplicate id invalid |
-| relations | no | only full-equal duplicate normalized |
+| relations | no | full-equal duplicate normalized under Relation.type directionality contract; symmetric swapped endpoints may dedup only when applicable vocabulary contract establishes symmetry |
 | provenance collections | no | full-equal duplicate normalized |
 | evidence | no | full-equal duplicate normalized |
 | annotations | no | full-equal duplicate normalized |
@@ -125,10 +127,11 @@ Closed field sets prevent one object matching multiple variants.
 ### Relation
 
 Content:
-- source
-- target
 - type
 - temporal content
+- directional type: source==source and target==target
+- symmetric / non-directional type: endpoint pair compared unordered
+- directionality contract unavailable: do not guess, swap, normalize, or deduplicate swapped endpoints
 
 Full:
 - content
@@ -136,7 +139,7 @@ Full:
 - relation provenance
 - annotations
 
-Same endpoints alone never equal.
+Same endpoints alone never equal. Symmetric swapped-endpoint equality / dedup requires the applicable Relation vocabulary contract and is owned by VOCABULARY + SEMANTIC + NORMALIZATION.
 
 ### TemporalExtent
 
@@ -171,7 +174,7 @@ Same id can have different state.
 
 - same version
 - order-insensitive one-to-one full entity match
-- order-insensitive full Relation match
+- order-insensitive full Relation match using type-contract-aware Relation equality
 
 ## 6. Fallback purity
 
@@ -217,12 +220,15 @@ Context text does not hide workflow/frequency/temporal/reason semantics.
 | unit preservation when source provides unit | SEMANTIC |
 | redundant local provenance | NORMALIZATION |
 | full-equal duplicate removal | NORMALIZATION |
-| optional empty collection omission | NORMALIZATION |
+| optional 0..* empty collection omission | NORMALIZATION |
+| optional 1..* collection present empty | STRUCTURAL / SEMANTIC invalid |
+| symmetric Relation endpoint-order equality | VOCABULARY + SEMANTIC |
+| symmetric swapped-endpoint dedup | VOCABULARY + SEMANTIC + NORMALIZATION |
 
 ## 8. Canonical-valid vs normal form
 
 Normalization-required:
-- ordinary optional []
+- ordinary optional 0..* []
 - full-equal duplicate
 - redundant explicit inherited provenance
 - future JSON lexical/order normalization
@@ -230,8 +236,9 @@ Normalization-required:
 Invalid:
 - null
 - unknown field
+- days_of_week=[]
 - local provenance=[]
-- required collection empty
+- collection whose declared cardinality requires >=1 item is empty
 - invalid union
 - duplicate EntityId
 - violated conditional invariant
@@ -276,4 +283,5 @@ R2C must leave:
 - references to resolver
 - semantic meaning to validator/canonicalizer
 - duplicate/equality normalization to canonicalizer
-- relation code contracts to Relation Vocabulary phase
+- relation code contracts, including directional vs symmetric endpoint semantics, to Relation Vocabulary phase
+- generic JSON Schema must not decide symmetric swapped-endpoint equality/dedup

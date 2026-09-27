@@ -2268,7 +2268,7 @@ R2B2 不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语 code。
 73. Annotation 与 structured canonical semantics 冲突时，conforming consumer **MUST NOT** 仅根据 Annotation 静默覆盖 structured semantics。
 74. PBDL-Core **MUST NOT** 要求 hidden chain-of-thought、private model reasoning trace、internal scratchpad 或 hidden model deliberation 作为规范性 Annotation 内容。
 
-跨文档 identity / reference protocol、Context / BehaviorFactor internals、communication vocabulary、Constraint / Barrier model、normative relation vocabulary / codes / inverse conventions、derived relation-strength artifact Schema、JSON Schema、DSL syntax 与术语词表仍为 **TODO**。
+跨文档 identity / reference protocol、communication vocabulary、Constraint / Barrier model、normative relation vocabulary / codes / inverse conventions、derived relation-strength artifact Schema、JSON Schema、DSL syntax 与术语词表仍为 **TODO**。
 
 ## 17. Canonical Object Model
 
@@ -3411,7 +3411,12 @@ Required root collection **MUST NOT** 通过 omission 表示 empty。
 
 除 required root collections 与 required provenance collections 外，optional collection 没有 item 时，canonical normal form **MUST omit the field**。
 
-因此以下形式不是 canonical normal form：
+Optional collection 的 empty 规则由该 field 自身声明的 cardinality 控制：
+
+- cardinality = 0..* 且 field present but [] → **MAY** 是 semantic-valid、normalization-required representation；canonical normal form **MUST** omit the field；
+- cardinality = 1..* 且 field present but [] → **INVALID**，不得通过 omission 修复 cardinality violation。
+
+因此以下 ordinary 0..* optional collections 显式为空时不是 canonical normal form，并 **MAY** normalize 为 omission：
 
     annotations: []
     contexts: []
@@ -3419,11 +3424,14 @@ Required root collection **MUST NOT** 通过 omission 表示 empty。
     frequencies: []
     evidence: []
     times: []
+
+`days_of_week` 已由 §8.3.5 冻结为 present 时至少 1 item，因此：
+
     days_of_week: []
 
-对于普通 optional collection，空数组可以是 semantic-valid input 的 normalization-required form；canonicalizer **MUST** normalize 为 field omission。
+是 **INVALID**，不是 normalization-required form。
 
-但是 local qualifier `provenance: []` 是特殊情况：它不是普通 empty normalization。由于 omission 表示 provenance inheritance，explicit empty local provenance **MUST** 视为 semantic-invalid，而 **MUST NOT** normalize 为 omission。
+Local qualifier `provenance` 同样是 present 时 1..*；此外 omission 具有 provenance inheritance semantics。因此 explicit local `provenance: []` **MUST** 视为 semantic-invalid，而 **MUST NOT** normalize 为 omission。
 
 任何 required `provenance : Provenance[1..*]` collection 为空同样 invalid。
 
@@ -3530,7 +3538,7 @@ Canonical collection classes：
 | Collection class | Examples | Semantic order | Duplicate policy |
 |---|---|---|---|
 | Identity-bearing entity collections | subjects / behaviors / preferences | none | duplicate EntityId invalid；shared namespace uniqueness applies |
-| Relation collection | relations | none | full-equal duplicate normalization-required；same endpoints alone never dedup |
+| Relation collection | relations | none | full-equal duplicate normalization-required；Relation equality受 type directionality contract控制；same endpoints alone never dedup |
 | Assertion provenance collections | Behavior/Preference/Relation/Annotation.provenance | none | full-equal duplicate normalization-required |
 | Evidence collections | Provenance.evidence | none | full-equal duplicate normalization-required |
 | Annotation collections | Behavior/Preference/Relation.annotations | none | full-equal duplicate normalization-required |
@@ -3541,6 +3549,8 @@ Canonical collection classes：
 “Normalization-required” 表示 semantic content 可以理解，但 canonical normal form **MUST** 移除 redundant full-equal duplicate。
 
 不同 provenance、不同 Annotation provenance、不同 factor role/direction、不同 temporal provenance、不同 Relation type/temporal/provenance 等导致 full canonical information不同的 items **MUST NOT** 被机械 dedup。
+
+Relation duplicate detection **MUST** 使用 §22.9.3 的 type-contract-aware equality。对于 symmetric / non-directional relation type，swapped endpoints 可以在其余 assertion content / full information 相等时构成 duplicate；对于 directional type，endpoint ordering具有语义。若 applicable Relation.type directionality contract unavailable，canonicalizer **MUST NOT** 自行猜测、swap、normalize 或据此 deduplicate endpoints。
 
 ### 22.9 Equality layers
 
@@ -3583,12 +3593,31 @@ Annotation equality **MUST NOT** 改变其 owner entity identity。
 
 #### 22.9.3 Relation equality
 
-Relation **assertion content equality** 要求：
+Relation **assertion content equality** 受 applicable `Relation.type` semantic contract 控制。
 
-- source CoreEntityRef equal；
-- target CoreEntityRef equal；
+共同要求：
+
 - type 使用 Coding canonical-information equality；
 - temporal 同时缺失，或 TemporalExtent content-equal。
+
+Endpoint equality要求：
+
+A. 对 **directional relation type**：
+
+- source CoreEntityRef 必须与 source equal；
+- target CoreEntityRef 必须与 target equal；
+- endpoint ordering具有语义。
+
+B. 对 **symmetric / non-directional relation type**：
+
+- source / target endpoint pair按 unordered pair比较；
+- 在同一 symmetric / non-directional relation type 下，A-B 与 B-A **MUST NOT** 仅因 endpoint ordering不同而被判为不同 semantic relation meaning。
+
+C. 若 applicable `Relation.type` directionality contract unavailable：
+
+- equality engine / canonicalizer **MUST NOT** 自行猜测 relation directionality；
+- **MUST NOT** 自行 swap 或 normalize endpoints；
+- swapped-endpoint equality / dedup **MUST** 等待 applicable Relation vocabulary contract。
 
 Relation **full canonical-information equality** 要求：
 
@@ -3602,7 +3631,8 @@ Relation **full canonical-information equality** 要求：
 - same endpoints **MUST NOT** 自动等于 same Relation；
 - annotation-only difference 可以造成 full canonical information不同，但 **MUST NOT** 创建 Core identity；
 - collection position **MUST NOT** 作为 Relation identity；
-- full-equal Relation duplicate属于 normalization-required representation redundancy。
+- full-equal Relation duplicate属于 normalization-required representation redundancy；
+- symmetric swapped-endpoint equality / dedup同时依赖 **VOCABULARY + SEMANTIC + NORMALIZATION**，generic structural Schema **MUST NOT** 自行决定。
 
 #### 22.9.4 References and actors
 
@@ -3654,7 +3684,7 @@ PBDLDocument canonical-information equality要求：
 2. subjects collections order-insensitive、可一一匹配 canonical-information-equal Subject；
 3. behaviors collections按 EntityId一一匹配且 canonical-information-equal；
 4. preferences collections按 EntityId一一匹配且 canonical-information-equal；
-5. relations collections order-insensitive、可一一匹配 full-equal Relation。
+5. relations collections order-insensitive、可一一匹配按 §22.9.3 applicable Relation.type semantic contract判定的 full-equal Relation；symmetric / non-directional type 的 swapped endpoints **MUST NOT** 仅因 ordering不同导致 document inequality。
 
 Root array position **MUST NOT** 影响 document semantic equality。
 
@@ -3689,7 +3719,7 @@ Semantic-valid，并已执行当前规范要求的 semantic normalization：
 - JSON `null`；
 - unknown Core field；
 - explicit local `provenance: []`；
-- required collection为空；
+- declared cardinality要求至少 1 item 的 collection为空（例如 `subjects: []`、required/local `provenance: []`）；required root `behaviors` / `preferences` / `relations` 可合法为 `[]`，但 **MUST NOT** omitted；
 - invalid union discriminator；
 - duplicate EntityId；
 - violated conditional invariant。
@@ -3774,7 +3804,8 @@ Factor role 与 direction也 **MUST NOT** 隐藏在 factor text里而省略 requ
 | CoreEntityRef resolves exactly one Behavior/Preference | REFERENCE |
 | ActorRef = ref XOR kind variant | STRUCTURAL |
 | Optional Core field uses omission; null forbidden | STRUCTURAL |
-| Optional empty collection omitted in normal form | NORMALIZATION |
+| Optional collection cardinality 0..* and present empty => omit in normal form | NORMALIZATION |
+| Optional collection cardinality 1..* and present empty => invalid | STRUCTURAL / SEMANTIC |
 | Local provenance present => non-empty | STRUCTURAL / SEMANTIC |
 | DIRECT => source required | STRUCTURAL conditional |
 | INFERRED => generator required | STRUCTURAL conditional |
@@ -3800,6 +3831,8 @@ Factor role 与 direction也 **MUST NOT** 隐藏在 factor text里而省略 requ
 | Context vs Factor classification follows source semantics | SEMANTIC |
 | Relation.type Coding structure | STRUCTURAL |
 | Relation.type endpoint-role / directionality / causal contract | VOCABULARY + SEMANTIC |
+| Relation equality for directional vs symmetric endpoint ordering | VOCABULARY + SEMANTIC |
+| Symmetric swapped-endpoint duplicate removal | VOCABULARY + SEMANTIC + NORMALIZATION |
 | Full-equal embedded/no-id duplicate => deduplicate normal form | NORMALIZATION |
 | Unknown Core property | STRUCTURAL invalid |
 | Text fallback cross-dimension leakage | SEMANTIC canonicalization |
@@ -3821,9 +3854,12 @@ Generic JSON Schema **MUST NOT** 被要求独立决定某 relation code：
 - 允许哪些 endpoint role / kind；
 - 是否 directional / symmetric；
 - inverse convention；
-- causal semantic status。
+- causal semantic status；
+- swapped endpoints 是否 assertion-content equal 或可 deduplicate。
 
-这些属于 dedicated **Relation Vocabulary phase + semantic validation**。
+Relation equality / swapped-endpoint dedup 在 symmetric / non-directional case 属于 **VOCABULARY + SEMANTIC + NORMALIZATION**。Generic R2C JSON Schema **MUST NOT** 自行判断 symmetric relation，也 **MUST NOT** 自行 swap / normalize endpoints。
+
+这些属于 dedicated **Relation Vocabulary phase + semantic validation + canonical normalization**。
 
 R2B4 不设计具体 relation codes。
 
