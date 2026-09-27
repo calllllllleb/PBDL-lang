@@ -532,7 +532,11 @@ R2A 新冻结：
 
 - Behavior / Preference / Relation 使用 `provenance : Provenance[1..*]`；
 - Provenance 为 embedded、non-identity canonical structure；
-- Provenance 最小 ownership 包括 derivation、source?、generator?、time?、evidence?、confidence?；
+- Provenance 最小 canonical ownership 包括 derivation、source?、generator?、evidence?、confidence?；
+- R2A final 不具有 generic top-level provenance time；
+- provenance-related time 的 concrete ownership 延后到 R2B：
+  - source / reporting / recording / observation related time → SourceDescriptor / Evidence；
+  - extraction / generation related time → GeneratorDescriptor；
 - Evidence canonical ownership 为 optional `Provenance.evidence[0..*]`；
 - 不建立 document-level Evidence pool 或 Evidence identity。
 
