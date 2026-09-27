@@ -1032,7 +1032,7 @@ ContextValue 只包含：
 | C6 stopped medication while traveling | Context when only co-occurrence is supported |
 | C7 owner {P1,P2}, Context only P1 | local provenance required |
 | C8 complete applicable provenance same as owner | local provenance omitted canonical form |
-| C9 only free-text “在家里比较规律” | TextContextValue fidelity fallback |
+| C9 mixed free-text “在家里比较规律” | 若 source semantics 可可靠分解：“在家里” → Context；“比较规律” → BehaviorFrequency；不能结构化的剩余 wording → Evidence / Annotation；整句不得作为单一 Context machine value |
 | C10 traveling + workday + family support | multiple Context items coexist；collection order no priority |
 
 ### 理由
@@ -1162,3 +1162,157 @@ BehaviorFactor 的职责是 Behavior-local non-Core factor。
 Context 表达 situation qualification；BehaviorFactor 表达 factor-role semantics。
 
 Lexical concept 本身不能证明 reason / causality。分类必须依据 source assertion 的 semantic relation，而不是单词。
+
+## DR-053 — Canonical absence uses omission; Core has no semantic null
+
+### 决策
+
+Optional field absence 用 field omission 表示。
+
+当前 Core 没有任何 type 定义 JSON null 为 semantic value，因此 canonical `field:null` invalid。
+
+Required root arrays 保持显式；普通 optional collection empty 是 normalization-required，normal form省略；local `provenance:[]` 因 omission具有 inheritance语义而直接 invalid。
+
+### 理由
+
+如果 omission、null、empty collection并存，会产生多种等价或含糊 representation。
+
+单一 omission rule让 R2C Schema 与 canonicalizer边界清楚，同时保留 root required-array decision。
+
+## DR-054 — Canonical Core objects use closed field sets
+
+### 决策
+
+所有 concrete Core objects / embedded structured objects使用 closed field set。
+
+Unknown property、legacy alias、typo field均不是 canonical Core。
+
+Future extension必须有显式机制；arbitrary unknown property不是 extension。
+
+### 理由
+
+JSON Schema前如果不冻结 closed/open policy，legacy fields如 `weight`、`confidence_score`、`behavior_type` 可以静默与 canonical ownership并存，从而重新制造 dual semantics。
+
+## DR-055 — Semantic strings and numbers use cross-type consistency rules
+
+### 决策
+
+Generic non-empty identifier/code/locator/metric/version strings必须包含至少一个 non-Unicode-White_Space code point；不自动 trim / case-fold / Unicode-normalize。
+
+Numeric equality使用 exact mathematical value，不依赖 JSON lexical spelling；`1`、`1.0`、`1e0` numeric-semantic equal，`-0` 与 `0` equal。
+
+不使用 fuzzy tolerance。
+
+### 理由
+
+“non-empty”如果允许 whitespace-only，会让 locator / metric / code等字段形式存在而实质为空。
+
+数值 lexical spelling属于 serializer层；混入 semantic equality会造成 Confidence / Rate / PreferenceValue之间不一致。
+
+## DR-056 — Identity, content equality, and full canonical-information equality are distinct
+
+### 决策
+
+R2B4统一区分：
+
+- identity equality；
+- semantic content equality；
+- full canonical-information equality。
+
+Entity id相同不代表 state相同。
+
+Relation无 id，因此使用 assertion content equality + full canonical-information equality。
+
+TemporalExtent、Annotation、Context、BehaviorFactor、BehaviorFrequency等 embedded structures按需要区分 content与full equality。
+
+### 理由
+
+Diff、dedup、normalization与reference identity是不同问题。
+
+把它们压成一个“equals”会导致 annotation/provenance变化错误地创建 identity，或反过来丢失 canonical information。
+
+## DR-057 — Duplicate handling follows identity and full canonical information
+
+### 决策
+
+Identity-bearing root entities通过 EntityId uniqueness禁止 duplicate identity。
+
+No-id / embedded collections只有在 item **full canonical-information equal** 时才视为 representation redundancy并 canonical-dedup。
+
+Relation same endpoints绝不足以 dedup。
+
+days_of_week duplicate token继续 invalid，而不是 normalization-only。
+
+### 理由
+
+机械“所有数组去重”会错误合并不同 provenance / temporal / role assertions。
+
+完全不去重又会允许同一无身份 assertion无限重复形成多种 canonical forms。
+
+Full equality提供安全边界。
+
+## DR-058 — Semantic ordering is frozen; byte-level deterministic JSON is separate
+
+### 决策
+
+当前 Core collection order与 JSON object member order不具有 semantic meaning。
+
+R2B4不冻结 byte-identical JSON排序 / number spelling / pretty-print profile。
+
+Future deterministic serialization profile必须建立在R2B4 equality与normal form上，不能反向改变 semantics。
+
+### 理由
+
+现在可以明确比较 semantic canonical documents，而无需先设计一个可能循环依赖“canonical JSON bytes”的 structural sort key。
+
+这也允许 R2C JSON Schema立即施工。
+
+## DR-059 — Text fidelity fallback cannot cross semantic dimensions
+
+### 决策
+
+TextPreferenceValue、TextContextValue、TextFactorValue只能承载各自 tagged type的 semantic dimension。
+
+Mixed wording如果能够可靠分解，应分别进入对应 canonical fields；无法结构化部分可由 Evidence / Annotation保真。
+
+Text fallback不能藏 Relation link、frequency、temporal extent、workflow status、reason role或CoreEntityRef。
+
+### 理由
+
+Text fallback的目的是真实信息保真，不是让已冻结 structured semantics重新变成 NLP-only blob。
+
+这修正 DR-047 C9 对“在家里比较规律”的潜在误读。
+
+## DR-060 — Semantic validity and canonical normal form are different states
+
+### 决策
+
+R2B4区分：
+
+- semantic-valid；
+- normalization-required；
+- canonical normal form。
+
+Redundant full-equal duplicate、普通 optional empty array、redundant explicit inherited provenance属于 normalization-required。
+
+null、unknown field、empty local provenance、invalid union、duplicate EntityId等属于 invalid。
+
+### 理由
+
+后续 Schema不应被迫承担 semantic equivalence / dedup；canonicalizer也不应把真正 invalid structure当作“随便修一下”。
+
+## DR-061 — R2C Schema owns structure, not references, normalization, or vocabulary semantics
+
+### 决策
+
+R2B4建立 STRUCTURAL / REFERENCE / SEMANTIC / NORMALIZATION / VOCABULARY 五类 invariant。
+
+R2C JSON Schema只承担 structural层及可直接表达的 conditional structure。
+
+Reference resolution、semantic source meaning、normalization equality与 Relation vocabulary contract由各自层负责。
+
+### 理由
+
+如果 generic JSON Schema试图承担 document-wide reference、source semantic interpretation或 relation vocabulary directionality，它会变成不可维护的伪语义执行器。
+
+明确分层使 R2C可以施工而不重新猜 Core shape。

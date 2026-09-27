@@ -1216,7 +1216,7 @@ R2B3B 不定义 fuzzy factor similarity。
 仍为 **TODO** 的主要是：
 
 - 类型兼容 / conversion rules；
-- canonical global sorting key；
+- future byte-level deterministic serialization profile；
 - JSON Schema 与 DSL syntax。
 
 ## 9. Patient / Subject
@@ -2318,7 +2318,7 @@ subjects、behaviors、preferences、relations 的 collection position **MUST NO
 - ranking；
 - semantic identity。
 
-Canonical serialization sorting 规则仍未冻结。
+R2B4 冻结：上述 root collections 在 semantic model 中均为 order-insensitive。Byte-level deterministic array sorting **不属于**当前 semantic canonical model；它被明确分配给 future deterministic serialization profile，见 §22.11。
 
 ### 17.3 Subject
 
@@ -2486,6 +2486,8 @@ R1D 允许 relative time 带 anchor 保留或在 canonicalization 前解析。R2
 原始 relative phrase **MAY** 通过 Evidence / Annotation 保真保存，但 **MUST NOT** 被当作 structured TemporalExtent。
 
 当 Interval 同时具有 start 与 end 时，ordering validity 使用 §8.2.6 的保守 comparability rule。
+
+R2B4 在 §22.9.1 将 TemporalExtent content equality / full canonical-information equality 提升为全局统一规则。
 
 #### 17.4.4 Behavior.frequencies
 
@@ -2658,6 +2660,8 @@ Cross-version lifecycle tracking、audit handles 与 Core 外 derived artifacts 
 Canonical Relation **MUST NOT** 具有 weight field、nested Relation endpoint 或独立 inferred direction field。
 
 Relation directionality 继续由 Relation.type semantic contract 决定。
+
+R2B4 在 §22.9.3 冻结 Relation assertion content equality 与 full canonical-information equality；该规则 **MUST NOT** 被解释为给 Relation 增加 identity。
 
 Legacy Relation.weight 继续属于 derived / analytic artifact，不进入 canonical Core Relation。
 
@@ -3011,6 +3015,8 @@ Annotation owner 的 provenance **MUST NOT** 在 source / generator / derivation
 
 Annotation.text 使用 §8.1 Text contract。
 
+R2B4 在 §22.9.2 冻结 Annotation content equality 与 full canonical-information equality；Annotation 文本或 provenance 差异 **MUST NOT** 改变 owner entity identity。
+
 ### 17.10 Nested qualifier provenance inheritance and equality
 
 Owner-level provenance 描述 owner assertion。
@@ -3068,7 +3074,7 @@ SourceDescriptor / GeneratorDescriptor / Evidence 的 semantic equality 基于�
 - Evidence collections 采用 order-insensitive comparison；
 - Confidence 按 §17.8.6.2 比较。
 
-Collection comparison 使用 one-to-one semantic matching；collection order **MUST NOT** 产生 semantic difference。R2B1 不冻结 duplicate elimination semantics。
+Collection comparison 使用 one-to-one semantic matching；collection order **MUST NOT** 产生 semantic difference。R2B4 在 §22.8 冻结 full-equal provenance / evidence / time-event duplicate 的 canonical normalization policy。
 
 #### 17.10.4 Canonical normalization
 
@@ -3089,7 +3095,7 @@ Provenance collection ordering **MUST NOT** 产生 semantic difference。
 
 R2B2 已冻结 TemporalValue、Text 与 Confidence equality，因此 Provenance semantic equality 不再因这些 leaf types 未定而阻塞。
 
-R2B2 仍 **不冻结** canonical provenance sorting key。Deterministic global serialization ordering 留待 final serialization round；semantic equality 继续按上述 order-insensitive rules 判断。
+R2B4 冻结：Provenance semantic equality 与 canonical normalization 均为 order-insensitive；byte-level deterministic ordering 不属于 semantic meaning，明确留给 future deterministic serialization profile，见 §22.11。
 
 #### 17.10.5 Scope
 
@@ -3221,11 +3227,17 @@ R2B3B 不进入这些后续工作。
 
 R2B3B 不定义 Validator implementation。
 
+R2B4 在 §22.13 进一步把当前 conditional invariants 分类为 STRUCTURAL / REFERENCE / SEMANTIC / NORMALIZATION / VOCABULARY，以便 R2C JSON Schema 与后续 resolver / semantic validator 分工；R2B4 仍不实现 Validator。
+
 ## 19. 扩展机制
 
 扩展机制尚未设计。
 
 Treatment Pathway **MAY** 在未来作为扩展或上层应用进行设计，但当前不属于 PBDL-Core。
+
+R2B4 冻结 Core boundary：canonical Core object 使用 closed field set。未定义 / unknown field **MUST NOT** 被静默接受为 Core field，也 **MUST NOT** 仅因为名称看似扩展字段就获得 extension semantics。
+
+Future extension **MUST** 使用未来显式定义的 extension mechanism；任意 unknown JSON property 不是 extension mechanism。
 
 **TODO：** 定义扩展命名空间或标识方式、兼容规则、扩展发现机制，以及扩展如何参与 Core 校验且不得静默改写 Core 语义。
 
@@ -3247,6 +3259,617 @@ Treatment Pathway **MAY** 在未来作为扩展或上层应用进行设计，但
 兼容性模型尚未冻结。
 
 **TODO：** 定义语言版本声明、向后 / 向前兼容预期、弃用策略和扩展兼容规则。
+
+## 22. R2B4 Canonical Representation & Serialization Semantics
+
+R2B4 是进入 JSON Schema 前的 final canonical representation audit。
+
+本节不新增业务实体，不改变 R1 / R2B1–R2B3B 已冻结的业务语义，而是冻结所有 concrete Core types 在 canonical JSON-ready semantic model 中的 representation、equality、normalization 与 ordering boundary。
+
+### 22.1 Canonical type inventory
+
+当前 concrete canonical type inventory 至少包括以下 named types / token families：
+
+**Root / Core objects**
+
+- PBDLDocument；
+- Subject；
+- Behavior；
+- Preference；
+- Relation；
+- Annotation。
+
+**Primitive / lexical / terminology types**
+
+- VersionToken；
+- EntityId；
+- Text；
+- TemporalValue；
+- Coding；
+- Confidence。
+
+**References / actors**
+
+- SubjectRef；
+- CoreEntityRef；
+- ExternalActorRef；
+- ActorRef。
+
+**Provenance**
+
+- DerivationKind；
+- SourceKind；
+- SourceDescriptor；
+- SourceTimeEvent；
+- GeneratorKind；
+- GeneratorDescriptor；
+- GeneratorTimeEvent；
+- EvidenceKind；
+- Evidence；
+- Provenance。
+
+**Temporal**
+
+- Instant；
+- Interval；
+- TemporalExtent。
+
+**Frequency**
+
+- QuantitativeFrequencyPrecision；
+- FrequencyPeriod；
+- Weekday；
+- DayPart；
+- QualitativeFrequencyToken；
+- ObservedCountFrequency；
+- RateFrequency；
+- RecurrenceFrequency；
+- QualitativeFrequency；
+- BehaviorFrequency。
+
+**Preference values**
+
+- CodedPreferenceValue；
+- TextPreferenceValue；
+- BooleanPreferenceValue；
+- NumericPreferenceValue；
+- PreferenceValue。
+
+**Context**
+
+- CodedContextValue；
+- TextContextValue；
+- ContextValue；
+- Context。
+
+**Behavior factors**
+
+- FactorRole；
+- FactorDirection；
+- CodedFactorValue；
+- TextFactorValue；
+- FactorValue；
+- BehaviorFactor。
+
+这些类型的 business fields / token sets 继续由 §§8、15、17 冻结。R2B4 **MUST NOT** 通过 representation rules 增加新的业务 field 或 variant。
+
+### 22.2 Canonical Core object closure and unknown fields
+
+每个 concrete canonical Core object / embedded structured object 的 field set 是 **closed**。
+
+对象只允许其 concrete type 定义的 fields。
+
+Unknown field、拼写错误 field、历史 legacy alias 或尚未定义的 extension property **MUST NOT** 出现在 canonical Core representation。
+
+例如以下 legacy fields **MUST NOT** 与 canonical fields 平行存在：
+
+- `behavior_type`；
+- `temporal_scope`；
+- `evidence_source`；
+- `communication_status`；
+- `reasoning_note`；
+- `risk_tag`；
+- `validity_flag`；
+- `preference_category`；
+- `preference_value`；
+- `source_type`；
+- `confidence_score`；
+- `associated_behavior`；
+- `note`；
+- `preference_conflict_flag`；
+- Relation.`weight`。
+
+Unknown property **MUST NOT** 被当作 extension。Future extension 必须使用 §19 所述未来显式 extension mechanism。
+
+### 22.3 Absence, null, and empty collections
+
+#### 22.3.1 Optional scalar / object fields
+
+Canonical Core representation 使用 **field omission** 表示 optional field absence。
+
+当前没有任何 frozen Core type 定义 JSON `null` 为 semantic value。
+
+因此 canonical Core representation 中：
+
+- optional field absent → 表示未提供该 optional semantic value；
+- `field: null` → **INVALID canonical Core representation**。
+
+该规则适用于 executor、temporal、source、generator、confidence、locator、display、identifier、version、role、unit、window、day_part、times_per_period、start / end 等所有 optional fields。
+
+#### 22.3.2 Required root collections
+
+PBDLDocument root collections 保持 R2A 决策：
+
+- `subjects` REQUIRED，至少 1 item；
+- `behaviors` REQUIRED，可为空；
+- `preferences` REQUIRED，可为空；
+- `relations` REQUIRED，可为空。
+
+Required root collection **MUST NOT** 通过 omission 表示 empty。
+
+#### 22.3.3 Optional collections
+
+除 required root collections 与 required provenance collections 外，optional collection 没有 item 时，canonical normal form **MUST omit the field**。
+
+因此以下形式不是 canonical normal form：
+
+    annotations: []
+    contexts: []
+    factors: []
+    frequencies: []
+    evidence: []
+    times: []
+    days_of_week: []
+
+对于普通 optional collection，空数组可以是 semantic-valid input 的 normalization-required form；canonicalizer **MUST** normalize 为 field omission。
+
+但是 local qualifier `provenance: []` 是特殊情况：它不是普通 empty normalization。由于 omission 表示 provenance inheritance，explicit empty local provenance **MUST** 视为 semantic-invalid，而 **MUST NOT** normalize 为 omission。
+
+任何 required `provenance : Provenance[1..*]` collection 为空同样 invalid。
+
+### 22.4 Tagged-union mechanical discrimination
+
+Canonical union **MUST** 能机械、唯一判定 variant；implementation **MUST NOT** “猜哪个更像”。
+
+| Union | Variant | Required discriminator | Allowed variant fields |
+|---|---|---|---|
+| ActorRef | SubjectRef | `ref` | `ref` only |
+| ActorRef | ExternalActorRef | `kind` = person/device/software/other | `kind, external_id?, display?, role?` |
+| TemporalExtent | Instant | `kind="instant"` | `kind, at, provenance?` |
+| TemporalExtent | Interval | `kind="interval"` | `kind, start?, end?, provenance?` |
+| BehaviorFrequency | ObservedCountFrequency | `kind="observed_count"` | `kind,count,precision,window?,provenance?` |
+| BehaviorFrequency | RateFrequency | `kind="rate"` | `kind,value,period,precision,provenance?` |
+| BehaviorFrequency | RecurrenceFrequency | `kind="recurrence"` | `kind,period,precision,times_per_period?,days_of_week?,day_part?,provenance?` |
+| BehaviorFrequency | QualitativeFrequency | `kind="qualitative"` | `kind,value,provenance?` |
+| PreferenceValue | CodedPreferenceValue | `kind="coded"` | `kind,value` |
+| PreferenceValue | TextPreferenceValue | `kind="text"` | `kind,value` |
+| PreferenceValue | BooleanPreferenceValue | `kind="boolean"` | `kind,value` |
+| PreferenceValue | NumericPreferenceValue | `kind="number"` | `kind,operator,value,unit?` |
+| ContextValue | CodedContextValue | `kind="coded"` | `kind,value` |
+| ContextValue | TextContextValue | `kind="text"` | `kind,value` |
+| FactorValue | CodedFactorValue | `kind="coded"` | `kind,value` |
+| FactorValue | TextFactorValue | `kind="text"` | `kind,value` |
+
+由于 §22.2 closed-field rule，variant 之外的 conflicting fields invalid。
+
+ActorRef 使用 structural discrimination：`ref` 与 `kind` **MUST NOT** 共存。
+
+其他 unions 使用 required `kind` token；missing / unknown discriminator invalid。
+
+### 22.5 Canonical field-name policy
+
+Canonical field names 只使用当前 concrete object inventories 中冻结的名称。
+
+同一语义 **MUST NOT** 同时存在 canonical name 与 legacy alias。
+
+Canonicalizer 可以在 Core 外 legacy-input layer 识别历史字段，但形成 canonical Core object 后必须只保留 canonical ownership field。
+
+R2B4 不设计 legacy parser。
+
+### 22.6 Generic semantic-string consistency
+
+Text、EntityId、VersionToken、TemporalValue 与 enum/token fields继续使用各自专门 lexical contract。
+
+对于其他当前被定义为 non-empty `string` 且承担 identifier / locator / code / metric / version semantics 的 fields，R2B4 冻结统一 **semantic string** rule：
+
+> value **MUST** 包含至少一个不属于 Unicode White_Space property 的 code point。
+
+该规则至少适用于：
+
+- Coding.system；
+- Coding.code；
+- Coding.version（存在时）；
+- ExternalActorRef.external_id.system；
+- ExternalActorRef.external_id.value；
+- SourceDescriptor.locator；
+- GeneratorDescriptor.identifier；
+- GeneratorDescriptor.version；
+- Evidence.locator；
+- Confidence.metric。
+
+因此 whitespace-only string（例如 `"   "`）**MUST NOT** 满足这些 field 的 non-empty requirement。
+
+Canonicalization **MUST NOT** 自动 trim、case-fold 或 Unicode-normalize这些 strings。
+
+这些 semantic strings 的 equality 使用 exact Unicode scalar-value sequence equality；specialized type 已定义更严格 lexical/equality rule 时，以 specialized rule 为准。
+
+### 22.7 Numeric consistency
+
+Canonical numeric semantics 使用数学数值，而不保存 JSON number 的 lexical spelling。
+
+因此在允许 number 的 field 中：
+
+    1
+    1.0
+    1e0
+
+表示相同 mathematical number。
+
+`-0` 与 `0` 在 numeric semantic equality 中相等。
+
+R2B4 **MUST NOT** 使用 fuzzy tolerance、implicit rounding tolerance 或 statistical equivalence。
+
+Field-specific constraints继续保持：
+
+- FrequencyPeriod.value：mathematical integer，>= 1；
+- ObservedCountFrequency.count：mathematical integer，>= 0；
+- RecurrenceFrequency.times_per_period：存在时 mathematical integer，>= 1；
+- RateFrequency.value：finite number，>= 0；
+- NumericPreferenceValue.value：finite number；
+- Confidence.value / scale.min / scale.max：finite number；
+- Confidence.scale 存在时 min < max 且 value ∈ [min,max]。
+
+JSON lexical number normalization / deterministic spelling属于 future deterministic serialization profile，不属于 semantic equality。
+
+### 22.8 Collection semantics and duplicate policy
+
+当前 Core array / collection 的 order **MUST NOT** 隐式表达 priority、identity、causality、temporal order、rank 或 lifecycle。
+
+Canonical collection classes：
+
+| Collection class | Examples | Semantic order | Duplicate policy |
+|---|---|---|---|
+| Identity-bearing entity collections | subjects / behaviors / preferences | none | duplicate EntityId invalid；shared namespace uniqueness applies |
+| Relation collection | relations | none | full-equal duplicate normalization-required；same endpoints alone never dedup |
+| Assertion provenance collections | Behavior/Preference/Relation/Annotation.provenance | none | full-equal duplicate normalization-required |
+| Evidence collections | Provenance.evidence | none | full-equal duplicate normalization-required |
+| Annotation collections | Behavior/Preference/Relation.annotations | none | full-equal duplicate normalization-required |
+| Nested qualifier collections | frequencies / contexts / factors | none | full qualifier-equal duplicate normalization-required |
+| Token-set collection | RecurrenceFrequency.days_of_week | none | duplicate token invalid |
+| Time-event collections | SourceDescriptor.times / GeneratorDescriptor.times / Evidence.times | none | full-equal event duplicate normalization-required |
+
+“Normalization-required” 表示 semantic content 可以理解，但 canonical normal form **MUST** 移除 redundant full-equal duplicate。
+
+不同 provenance、不同 Annotation provenance、不同 factor role/direction、不同 temporal provenance、不同 Relation type/temporal/provenance 等导致 full canonical information不同的 items **MUST NOT** 被机械 dedup。
+
+### 22.9 Equality layers
+
+R2B4 明确区分：
+
+- identity equality；
+- semantic content equality；
+- full canonical-information equality。
+
+不同类型只使用对其有意义的层级。
+
+#### 22.9.1 TemporalExtent equality
+
+TemporalExtent **content equality**：
+
+- kind 必须相同；
+- Instant.at 使用 TemporalValue canonical information equality；
+- Interval.start / end 必须分别同时缺失，或分别 TemporalValue-equal；
+- provenance 不参与 content equality。
+
+TemporalExtent **full canonical-information equality**：
+
+1. content equality；
+2. effective provenance set semantic-equivalent。
+
+Effective provenance 依 §17.10，在 owner environment 中计算。
+
+#### 22.9.2 Annotation equality
+
+Annotation **content equality** 只比较 text，使用 §8.1 Text equality。
+
+Annotation **full canonical-information equality** 要求：
+
+1. text content equality；
+2. Annotation.provenance collections semantic-equivalent。
+
+Full-equal Annotation duplicate normalization-required。
+
+Annotation equality **MUST NOT** 改变其 owner entity identity。
+
+#### 22.9.3 Relation equality
+
+Relation **assertion content equality** 要求：
+
+- source CoreEntityRef equal；
+- target CoreEntityRef equal；
+- type 使用 Coding canonical-information equality；
+- temporal 同时缺失，或 TemporalExtent content-equal。
+
+Relation **full canonical-information equality** 要求：
+
+1. relation assertion content equality；
+2. temporal 同时缺失，或 TemporalExtent full-equal；
+3. Relation.provenance collections semantic-equivalent；
+4. annotations collections按 Annotation full equality semantic-equivalent。
+
+因此：
+
+- same endpoints **MUST NOT** 自动等于 same Relation；
+- annotation-only difference 可以造成 full canonical information不同，但 **MUST NOT** 创建 Core identity；
+- collection position **MUST NOT** 作为 Relation identity；
+- full-equal Relation duplicate属于 normalization-required representation redundancy。
+
+#### 22.9.4 References and actors
+
+SubjectRef / CoreEntityRef equality：`ref` EntityId exact equal。
+
+ExternalActorRef canonical-information equality要求：
+
+- kind token相同；
+- external_id 同时缺失，或 system + value exact semantic-string equal；
+- display 同时缺失，或 Text-equal；
+- role 同时缺失，或 Text-equal。
+
+ActorRef equality要求相同 variant，再使用对应 variant equality。
+
+#### 22.9.5 Provenance descriptors
+
+SourceTimeEvent / GeneratorTimeEvent equality要求 role token相同且 at TemporalValue-equal。
+
+SourceDescriptor equality要求 kind、locator、display与 times collection分别 semantic-equivalent。
+
+GeneratorDescriptor equality要求 kind、identifier、version、display与 times collection分别 semantic-equivalent。
+
+Evidence equality要求 kind、content、locator与 times collection分别 semantic-equivalent。
+
+Provenance equality继续使用 §17.10.3，并受 §22.8 duplicate normalization policy约束。
+
+#### 22.9.6 Entity identity vs canonical-information equality
+
+Subject / Behavior / Preference 的 **identity equality** 仅由 document-local EntityId 决定。
+
+Same id **MUST NOT** 自动表示 complete canonical information相同。
+
+Subject 当前只有 id，因此同一 id 的 canonical-information state在当前模型中相同。
+
+Behavior canonical-information equality要求 id、subject、type、executor、temporal、frequencies、contexts、factors、provenance、annotations 全部按对应 full equality / collection equality semantic-equivalent。
+
+Preference canonical-information equality要求 id、subject、category、value、temporal、contexts、provenance、annotations 全部 semantic-equivalent。
+
+因此 Behavior `id=b1` 但 temporal / provenance / annotation 等发生改变：
+
+- same entity identity；
+- different canonical-information state。
+
+#### 22.9.7 PBDLDocument equality
+
+PBDLDocument canonical-information equality要求：
+
+1. pbdl_version equal；
+2. subjects collections order-insensitive、可一一匹配 canonical-information-equal Subject；
+3. behaviors collections按 EntityId一一匹配且 canonical-information-equal；
+4. preferences collections按 EntityId一一匹配且 canonical-information-equal；
+5. relations collections order-insensitive、可一一匹配 full-equal Relation。
+
+Root array position **MUST NOT** 影响 document semantic equality。
+
+### 22.10 Canonical-valid, normalization-required, and canonical normal form
+
+R2B4 冻结三个层次：
+
+**Semantic-valid representation**
+
+满足业务 / reference / provenance / lexical semantics，但可能包含纯 representation redundancy。
+
+**Normalization-required representation**
+
+Semantic-valid，但尚未达到 canonical normal form。例如：
+
+- optional普通 collection显式 `[]`；
+- full-equal no-id duplicate；
+- explicit local provenance 与 inherited complete set完全等价；
+- future serializer尚未统一 JSON number spelling / array ordering。
+
+**Canonical normal form**
+
+Semantic-valid，并已执行当前规范要求的 semantic normalization：
+
+- optional empty collections omitted；
+- redundant local provenance omitted；
+- full-equal redundant no-id / embedded items deduplicated；
+- legacy aliases / unknown fields不存在。
+
+以下不是 normalization-only，而是 invalid：
+
+- JSON `null`；
+- unknown Core field；
+- explicit local `provenance: []`；
+- required collection为空；
+- invalid union discriminator；
+- duplicate EntityId；
+- violated conditional invariant。
+
+PBDL canonical document **MUST** 达到 canonical normal form。
+
+R2B4 的 normal form是 **semantic canonical normal form**；它不承诺 byte-identical JSON。
+
+### 22.11 Ordering and deterministic serialization boundary
+
+R2B4 选择：
+
+> **Semantic model order-insensitive；byte-level deterministic JSON serialization deferred。**
+
+JSON object member order **MUST NOT** 具有 semantic meaning。
+
+当前 Core 中声明为 order-insensitive 的 arrays，无论输入 / serializer 如何排列，只要 item collections按本节 equality相同，就具有相同 semantic canonical information。
+
+R2B4 **不冻结**：
+
+- JSON object key order；
+- entity array sort order；
+- no-id complex object structural sort key；
+- JSON number lexical spelling；
+- whitespace / pretty-print profile。
+
+Future deterministic serialization profile **MUST** 基于当前 equality / normal-form rules定义 byte-level ordering，而 **MUST NOT** 反过来改变 PBDL semantics。
+
+因此 R2C JSON Schema **MAY** 在没有 byte-level canonical JSON profile的情况下开始施工。
+
+### 22.12 Cross-type Text fallback purity
+
+TextPreferenceValue、TextContextValue、TextFactorValue 都是 fidelity fallback，但每个 Text fallback只能承载其 tagged type自己的 semantic dimension。
+
+#### Preference Text
+
+TextPreferenceValue **MUST NOT** 偷偷承载：
+
+- associated Behavior / CoreEntityRef link；
+- Relation semantics；
+- unsupported preference-strength numeric semantics；
+-其他已经有独立 canonical ownership 的 machine semantics。
+
+#### Context Text
+
+TextContextValue **MUST NOT** 偷偷承载：
+
+- BehaviorFrequency；
+- TemporalExtent；
+- BehaviorFactor reason / antecedent / explanation semantics；
+- workflow status；
+- Relation semantics。
+
+例如 source wording：
+
+> “在家里比较规律”
+
+如果 source semantics可以可靠分解：
+
+- “在家里” → Context；
+- “比较规律” → BehaviorFrequency；
+
+canonicalizer **SHOULD** 分别结构化。
+
+如果某一部分无法可靠结构化，可用 Evidence / Annotation保留原始完整 wording；**MUST NOT** 把 mixed-dimension整句作为单一 Context machine value。
+
+#### Factor Text
+
+TextFactorValue **MUST NOT** 偷偷承载已有 Core Behavior / Preference identity；该关系使用 Relation。
+
+Factor role 与 direction也 **MUST NOT** 隐藏在 factor text里而省略 required structured fields。
+
+### 22.13 Canonical conditional invariant table
+
+| Invariant | Class |
+|---|---|
+| PBDLDocument.subjects >= 1 | STRUCTURAL |
+| behaviors/preferences/relations root arrays required, may be empty | STRUCTURAL |
+| Subject/Behavior/Preference EntityId shared namespace unique | REFERENCE / SEMANTIC |
+| EntityId lexical profile | STRUCTURAL |
+| SubjectRef resolves exactly one Subject | REFERENCE |
+| CoreEntityRef resolves exactly one Behavior/Preference | REFERENCE |
+| ActorRef = ref XOR kind variant | STRUCTURAL |
+| Optional Core field uses omission; null forbidden | STRUCTURAL |
+| Optional empty collection omitted in normal form | NORMALIZATION |
+| Local provenance present => non-empty | STRUCTURAL / SEMANTIC |
+| DIRECT => source required | STRUCTURAL conditional |
+| INFERRED => generator required | STRUCTURAL conditional |
+| UNDETERMINED => source required | STRUCTURAL conditional |
+| UNDETERMINED => source.locator OR material-bearing Evidence | STRUCTURAL + SEMANTIC |
+| Evidence => content OR locator | STRUCTURAL conditional |
+| Interval => start OR end | STRUCTURAL conditional |
+| Comparable Interval with start definitely later than end => invalid | SEMANTIC |
+| Confidence.scale present => min < max and value in range | SEMANTIC / numeric |
+| FrequencyPeriod.value integer >= 1 | STRUCTURAL |
+| ObservedCount.count integer >= 0 | STRUCTURAL |
+| Rate.value finite >= 0 and period required | STRUCTURAL |
+| Recurrence.times_per_period present => integer >= 1 | STRUCTURAL |
+| days_of_week present => non-empty, no duplicate, period=1 week, times_per_period absent | STRUCTURAL + SEMANTIC |
+| NumericPreference.value finite and operator allowed | STRUCTURAL |
+| Dimensioned NumericPreference source unit provided => preserve unit | SEMANTIC canonicalization |
+| Context/Factor/Frequency/Temporal local provenance differs/subset => explicit local provenance | SEMANTIC |
+| Redundant local provenance == inherited full set => omit | NORMALIZATION |
+| reported_reason => direction=factor_to_behavior | STRUCTURAL conditional |
+| antecedent => direction=factor_to_behavior | STRUCTURAL conditional |
+| explanatory factor inferred from model beyond source => effective derivation=inferred | SEMANTIC |
+| BehaviorFactor existing Core entity relationship => Relation | SEMANTIC |
+| Context vs Factor classification follows source semantics | SEMANTIC |
+| Relation.type Coding structure | STRUCTURAL |
+| Relation.type endpoint-role / directionality / causal contract | VOCABULARY + SEMANTIC |
+| Full-equal embedded/no-id duplicate => deduplicate normal form | NORMALIZATION |
+| Unknown Core property | STRUCTURAL invalid |
+| Text fallback cross-dimension leakage | SEMANTIC canonicalization |
+
+Classification meanings：
+
+- **STRUCTURAL**：R2C JSON Schema 可以直接表达全部或主要结构；
+- **REFERENCE**：需要 document-wide resolver；
+- **SEMANTIC**：需要 semantic validator / canonicalizer读取跨字段或 source-supported meaning；
+- **NORMALIZATION**：canonicalizer responsibility，不应假装由 Schema解决 semantic equivalence；
+- **VOCABULARY**：依赖 terminology / relation vocabulary contract。
+
+### 22.14 Relation vocabulary owner boundary
+
+Relation.type 已是 Coding，因此 R2C JSON Schema可以验证 Coding structure。
+
+Generic JSON Schema **MUST NOT** 被要求独立决定某 relation code：
+
+- 允许哪些 endpoint role / kind；
+- 是否 directional / symmetric；
+- inverse convention；
+- causal semantic status。
+
+这些属于 dedicated **Relation Vocabulary phase + semantic validation**。
+
+R2B4 不设计具体 relation codes。
+
+### 22.15 R2C JSON Schema prerequisites
+
+R2B4 关闭后，R2C JSON Schema可以在不重新猜 Core object shape的前提下开始，因为以下 prerequisite已冻结：
+
+1. 所有 concrete Core object fields / required / optional / cardinality；
+2. EntityId / Text / TemporalValue / Coding / numeric基础 lexical constraints；
+3. closed Core field policy；
+4. absent / null policy；
+5. required-root vs optional collection empty policy；
+6. union discriminator与 variant field closure；
+7. structural conditional invariants；
+8. reference fields与 reference-resolution owner；
+9. semantic vs full equality；
+10. duplicate / normalization boundary；
+11. order-insensitive semantic collection rules；
+12. unknown-field / extension boundary；
+13. Schema无法承担的 semantic / normalization / vocabulary obligations已有明确分类。
+
+R2C **MUST NOT** 尝试用 generic JSON Schema替代：
+
+- reference resolution；
+- semantic source-support判断；
+- Context vs Factor canonicalization；
+- provenance semantic equality；
+- redundant provenance / duplicate semantic normalization；
+- Relation vocabulary endpoint/direction/causal validation。
+
+### 22.16 Remaining post-R2B representation debt
+
+R2B4 后仍然存在、但不阻塞 R2C structural Schema的明确 debt：
+
+- future deterministic byte-level JSON serialization profile；
+- canonical array sorting / object key ordering profile；
+- generic type conversion / coercion policy；
+- shared Provenance identity / pool（若未来出现真实 need）；
+- provenance chaining；
+- dedicated Relation vocabulary / inverse conventions / causal status definitions；
+- extension mechanism；
+- DSL / EBNF syntax；
+- parser / validator / runtime implementation；
+- normative examples。
+
+这些项目都已有 owner boundary；它们 **MUST NOT** 被解释为当前 Core object shape仍未确定。
 
 ## 附录 A：语法
 

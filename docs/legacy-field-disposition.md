@@ -637,13 +637,25 @@ R2B2 已解决：
 
 OQ-003 仍保持 partially resolved。
 
+**R2B4 状态：further partially resolved by R2B4。**
+
+R2B4 已冻结：
+
+- Provenance / Evidence / SourceTimeEvent / GeneratorTimeEvent collection semantic ordering 为 order-insensitive；
+- full-equal Provenance / Evidence / time-event duplicate 属于 normalization redundancy；
+- optional empty evidence / times collection 的 canonical normal form 为 field omission；
+- Provenance semantic equality 已可用于 nested inheritance、dedup 与 document comparison；
+- semantic canonical ordering 与 byte-level deterministic serialization 明确分层。
+
+OQ-003 仍保持 partially resolved。
+
 真实 remaining items：
 
 - shared provenance identity / pool；
 - provenance chaining；
-- final JSON Schema / serialization；
-- canonical deterministic sorting / remaining provenance serialization integration；
-- 其他尚未冻结的 provenance integration details。
+- R2C final JSON Schema integration；
+- future byte-level deterministic serialization profile；
+- 其他尚未冻结的 provenance extension / chaining integration details。
 
 ### OQ-004 — Confidence 的语义归属
 
