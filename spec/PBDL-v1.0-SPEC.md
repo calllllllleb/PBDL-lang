@@ -22,7 +22,8 @@ PBDL-Core 只负责描述与表示。
 - Behavior（行为）
 - Preference（偏好）
 - Context（上下文）
-- Evidence / Provenance（证据 / 来源追踪）
+- Provenance（来源追踪）
+- Evidence（证据）
 - Relation（关系）
 
 在本轮重新设计中，Behavior 与 Preference 是主要研究对象。
@@ -94,7 +95,7 @@ R1B 冻结以下四类核心语义对象的最小边界：
 - Preference：对某个 Subject 已表达或已推断的倾向、选择、优先级、厌恶或偏好的表示。
 - Relation：在允许的端点类型之间显式表达语义联系的 Core 构造。
 
-Context 与 Evidence / Provenance 仍属于 PBDL-Core 的候选概念，但其详细结构与 identity 要求不在 R1B 冻结。
+Context 仍属于 PBDL-Core 的候选概念。Provenance 与 Evidence 的最小语义边界已由 R1C 冻结为两个相关但不等价的概念；其具体字段、Schema、identity / reference 细节仍未完全冻结。
 
 ### 5.1 文档与 Subject 绑定
 
@@ -371,6 +372,14 @@ R1C 不冻结 Evidence 的具体字段、identity requirement、嵌套方式或�
 
 R1C 冻结至少两类必须可区分的 provenance semantics。具体 surface enum 名称本轮不冻结。
 
+DIRECT / INFERRED 判断的是**结构化 semantic content 相对于来源内容的产生方式**，而不是处理链路中是否使用了某种模型或工具。
+
+使用 LLM、NLP 或其他工具进行 extraction、parsing、normalization、terminology mapping 或 serialization transformation，本身 **MUST NOT** 自动使该信息成为 INFERRED。
+
+如果结构化语义忠实表示来源中已经明确报告、记录或观测到的内容，即使抽取或标准化过程由 LLM / NLP 完成，该信息仍 **MAY** 属于 DIRECT。
+
+只有当结构化 semantic content 超出来源直接表达、记录或观测的内容，并由模型、规则、分析过程或其他推导过程生成时，该信息才属于 INFERRED provenance semantics。
+
 #### DIRECT
 
 DIRECT 表示信息直接来自某个来源的报告、记录或观测，例如概念上的：
@@ -393,8 +402,8 @@ canonical semantic representation **MUST** 使下游能够区分 DIRECT 与 INFE
 
 对于 Preference：
 
-- 患者明确表达“我不想每天打针”可属于 DIRECT / expressed Preference；
-- 模型根据行为记录推断“患者可能偏好低治疗负担方案”属于 INFERRED Preference。
+- 来源明确表达“我不想每天打针”，LLM 仅将其结构化抽取为 injection aversion 时，仍可属于 DIRECT / expressed Preference；
+- 来源没有明确表达该偏好，而模型根据多项行为记录推断“患者可能偏好低治疗负担方案”时，属于 INFERRED Preference。
 
 即使两者最终具有相同的 preference category 或 preference value，其 provenance semantics 仍 **MUST** 可区分。
 
@@ -402,7 +411,9 @@ canonical semantic representation **MUST** 使下游能够区分 DIRECT 与 INFE
 
 如果多个来源支持的是同一项结构化语义，一个 Behavior / Preference **MAY** 关联多条 provenance。
 
-如果不同来源表达的 semantic content 实质不同或相互冲突，它们 **SHOULD** 保持为不同的 Behavior / Preference instances，而不是仅把不同来源合并进同一对象的 provenance 列表，从而掩盖语义冲突。
+如果不同来源表达的 semantic content 实质不同或相互冲突，canonical representation **MUST NOT** 通过 provenance 合并、对象折叠或其他方式丢失、掩盖或使这些冲突语义不可区分。
+
+默认情况下，这些冲突内容 **SHOULD** 保持为不同的 Behavior / Preference instances；未来若采用其他表示方式，也必须保持各项冲突语义可区分。
 
 例如：
 
@@ -534,10 +545,10 @@ R0 阶段不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语编�
 7. Behavior 与 Preference **MUST** 各自绑定到恰好一个 Subject。
 8. 每个 canonical Behavior **MUST** 实际具有至少一条 provenance linkage。
 9. 每个 canonical Preference **MUST** 实际具有至少一条 provenance linkage。
-10. canonical semantic representation **MUST** 能区分 DIRECT 与 INFERRED provenance semantics。
-11. INFERRED information **MUST NOT** 静默表示成 DIRECT/source-described information。
+10. canonical semantic representation **MUST** 能区分 DIRECT 与 INFERRED provenance semantics；该判断依据 semantic content 相对于来源内容是否经过推导，而不是处理链路中是否使用 LLM、NLP 或其他工具。
+11. 仅使用 LLM、NLP 或其他工具进行 extraction、parsing、normalization、terminology mapping 或 serialization transformation **MUST NOT** 自动使信息成为 INFERRED；INFERRED information **MUST NOT** 静默表示成 DIRECT/source-described information。
 12. 同一个 Behavior / Preference **MAY** 具有多条 provenance linkage，但多来源 **MUST NOT** 自动表示更高真值或可信度。
-13. 如果不同来源表达的 semantic content 实质不同或冲突，它们 **SHOULD** 保持为不同 Behavior / Preference instances；PBDL-Core 不自动裁决冲突。
+13. 如果不同来源表达的 semantic content 实质不同或冲突，canonical representation **MUST NOT** 通过 provenance 合并、对象折叠或其他方式丢失、掩盖或使冲突语义不可区分；默认 **SHOULD** 使用不同 Behavior / Preference instances。PBDL-Core 不自动裁决冲突。
 14. Provenance 与 Evidence **MUST NOT** 被当作完全同义概念。
 15. confidence **MUST NOT** 成为所有 Preference 的强制属性，DIRECT self-report **MUST NOT** 被迫赋予模型式 confidence。
 16. Provenance 在 R1C 中不要求独立 identity。

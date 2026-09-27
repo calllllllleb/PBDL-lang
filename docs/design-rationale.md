@@ -202,6 +202,8 @@ INFERRED **MUST NOT** 静默伪装成 DIRECT information。
 
 该区分必须由结构化 provenance semantics 表达，不能只靠自由文本 note 推测。
 
+DIRECT / INFERRED 判断依据的是结构化 semantic content 相对于来源内容是否经过推导，而不是处理链路中是否出现 LLM、NLP 或其他工具。使用这些工具做 extraction、parsing、normalization、terminology mapping 或 serialization transformation，本身不能自动把信息归为 INFERRED；如果结构化语义忠实表达来源已经明确报告、记录或观测到的内容，即使由 LLM / NLP 抽取，也仍可属于 DIRECT。只有当 semantic content 超出来源直接表达、记录或观测的内容并经推导产生时，才属于 INFERRED。
+
 ### 理由
 
 同一个 Preference category / value 或 Behavior semantic content 可能既来自患者直接表达，也可能来自模型推断。
@@ -218,7 +220,7 @@ INFERRED **MUST NOT** 静默伪装成 DIRECT information。
 
 同一个语义实例可以有多个 provenance records，但来源数量本身不构成真值权重。
 
-如果来源表达的 semantic content 实质不同或冲突，应优先保持为不同 Behavior / Preference instances，而不是把来源堆入同一对象并掩盖差异。
+如果来源表达的 semantic content 实质不同或冲突，规范化表示不得通过 provenance 合并、对象折叠或其他方式丢失、掩盖或使冲突语义不可区分。默认应优先保持为不同 Behavior / Preference instances；未来若采用其他表示方式，也必须保留冲突语义之间的可区分性。
 
 Provenance 与 Evidence 是相关但不同的概念：
 
