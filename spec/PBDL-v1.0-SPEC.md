@@ -1500,7 +1500,23 @@ executor 保留 R1B legacy executor semantic capability，并为 OPTIONAL ActorR
 
 executor 表示谁执行或参与 Behavior；它 **MUST NOT** 被等价为 Subject ownership。
 
-ActorRef concrete structure 留待 R2B。R2A 不新增 Participant entity、Participant identity namespace 或 Participant Relation endpoint。
+R2B0 冻结 ActorRef architecture：
+
+    ActorRef = SubjectRef | ExternalActorRef
+
+当 executor 就是当前 PBDL document 中的 Subject 时，canonical representation **MUST** 使用 SubjectRef。
+
+当 executor 是 caregiver、clinician、device、external software / system 或其他不是当前 Core Subject entity 的 actor 时，canonical representation **MAY** 使用 embedded ExternalActorRef。
+
+ExternalActorRef 是 non-identity-bearing embedded descriptor，不进入 Subject / Behavior / Preference document-local identity namespace，也不成为 Relation endpoint。
+
+ExternalActorRef 的 concrete leaf fields 留待 R2B，但其 representation **MUST** 能够表达 actor kind，并 **MAY** 在来源实际支持时表达 external identity 与 human-readable display / role。
+
+如果外部 actor 只有 human-readable role 而没有稳定 external identity，canonical representation **MUST NOT** 因重复 display / role 而宣称多个 Behavior 中描述的是同一个稳定 actor instance。
+
+如果来源提供稳定 external identity，该 identity **MAY** 用于表达跨多个 Behavior 的同一 external actor，而无需新增 Participant Core entity。
+
+R2B0 不新增 Actor / Participant entity、Participant identity namespace 或 Participant Relation endpoint。
 
 #### 17.4.3 Behavior.temporal and TemporalExtent
 
@@ -1677,6 +1693,14 @@ Canonical Relation field inventory：
 
 Relation 继续 **不要求 id field**。
 
+R2B0 relation-identity stress test 维持该决定：Core Relation 表达 semantic assertion，而不承诺跨文档版本的 stable lifecycle handle。
+
+同一 endpoint pair 上 type、temporal applicability 或 provenance semantics 不同的 Relation assertions 继续依其 canonical semantic content 保持可区分。
+
+仅 Annotation 发生变化 **MUST NOT** 被解释为 Relation 因此获得新的 Core identity；temporal / type / provenance semantic content 的变化则可以表示一个不同的 Relation assertion。
+
+Cross-version lifecycle tracking、audit handles 与 Core 外 derived artifacts 对特定 Relation assertion 的稳定定位属于 application / extension responsibility，**MUST NOT** 通过 collection position 冒充 Core identity。
+
 Canonical Relation **MUST NOT** 具有 weight field、nested Relation endpoint 或独立 inferred direction field。
 
 Relation directionality 继续由 Relation.type semantic contract 决定。
@@ -1718,15 +1742,40 @@ Provenance 默认 embedded / attached to the assertion it traces：
 
 #### 17.8.1 Provenance.derivation
 
-DerivationKind 的 canonical semantics 至少且当前仅区分 DIRECT 与 INFERRED。
+R2B0 stress test 冻结 DerivationKind 的三种 semantic states：
 
-R2A 冻结概念值 direct / inferred；其最终 lexical / enum serialization 由 R2B / Schema 工作确定。
+- DIRECT；
+- INFERRED；
+- UNDETERMINED。
+
+R2A/R1C 已冻结的 DIRECT / INFERRED distinction 保持不变。
 
 DIRECT 表示 structured semantic content 忠实来自 source-described / recorded / observed information。
 
 INFERRED 表示 semantic content 超出来源直接表达，由 human、model、rule 或 analytic process 产生推导。
 
+UNDETERMINED 仅表示：derivation metadata 对 canonicalizer / migration pipeline **真实不可用或无法可靠判定**。
+
+UNDETERMINED **MUST NOT** 被解释为：
+
+- partly direct / partly inferred；
+- consumer may treat as direct；
+- producer 可以在 derivation 已知时跳过分类；
+- 一种 confidence level。
+
+新生成 canonical PBDL 的 producer 如果拥有足够信息判定 DIRECT 或 INFERRED，**MUST NOT** 使用 UNDETERMINED 逃避分类。
+
+Legacy migration 在历史 metadata 不足、无法可靠重建 derivation 时 **MAY** 使用 UNDETERMINED，而 **MUST NOT** 猜测 DIRECT 或 INFERRED。
+
+UNDETERMINED provenance **MUST** 保持至少一条可追踪 source path；通常 source 可以是被迁移的 legacy record / source material。已知的 source、generator、Evidence information **MUST** 被保留，缺失 metadata **MUST NOT** 被发明。
+
+如果连最小可追踪 source path 都不存在，则 canonicalization **MUST** 报告 provenance requirement 无法满足，而 **MUST NOT** 仅靠 UNDETERMINED token 伪造 provenance completeness。
+
+UNDETERMINED 是 canonical-valid migration semantics，但 conforming validator **SHOULD** 产生 provenance-quality warning，以提示 derivation classification 未能恢复。
+
 Tool / generator 的存在本身 **MUST NOT** 决定 derivation。
+
+DerivationKind 的最终 lexical / enum serialization 留待 R2B。
 
 #### 17.8.2 Provenance.source and generator
 
@@ -1737,7 +1786,8 @@ generator 表示产生、抽取、转换或推导 semantic result 的 human / mo
 Conditional invariants：
 
 - DIRECT provenance **MUST** have source；
-- INFERRED provenance **MUST** have generator。
+- INFERRED provenance **MUST** have generator；
+- UNDETERMINED provenance **MUST** have source，以保留最小 traceable source path；generator **MAY** 存在，例如 migration / transformation process。
 
 一个 Provenance **MAY** 同时具有 source 与 generator。
 
@@ -1809,11 +1859,25 @@ Annotation owner 的 provenance **MUST NOT** 在 source / generator / derivation
 
 Text lexical constraints 留待 R2B。
 
-### 17.10 Nested qualifier provenance rule
+### 17.10 Nested qualifier provenance inheritance and equality
 
 Owner-level provenance 描述 owner assertion。
 
+R2B0 冻结 nested qualifier provenance 的 final representation rule。
+
+#### 17.10.1 Omitted local provenance
+
 Nested semantic qualifier **MAY** 省略 local provenance，**仅当**该 qualifier 的 provenance semantics 与 owner 对该 qualifier 的完整 applicable provenance set 一致。
+
+省略 local provenance 表示 **structural dynamic inheritance of the complete current applicable owner provenance set**。
+
+Canonical serialized document **MUST NOT** 依赖不可见历史 snapshot 来解释省略的 local provenance。
+
+因此，如果 owner provenance 从 {P1,P2} 修改为 {P1,P2,P3}，而 qualifier 继续省略 local provenance，则新 document 中该 qualifier 的 inherited provenance semantics 也变为 {P1,P2,P3}。
+
+如果 transformation 需要 qualifier 继续只由旧集合 {P1,P2} 支持，则在 owner 增加 P3 时 qualifier **MUST** materialize explicit local provenance。
+
+#### 17.10.2 Explicit local provenance
 
 如果 qualifier：
 
@@ -1822,19 +1886,38 @@ Nested semantic qualifier **MAY** 省略 local provenance，**仅当**该 qualif
 - derivation 不同；
 - 或仅由 owner provenance 的真子集支持；
 
-则该 qualifier **MUST** 携带 local provenance。
+则该 qualifier **MUST** 携带 explicit local provenance。
 
-省略 local provenance **MUST** 表示继承 owner assertion 对该 qualifier 完整适用的 provenance set，**MUST NOT** 表示“任选一条 owner provenance”或允许实现自行猜测支持 provenance。
+当 local provenance 存在时，它表示 qualifier 的 **complete provenance set**，并完全覆盖 inheritance。
 
-该规则至少适用于：
+Canonical model **MUST NOT** 支持 “inherit owner provenance + add local provenance” 的 additive hybrid merge semantics。
+
+#### 17.10.3 Semantic equality and canonical normalization
+
+Qualifier 省略 local provenance 并继承 owner set {P1...Pn}，与 qualifier 显式 local provenance 为同一个 complete semantic set {P1...Pn} 时，两者 **MUST** 被视为 semantic-equivalent。
+
+Canonical normalization **MUST** 省略与 inherited complete owner set semantic-equivalent 的 redundant explicit local provenance。
+
+因此：
+
+- owner {P1}, child omitted；
+- owner {P1}, child explicit {P1}；
+
+semantic-equivalent，且 canonical form 为 child omitted provenance。
+
+同理，owner {P1,P2}, child explicit {P1,P2} 必须 canonicalize 为 omitted local provenance。
+
+Explicit provenance collection ordering **MUST NOT** 产生 semantic difference。Concrete canonical serialization ordering / sorting 留待 R2B。
+
+#### 17.10.4 Scope
+
+上述 inheritance / override / normalization semantics 至少统一适用于：
 
 - BehaviorFrequency；
 - BehaviorFactor；
 - Context。
 
 Temporal local provenance 是否采用相同机制留待 R2B。
-
-Concrete serialization 与 inheritance validation 留待 R2B。
 
 Canonical model **MUST NOT** 用单一 owner-level DIRECT / INFERRED label 粗暴覆盖内部 derivation 实际不同的 nested qualifier，也 **MUST NOT** 把 owner 中不支持该 qualifier 的 provenance 错误继承给 qualifier。
 
@@ -1897,7 +1980,9 @@ R2A 冻结以下名称 / ownership，但其具体 leaf structure 或 serializati
 - EntityId；
 - SubjectRef；
 - CoreEntityRef；
-- ActorRef；
+- ActorRef union serialization；
+- ExternalActorRef concrete leaf fields；
+- DerivationKind lexical / enum serialization；
 - TemporalValue；
 - BehaviorFrequency；
 - Context；
@@ -1915,11 +2000,18 @@ R2A 明确停止在 field-level canonical model freeze，不在本轮设计 JSON
 
 ## 18. 校验模型
 
-校验架构尚未冻结。
+完整校验架构尚未冻结。
 
-未来的校验模型预计至少需要区分结构合法性与语义合法性，但具体分层、Validator 行为、严重级别模型和错误码仍为 **TODO**。
+未来的校验模型预计至少需要区分结构合法性与语义合法性，但具体分层、严重级别模型、错误码与实现仍为 **TODO**。
 
-R0 不定义 Validator 实现。
+R2B0 只冻结一个与 DerivationKind 直接相关的 validation consequence：
+
+- legacy migration 因历史 metadata 真实不足而使用 UNDETERMINED，可以形成 canonical-valid provenance；
+- conforming validator **SHOULD** 对 UNDETERMINED 产生 provenance-quality warning；
+- producer 已掌握足够 derivation information 却使用 UNDETERMINED，属于 semantic non-conformance；
+- 缺少最小 traceable source path 时，UNDETERMINED **MUST NOT** 使 provenance requirement 自动变为 satisfied。
+
+R2B0 不定义 Validator implementation。
 
 ## 19. 扩展机制
 

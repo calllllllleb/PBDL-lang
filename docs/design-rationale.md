@@ -607,3 +607,93 @@ Canonical output 不得同时保留 legacy field 与新 canonical mechanism。
 平行 canonical fields 会制造两个 source of truth，使 validator、round-trip、provenance、reference 与 downstream interoperability 无法判断哪一个字段具有权威语义。
 
 R2A 因而在 representation 层正式结束 legacy duplication；兼容性通过 migration mapping 保留，而不是通过 canonical duplication 保留。
+
+## DR-029 — Relation remains non-identity-bearing after lifecycle stress test
+
+### 决策
+
+R2B0 对同 endpoint 多 type、多 temporal、多 provenance、跨版本 annotation / temporal 修改、derived artifact targeting、audit log 与 diff matching 进行了 stress test。
+
+结论：**KEEP — Relation 继续不要求 document-local identity。**
+
+Core Relation 表达当前文档中的 semantic assertion，不承诺跨文档版本的 stable lifecycle handle。
+
+Type、temporal applicability 或 provenance semantics 不同的 Relation 可以依 canonical semantic content 保持区分。仅 annotation 改变不产生新的 Core identity；temporal / type / provenance semantic content 改变可以表示不同 assertion。
+
+需要跨版本稳定 handle、audit lifecycle 或 Core 外 derived artifact 稳定定位的场景属于 application / extension responsibility，不足以证明 Core 必须增加 Relation.id。
+
+### 理由
+
+给 Relation 增加 id 会扩张 R1B identity model、reference namespace 与 JSON Schema，但当前 Core 没有实体需要通过 Core reference 指向 Relation。
+
+A6/A7 所需要的是 application lifecycle / artifact targeting，而不是 Core graph endpoint identity。
+
+因此保持 no-id model 更简单，也符合“identity 由真实 Core reference need 驱动”的原则。
+
+## DR-030 — Nested provenance inheritance uses complete override and canonical omission
+
+### 决策
+
+Nested qualifier provenance 采用：
+
+- local provenance absent → inherit complete current applicable owner provenance set；
+- local provenance present → complete override；
+- no additive merge。
+
+Inheritance 是当前 canonical document 的 structural dynamic semantics，不是隐藏的 snapshot history。
+
+显式 local set 与 inherited complete set semantic-equivalent 时，canonical form 必须省略 redundant local provenance。
+
+Provenance collection ordering 不改变 semantic equality。
+
+### 理由
+
+如果 omitted provenance 采用不可见 snapshot semantics，serialized document 将无法自解释。
+
+如果允许 additive inheritance，consumer 无法仅从 local field 判断 complete provenance set，也会让 hashing、dedup、diff 与 round-trip 产生多种等价表示。
+
+Complete override + redundant omission 提供单一、可自解释的 canonical direction。
+
+## DR-031 — UNDETERMINED derivation preserves legacy uncertainty without weakening DIRECT / INFERRED
+
+### 决策
+
+DerivationKind 增加受限语义状态 UNDETERMINED。
+
+它只用于 derivation metadata 真实不可用或无法可靠重建的 migration / canonicalization 情况，不表示 mixed derivation，也不是 producer 的通用逃生口。
+
+如果 producer 已能判断 DIRECT / INFERRED，则不得使用 UNDETERMINED。
+
+UNDETERMINED 必须保留至少一条 traceable source path；validator 应产生 provenance-quality warning。
+
+### 理由
+
+强迫历史记录在证据不足时二选一 DIRECT / INFERRED 会制造虚假的确定性。
+
+反过来，让所有 producer 任意选择 unknown 又会削弱 R1C boundary。
+
+受限的 UNDETERMINED 允许诚实迁移 legacy uncertainty，同时保持 native documents 的分类责任。
+
+## DR-032 — ActorRef is SubjectRef or embedded ExternalActorRef
+
+### 决策
+
+ActorRef architecture 冻结为：
+
+    SubjectRef | ExternalActorRef
+
+当前 Subject 本人作为 executor 时使用 SubjectRef。
+
+Caregiver、clinician、device、external software / system 等非 Core Subject actor 使用 non-identity-bearing embedded ExternalActorRef。
+
+ExternalActorRef 必须能够表达 actor kind，并可在来源支持时表达 external identity 与 display / role；具体 leaf fields 留待 R2B。
+
+不新增 Actor / Participant Core entity。
+
+### 理由
+
+Stress cases 显示 executor 需要覆盖人、设备与软件系统，但没有 Core requirement 需要其他对象通过 PBDL Core reference 指向这些 actor。
+
+Embedded external descriptor 足以表达当前语义需求。
+
+当稳定 external id 存在时，可以重复表达同一 external actor；只有 role / display 时则不能假装具有稳定 instance identity。
