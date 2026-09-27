@@ -486,7 +486,7 @@ R1F 已解决：
 - Context 当前不要求独立 Core identity，也不加入 document-local identity namespace；
 - Context 不成为 Relation endpoint，R1B endpoint matrix 保持不变。
 
-仍未解决：
+R1F 后仍未解决：
 
 - final communication canonical fields；
 - communication vocabulary / enum；
@@ -497,6 +497,12 @@ R1F 已解决：
 - Context JSON / DSL syntax；
 - 是否未来建立 Communication extension；
 - Context 与 Constraint / Barrier 的最终结构关系。
+
+**R2A cross-reference：further partially resolved by R2A。**
+
+R2A 冻结 canonical Behavior **不重新引入** `communication_status`；legacy value 继续依 R1F 按 actual communication Behavior / Context / Provenance / workflow-application state 四路分流。
+
+Context / communication concrete vocabulary、actor / recipient / channel 与 Context internal structure 仍未具体化，因此 OQ-002 保持 partially resolved。
 
 ### OQ-003 — 统一 Evidence / Provenance
 
@@ -514,11 +520,23 @@ R1C 已冻结：
 - DIRECT 与 INFERRED provenance semantics 必须可区分；
 - Provenance 在 R1C 中暂不强制独立 identity。
 
-仍未解决：
+R1C 后仍未解决：
 
 - Provenance / Evidence 的具体字段与 Schema；
 - Source、Evidence、Provenance 的最终对象分层与 surface naming；
 - 多来源共享、provenance chaining 与 Evidence identity / reference 机制。
+
+**R2A 状态：further partially resolved by R2A。**
+
+R2A 新冻结：
+
+- Behavior / Preference / Relation 使用 `provenance : Provenance[1..*]`；
+- Provenance 为 embedded、non-identity canonical structure；
+- Provenance 最小 ownership 包括 derivation、source?、generator?、time?、evidence?、confidence?；
+- Evidence canonical ownership 为 optional `Provenance.evidence[0..*]`；
+- 不建立 document-level Evidence pool 或 Evidence identity。
+
+仍未解决 SourceDescriptor / GeneratorDescriptor / Evidence concrete fields、shared provenance、provenance chaining、JSON Schema 与 serialization。
 
 ### OQ-004 — Confidence 的语义归属
 
@@ -539,10 +557,21 @@ R1C 已冻结：
 - DIRECT self-report 不得被迫赋予模型式 confidence；
 - 若 confidence 用于 INFERRED information，未来必须能够说明生成者、衡量含义以及对应 inference process / model。
 
-仍未解决：
+R1C 后仍未解决：
 
 - confidence 最终归属于 Provenance、推断结果元数据还是其他结构；
 - 字段名、范围、算法、calibration 与 threshold。
+
+**R2A 状态：partially resolved by R2A。**
+
+R2A 冻结：
+
+- canonical confidence ownership → optional `Provenance.confidence`；
+- confidence 不作为 Preference intrinsic field；
+- DIRECT self-report 不被强制要求 confidence；
+- legacy `Preference.confidence_score` 不得在缺少 metric / generator / inference semantics 时无条件搬值。
+
+仍未解决 Confidence metric、scale、range、calibration、numeric representation 与 validation。
 
 ### OQ-005 — Trigger / Symptom 的非因果表达
 
@@ -566,7 +595,7 @@ R1E 已解决：
 - symptom-related information 不因 R1E 新增为一级 PBDL-Core entity；
 - R1B Relation endpoint matrix 保持不变。
 
-仍未解决：
+R1E 后仍未解决：
 
 - concrete canonical fields；
 - Context vs Behavior-local field vs extension 的最终结构归属；
@@ -574,6 +603,16 @@ R1E 已解决：
 - normative relation vocabulary；
 - concrete relation type names；
 - concrete JSON / DSL syntax。
+
+**R2A 状态：further partially resolved by R2A。**
+
+R2A 新冻结：
+
+- Behavior-local、非 Core-entity 的 trigger / symptom / reason association canonical ownership → `Behavior.factors : BehaviorFactor[0..*]`；
+- 如果两端均为允许的 Core entities，且表达 explicit typed entity relationship，仍使用 Relation；
+- BehaviorFactor 必须为 structured qualifier，并必须能够保留必要的 local provenance。
+
+仍未解决 BehaviorFactor concrete leaf fields、factor / symptom terminology、normative Relation vocabulary 与 JSON / DSL syntax。
 
 ### OQ-006 — Preference 到 Behavior 的关联方式
 

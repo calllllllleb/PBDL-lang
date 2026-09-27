@@ -95,7 +95,7 @@ R1B 冻结以下四类核心语义对象的最小边界：
 - Preference：对某个 Subject 已表达或已推断的倾向、选择、优先级、厌恶或偏好的表示。
 - Relation：在允许的端点类型之间显式表达语义联系的 Core 构造。
 
-Context 的最小语义职责已由 R1F 冻结：它用于对 Behavior / Preference 的语义解释提供情境性限定，但当前不作为具有独立 identity 的可引用一级 Core entity。其具体字段、cardinality、nesting、Schema 与 syntax 仍未冻结。Provenance 与 Evidence 的最小语义边界已由 R1C 冻结为两个相关但不等价的概念；其具体字段、Schema、identity / reference 细节仍未完全冻结。
+Context 的最小语义职责已由 R1F 冻结：它用于对 Behavior / Preference 的语义解释提供情境性限定，但当前不作为具有独立 identity 的可引用一级 Core entity。R2A 冻结 Context 的 canonical ownership 为 Behavior / Preference 下的 embedded qualifier；其 concrete internal fields、cardinality details、JSON Schema 与 syntax 仍留待 R2B / 后续工作。Provenance 与 Evidence 的最小语义边界已由 R1C 冻结；R2A 在 §17 冻结 Provenance 的 field inventory、attachment pattern 与 Evidence 的 embedded ownership，具体 SourceDescriptor / Evidence leaf structure 仍留待 R2B。
 
 ### 5.1 文档与 Subject 绑定
 
@@ -107,7 +107,7 @@ Context 的最小语义职责已由 R1F 冻结：它用于对 Behavior / Prefere
 
 每个 Preference **MUST** 绑定到且仅绑定到一个 Subject。
 
-本轮只冻结上述语义要求，不冻结具体字段名、文本语法或序列化形式。即使未来 surface syntax 在单 Subject 文档中允许省略显式主体引用，规范化语义仍 **MUST** 能够确定该 Behavior 或 Preference 唯一对应的 Subject。
+R1B 在此只冻结上述语义要求；R2A 已在 §17 冻结 canonical document / object field ownership。文本语法与具体 serialized reference representation 仍未冻结。即使未来 surface syntax 在单 Subject 文档中允许省略显式主体引用，canonical semantics 仍 **MUST** 能够确定该 Behavior 或 Preference 唯一对应的 Subject。
 
 ### 5.2 Core identity requirements
 
@@ -174,7 +174,7 @@ Subject 的角色是 Behavior / Preference 的稳定归属锚点，而不是 R1B
 
 R1B 不允许 Relation→Relation，是为了避免在没有明确使用场景时提前引入高阶关系、关系注释图或 reification 语义。
 
-精确的引用字段名、序列化结构与 DSL syntax 仍为 **TODO**。
+R2A 已在 §17 冻结 reference 的 canonical ownership field names 与 typed reference semantics；具体 serialized reference shape、EntityId / reference lexical form 与 DSL syntax 仍为 **TODO**。
 
 ### 5.7 Temporal semantics foundation
 
@@ -312,7 +312,7 @@ Annotation **MAY** 用于保留：
 - 来源中无法完全结构化、但值得保留的说明；
 - 人工或外部系统产生的解释性备注。
 
-R1I 不冻结 Annotation 的 concrete field name、object structure、cardinality、serialization 或 syntax。
+R1I 当时不冻结 Annotation representation；R2A 已在 §17 冻结 Annotation 的最小 canonical field inventory、attachment ownership 与 cardinality。Text lexical constraints、author / generator representation、JSON Schema、serialization 与 DSL syntax 仍留待后续。
 
 #### 5.8.1 Annotation is not a machine-semantics backdoor
 
@@ -437,18 +437,20 @@ R0 阶段的语法仍有意保持不完整。
 
 ## 8. 类型系统
 
-PBDL 类型系统尚未冻结。
+R2A 冻结 canonical object model 层面的最小结构类型、required / optional、cardinality、typed reference ownership 与 named nested semantic types。
 
-**TODO：**
+仍为 **TODO** 的主要是：
 
-- 基本类型
-- 结构化类型
-- 可选性
-- 多重性
-- 引用类型
-- 术语绑定值
-- 类型兼容规则
-- 是否存在类型转换以及相应规则
+- leaf lexical types；
+- EntityId / VersionToken lexical profile；
+- reference serialization；
+- TemporalValue representation；
+- PreferenceValue leaf type system；
+- Context / BehaviorFrequency / BehaviorFactor concrete internal fields；
+- SourceDescriptor / GeneratorDescriptor / Evidence / Confidence concrete structures；
+- Coding concrete JSON serialization；
+- 类型兼容与转换规则；
+- JSON Schema 与 DSL syntax。
 
 ## 9. Patient / Subject
 
@@ -470,7 +472,7 @@ Subject **MUST NOT** 被设计成完整电子病历 Patient resource 的替代�
 
 每个 Behavior 与 Preference **MUST** 能够解析到恰好一个 Subject。
 
-Subject 的具体字段、隐私表示、外部标识符绑定方式与 surface syntax 仍为 **TODO**。
+R2A 在 §17 冻结 canonical Subject 仅包含 required id 字段。EntityId lexical syntax、隐私表示、外部标识符绑定方式与 surface syntax 仍为 **TODO**。
 
 ## 10. Behavior
 
@@ -593,7 +595,7 @@ R1E 不新增 Symptom 一级 PBDL-Core entity，也不修改 R1B Relation endpoi
 
 R1E 不冻结新的 normative Relation vocabulary。`related_to`、`associated_with`、`reported_reason_for`、`precedes`、`follows` 等仍保持此前的非规范性候选状态，除非后续规范另行冻结。
 
-Behavior 的具体 trigger / symptom canonical fields、Context 归属、symptom terminology representation、Relation type names、JSON / DSL syntax 仍为 **TODO**。
+R2A 在 §17 将 Behavior-local、非 Core-entity 的 trigger / symptom / reason association ownership 冻结到 Behavior.factors；若两端均为允许的 Core entities 且表达 explicit typed entity relationship，仍使用 Relation。BehaviorFactor concrete fields、symptom terminology、Relation type vocabulary 与 JSON / DSL syntax 仍为 **TODO**。
 
 ### 10.4 Legacy `communication_status` compatibility
 
@@ -623,7 +625,7 @@ R1F 不冻结 communication behavior 的具体 behavior type、actor、recipient
 
 该类语义 **MUST** 与 actual communication Behavior、Provenance information、workflow / application state 保持可区分。
 
-R1F 不冻结其最终是否采用 Context、Behavior-local structured information、extension 或其他结构，也不冻结字段名或 enum。
+R1F 当时未冻结其最终 representation。R2A 在 §17 明确 canonical Behavior 不保留 communication_status 字段，并继续按 actual communication Behavior / Context / Provenance / workflow-application state 四路分流；Context / communication concrete vocabulary 仍未冻结。
 
 #### 10.4.3 Communication-related Provenance
 
@@ -782,7 +784,7 @@ Frequency assertion 继续继承该 Behavior 的 R1C source traceability；“�
 
 R1G 不把 recurrence semantic contract 扩张到 Preference 或 Relation。若未来出现明确需求，应另行审议。
 
-Behavior frequency / recurrence 的 concrete fields、period representation、day-of-week / time-of-day structure、rate model、duration arithmetic、recurrence serialization、JSON Schema 与 DSL syntax 仍为 **TODO**。
+R2A 在 §17 冻结 Behavior.frequencies : BehaviorFrequency[0..*] 作为独立 structured qualifier ownership，并允许必要时具有 local provenance。BehaviorFrequency concrete fields、period representation、day-of-week / time-of-day structure、rate model、duration arithmetic、recurrence serialization、JSON Schema 与 DSL syntax 仍为 **TODO**。
 
 ### 10.6 Legacy `reasoning_note` compatibility
 
@@ -798,7 +800,7 @@ Legacy `reasoning_note` **MUST NOT** 替代 structured Behavior semantics、mand
 
 R1I **MUST NOT** 被解释为要求保存模型 hidden chain-of-thought / private reasoning trace。
 
-R1I 不冻结最终字段名、嵌入方式、list structure 或 concrete provenance attachment structure。
+R1I 当时未冻结最终 representation。R2A 在 §17 冻结 legacy reasoning_note → Behavior.annotations，且 Annotation 采用 embedded lightweight structure；其更细的 serialization / author-generator representation 仍留待后续。
 
 ## 11. Preference
 
@@ -872,9 +874,9 @@ R1A 对 `Preference.note` 的 **KEEP_CORE** 结论保持不变。
 
 Preference Annotation **MUST NOT** 自动成为 Evidence 或 Provenance，也 **MUST NOT** 仅凭文本内容创建新的 Behavior、Preference、Relation、Context、causal claim 或 derived result。
 
-R1I 不要求最终 canonical representation 保留字段名 `note`；concrete Annotation field / structure 留待 R2。
+R2A 在 §17 冻结 legacy Preference.note → Preference.annotations，并冻结 Annotation 的最小 text + provenance field inventory；更细的 serialization / author-generator representation 仍留待后续。
 
-Preference 的具体字段、偏好类型词表、取值模型、confidence surface、Provenance / Evidence 的具体结构、frequency / recurrence 模型和语法仍为 **TODO**。
+R2A 在 §17 冻结 Preference 的 canonical field inventory；PreferenceValue leaf type system、偏好类型词表、Confidence concrete representation、SourceDescriptor / Evidence leaf structure、Preference recurrence model 与语法仍为 **TODO**。
 
 ## 12. Context
 
@@ -988,7 +990,7 @@ Provenance 说明“信息如何产生以及从哪里来”；Evidence 说明“
 
 Evidence **MAY** 作为 Provenance 指向或关联的支持材料，但二者 **MUST NOT** 被视为完全同义的概念。
 
-R1C 不冻结 Evidence 的具体字段、identity requirement、嵌套方式或外部引用格式。
+R2A 在 §17 冻结 Evidence 为 optional Provenance.evidence embedded collection，且不要求 Evidence identity；Evidence concrete fields 与外部引用格式仍留待 R2B。
 
 ### 13.2.1 Provenance time boundary
 
@@ -1062,7 +1064,7 @@ PBDL-Core 不负责自动裁决冲突，不在 R1C 设计 ConflictAnalysis。
 
 Behavior 与 Preference **SHOULD NOT** 长期维护两套彼此独立、语义重复的来源机制。
 
-R1C 不删除 `evidence_source` 或 `source_type` 的历史兼容意义，也不冻结它们最终对应的 surface field。
+R1C 不删除 `evidence_source` 或 `source_type` 的历史兼容意义。R2A 在 §17 冻结其 canonical ownership 统一进入 Provenance，而不继续保留 legacy surface fields。
 
 ### 13.6 Confidence boundary
 
@@ -1076,7 +1078,7 @@ DIRECT self-report **MUST NOT** 被迫赋予模型式 confidence。
 - confidence 衡量什么；
 - confidence 对应哪个 inference process / model / analytic process。
 
-R1C 不冻结 confidence 的字段名、数值范围、算法、校准方式或阈值。
+R2A 在 §17 冻结 canonical confidence ownership 为 optional Provenance.confidence；Confidence 的数值范围、metric、算法、校准方式、serialization 与 validation 仍未冻结。
 
 历史 `Preference.confidence_score` 因此继续保留为待细化概念，但不得被解释为所有 Preference 的必需 Core 属性。
 
@@ -1094,7 +1096,7 @@ R1H 新增 Relation assertion provenance requirement **MUST NOT** 被解释为 P
 
 当前仍没有 Core 场景要求其他实体通过稳定 Core reference 指向某个 Provenance instance。
 
-Shared provenance identity、provenance chaining、Evidence reference mechanics、具体 Schema、field names、嵌套结构与 serialization 仍为 **TODO**。
+R2A 在 §17 冻结 Provenance 的最小 field inventory 与 embedded attachment pattern，但 Shared provenance identity、provenance chaining、SourceDescriptor / GeneratorDescriptor / Evidence concrete fields、JSON Schema 与 serialization 仍为 **TODO**。
 
 ## 14. Relations
 
@@ -1106,7 +1108,7 @@ R1B 冻结 Relation 的最小语义组成：
 - target endpoint
 - relation type concept
 
-这些是抽象语义要求，不冻结具体 surface field name、JSON field 或 DSL syntax。
+R1H 在此冻结抽象语义要求；R2A 在 §17 进一步冻结 canonical Relation field names source / target / type / temporal / provenance / annotations。JSON Schema、serialized reference shape 与 DSL syntax 仍未冻结。
 
 Relation source 与 target **MUST** 是 entity references，并 **MUST** 分别解析到恰好一个允许的 endpoint entity。
 
@@ -1161,12 +1163,11 @@ Relation semantic temporal extent 与 Relation type ordering semantics 相互独
 
 仍为 **TODO** 的是：
 
-- concrete temporal fields；
-- temporal serialization；
+- TemporalValue lexical / precision / timezone details 与 temporal serialization；
 - normative relation vocabulary 与 concrete relation type codes；
 - inverse relation conventions；
 - derived relation-strength artifact structure；
-- canonical field names；
+- relation vocabulary serialization；
 - syntax。
 
 ### 14.5 Explicit Relation boundary
@@ -1202,7 +1203,7 @@ Relation type **MUST NOT** 只是一段自由文本说明、显示标签或 UI �
 
 A conforming canonical Relation **MUST** 使用其语义由适用 PBDL vocabulary / terminology binding 定义的 relation type。Undefined 或 free-text-only relation type semantics **MUST NOT** 被当作规范性 machine semantics。
 
-R1H 不冻结 complete relation vocabulary、concrete code、field name、serialization 或 open-vs-closed vocabulary policy，也不新增任何 concrete causal relation type。
+R1H 不冻结 complete relation vocabulary、concrete code、serialization 或 open-vs-closed vocabulary policy，也不新增任何 concrete causal relation type。R2A 在 §17 冻结 Relation 的 canonical structural field names，但不冻结 normative relation vocabulary。
 
 对于 directional relation type，交换 source / target 会改变或破坏该 relation type 所定义的语义。
 
@@ -1390,15 +1391,489 @@ R0 阶段不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语编�
 73. Annotation 与 structured canonical semantics 冲突时，conforming consumer **MUST NOT** 仅根据 Annotation 静默覆盖 structured semantics。
 74. PBDL-Core **MUST NOT** 要求 hidden chain-of-thought、private model reasoning trace、internal scratchpad 或 hidden model deliberation 作为规范性 Annotation 内容。
 
-跨文档 identity / reference protocol、Behavior frequency / recurrence concrete fields / serialization、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom concrete structure、symptom terminology representation、communication canonical fields / vocabulary、Context concrete fields / cardinality / nesting、Annotation concrete fields / structure / cardinality / serialization、Constraint / Barrier model、normative relation vocabulary / codes / inverse conventions、derived relation-strength artifact Schema、术语词表仍为 **TODO**。
+跨文档 identity / reference protocol、R2B deferred named types 的 concrete leaf structures / serialization、exact TemporalValue lexical profile、BehaviorFrequency / Context / BehaviorFactor internals、PreferenceValue leaf type system、SourceDescriptor / GeneratorDescriptor / Evidence / Confidence concrete structures、communication vocabulary、Constraint / Barrier model、normative relation vocabulary / codes / inverse conventions、derived relation-strength artifact Schema、JSON Schema、DSL syntax 与术语词表仍为 **TODO**。
 
-## 17. 规范化表示
+## 17. Canonical Object Model
 
-规范化表示目前尚未冻结到字段级。
+R2A 冻结 PBDL-Core 的 field-level canonical object model。
 
-[`schema/pbdl-v1.schema.json`](schema/pbdl-v1.schema.json) 当前只是合法的 JSON Schema Draft 2020-12 占位文件，**MUST NOT** 被解释为已经冻结最终 PBDL 字段模型。
+本节冻结 canonical object graph、field ownership、required / optional、cardinality、nested qualifier ownership、typed reference ownership、mandatory provenance attachment pattern 与 legacy-to-canonical representation ownership。
 
-**TODO：** 定义规范化序列化格式、必要时的排序或归一化规则、字段名称以及往返转换要求。
+本节 **不是** JSON serialization freeze、JSON Schema freeze、DSL syntax freeze 或 implementation specification。
+
+[schema/pbdl-v1.schema.json](schema/pbdl-v1.schema.json) 仍只是 JSON Schema Draft 2020-12 占位文件，R2A **MUST NOT** 被解释为已经修改或冻结该 Schema 文件。
+
+### 17.1 Canonical root: PBDLDocument
+
+Canonical root object 名称冻结为 PBDLDocument。
+
+| Field | Type | Cardinality | Requirement |
+|---|---|---:|---|
+| pbdl_version | VersionToken | 1 | REQUIRED |
+| subjects | Subject | 1..* | REQUIRED collection |
+| behaviors | Behavior | 0..* | REQUIRED collection, MAY be empty |
+| preferences | Preference | 0..* | REQUIRED collection, MAY be empty |
+| relations | Relation | 0..* | REQUIRED collection, MAY be empty |
+
+Canonical document **MUST** carry an explicit PBDL version declaration through pbdl_version。
+
+VersionToken 的 lexical syntax 与允许值集合留待 R2B / 后续版本工作。
+
+PBDLDocument **MUST NOT** 增加 document-level risk、recommendation、Pathway、workflow state、global annotation bag 或 global arbitrary metadata bag 作为 R2A Core fields。
+
+### 17.2 Root collection ordering
+
+subjects、behaviors、preferences、relations 的 collection position **MUST NOT** 承担 entity identity。
+
+除非未来某个 nested type 另行冻结 order semantics，canonical collection ordering **MUST NOT** 被下游解释为：
+
+- priority；
+- causality；
+- temporal order；
+- ranking；
+- semantic identity。
+
+Canonical serialization sorting 规则仍未冻结。
+
+### 17.3 Subject
+
+Canonical Subject field inventory：
+
+| Field | Type | Cardinality | Requirement |
+|---|---|---:|---|
+| id | EntityId | 1 | REQUIRED |
+
+R2A 不给 Subject 增加 name、age、sex、address、phone、完整 demographics、完整 EHR record、annotations、provenance、context 或 workflow metadata。
+
+Subject / Behavior / Preference 继续共享 R1B document-local identity namespace。
+
+EntityId lexical syntax 留待 R2B。
+
+### 17.4 Behavior
+
+Canonical Behavior field inventory：
+
+| Field | Type | Cardinality | Requirement |
+|---|---|---:|---|
+| id | EntityId | 1 | REQUIRED |
+| subject | SubjectRef | 1 | REQUIRED |
+| type | Coding | 1 | REQUIRED |
+| executor | ActorRef | 0..1 | OPTIONAL |
+| temporal | TemporalExtent | 0..1 | OPTIONAL |
+| frequencies | BehaviorFrequency | 0..* | OPTIONAL collection |
+| contexts | Context | 0..* | OPTIONAL collection |
+| factors | BehaviorFactor | 0..* | OPTIONAL collection |
+| provenance | Provenance | 1..* | REQUIRED |
+| annotations | Annotation | 0..* | OPTIONAL collection |
+
+Canonical field name type 正式承担 legacy behavior_type 的 structured machine meaning：
+
+- legacy Behavior.behavior_type → Behavior.type。
+
+Canonical model **MUST NOT** 同时保留 type 与 behavior_type 两套平行 fields。
+
+#### 17.4.1 Behavior.type
+
+Behavior.type 使用 §15 已定义的 Coding semantic type。
+
+Coding 的概念职责保持：
+
+- code + system 承担机器语义 identity；
+- display 为人类可读展示；
+- version 为可选信息。
+
+Coding 的 concrete JSON serialization 仍未冻结。
+
+Behavior.type **MUST** 承担 structured machine semantics，**MUST NOT** 由 Annotation 替代。
+
+#### 17.4.2 Behavior.executor
+
+executor 保留 R1B legacy executor semantic capability，并为 OPTIONAL ActorRef。
+
+executor 表示谁执行或参与 Behavior；它 **MUST NOT** 被等价为 Subject ownership。
+
+ActorRef concrete structure 留待 R2B。R2A 不新增 Participant entity、Participant identity namespace 或 Participant Relation endpoint。
+
+#### 17.4.3 Behavior.temporal and TemporalExtent
+
+Behavior.temporal 为 OPTIONAL single TemporalExtent。
+
+R2A 冻结 TemporalExtent 的两种 canonical structured shape：
+
+    TemporalExtent = Instant | Interval
+
+    Instant {
+        kind : "instant"
+        at   : TemporalValue
+    }
+
+    Interval {
+        kind   : "interval"
+        start? : TemporalValue
+        end?   : TemporalValue
+    }
+
+Interval 的 start / end 至少一个存在。
+
+TemporalValue 的 lexical format、precision encoding 与 timezone serialization 留待 R2B。
+
+R1D 允许 relative time 带 anchor 保留或在 canonicalization 前解析。R2A 选择更严格的 canonical representation：TemporalExtent 当前只冻结 Instant / Interval。
+
+如果上游可基于明确 anchor 将 relative expression 可靠解析为 Instant / Interval，则 **MAY** canonicalize。
+
+如果不能可靠解析，canonicalization **MUST NOT** 发明 absolute time 或把 unresolved relative expression 伪装成 absolute TemporalExtent。
+
+原始 relative phrase **MAY** 通过 Evidence / Annotation 保真保存，但 **MUST NOT** 被当作 structured TemporalExtent。
+
+#### 17.4.4 Behavior.frequencies
+
+Behavior.frequencies 为 OPTIONAL BehaviorFrequency[0..*]。
+
+BehaviorFrequency 是独立 structured qualifier type，用于承载 R1G 已区分的 observed / reported count、recurrence pattern、qualitative frequency 等 frequency semantics。
+
+BehaviorFrequency 的 exact fields、period structure、recurrence representation、qualitative vocabulary 与 serialization 留待 R2B。
+
+Canonical representation **MUST NOT** 使用 frequency : arbitrary string 作为最终机器语义替代。
+
+BehaviorFrequency **MAY** carry local Provenance。
+
+如果某个 frequency assertion 与 owner Behavior 具有不同 source、generator 或 DIRECT / INFERRED derivation，则该 BehaviorFrequency **MUST** 携带自己的 local provenance。
+
+如果没有 local provenance，它 **MAY** inherit owner Behavior provenance semantics。
+
+Concrete provenance inheritance serialization 与 validation 留待 R2B，但 canonical model **MUST NOT** 丢失 DIRECT Behavior + INFERRED frequency 的区别。
+
+#### 17.4.5 Behavior.contexts
+
+Behavior.contexts 为 OPTIONAL Context[0..*]。
+
+Context 不是 identity-bearing entity，不进入 document root collection。
+
+R2A 冻结 Context canonical ownership 至少包括：
+
+- Behavior.contexts；
+- Preference.contexts。
+
+Context concrete internal fields、cardinality / nesting details 留待 R2B。
+
+Context **MUST NOT** 成为 arbitrary metadata bag。
+
+当 Context 的 source / generator / derivation 与 owner assertion 不同时，Context **MAY** carry local provenance；若该 distinction 对 canonical semantics 必要，则 local provenance **MUST** 被保留。
+
+#### 17.4.6 Behavior.factors
+
+Behavior.factors 为 OPTIONAL BehaviorFactor[0..*]。
+
+BehaviorFactor 承载 R1E 中 Behavior-local、不能自然表示成两个 Core entities 之间 Relation 的 structured factor semantics，例如：
+
+- source-attributed reason；
+- observed / recorded association or antecedent；
+- inferred explanation；
+- symptom-related association / direction；
+- non-Core semantic factor。
+
+BehaviorFactor **MUST NOT** 成为 generic Relation replacement。
+
+如果 source 与 target 都是允许的 Core entities，且语义是 explicit typed entity relationship，则 canonical model 仍 **MUST** 使用 Relation。
+
+R2A 不冻结 BehaviorFactor concrete leaf fields、factor vocabulary 或 symptom terminology；这些留待 R2B。
+
+BehaviorFactor **MUST** 是 structured qualifier，而不是 arbitrary reasoning string。
+
+BehaviorFactor representation **MUST** 支持 local provenance；当其 source / generator / derivation 与 owner Behavior 不同时，local provenance **MUST** 被保留，使 inferred explanation 不会因 owner Behavior 为 DIRECT 而伪装成 DIRECT。
+
+#### 17.4.7 Legacy Behavior ownership
+
+Canonical Behavior **MUST NOT** 保留 communication_status 字段。
+
+Legacy communication_status 按 R1F canonicalize：
+
+- actual communication behavior → Behavior；
+- contextual communication qualification → Context；
+- source / reporting information → Provenance；
+- workflow / application state → Core 外。
+
+Canonical Behavior **MUST NOT** 保留 risk_tag、validity_flag 或 reasoning_note：
+
+- risk_tag → derived / application result；
+- validity_flag → validator / report output；
+- reasoning_note → annotations。
+
+其他主要 legacy mapping：
+
+| Legacy | Canonical ownership |
+|---|---|
+| behavior_type | Behavior.type |
+| executor | Behavior.executor |
+| temporal_scope | Behavior.temporal |
+| evidence_source | Behavior.provenance |
+| behavior_trigger / symptom_triggered | Behavior.factors when Behavior-local non-Core factor; Relation when both endpoints are Core entities and semantics are explicit typed relation |
+
+### 17.5 Preference
+
+Canonical Preference field inventory：
+
+| Field | Type | Cardinality | Requirement |
+|---|---|---:|---|
+| id | EntityId | 1 | REQUIRED |
+| subject | SubjectRef | 1 | REQUIRED |
+| category | Coding | 1 | REQUIRED |
+| value | PreferenceValue | 1 | REQUIRED |
+| temporal | TemporalExtent | 0..1 | OPTIONAL |
+| contexts | Context | 0..* | OPTIONAL collection |
+| provenance | Provenance | 1..* | REQUIRED |
+| annotations | Annotation | 0..* | OPTIONAL collection |
+
+PreferenceValue 是 named structured semantic type；其 complete leaf type system 留待 R2B。
+
+Legacy ownership：
+
+| Legacy | Canonical ownership |
+|---|---|
+| preference_category | Preference.category |
+| preference_value | Preference.value |
+| source_type | Preference.provenance |
+| confidence_score | Provenance.confidence when semantics / generator are supportable |
+| associated_behavior | Relation |
+| note | Preference.annotations |
+| preference_conflict_flag | derived ConflictAnalysis / application result |
+
+Canonical Preference **MUST NOT** 继续保留 source_type、confidence_score、associated_behavior、note、preference_conflict_flag、preference_category 或 preference_value 作为与新 ownership 平行的 legacy fields。
+
+Legacy confidence_score **MUST NOT** 被无条件搬入 Provenance.confidence；只有在其 metric meaning 与 generator / inference process 可说明时才可保留。
+
+### 17.6 Relation
+
+Canonical Relation field inventory：
+
+| Field | Type | Cardinality | Requirement |
+|---|---|---:|---|
+| source | CoreEntityRef | 1 | REQUIRED |
+| target | CoreEntityRef | 1 | REQUIRED |
+| type | Coding | 1 | REQUIRED |
+| temporal | TemporalExtent | 0..1 | OPTIONAL |
+| provenance | Provenance | 1..* | REQUIRED |
+| annotations | Annotation | 0..* | OPTIONAL collection |
+
+Relation 继续 **不要求 id field**。
+
+Canonical Relation **MUST NOT** 具有 weight field、nested Relation endpoint 或独立 inferred direction field。
+
+Relation directionality 继续由 Relation.type semantic contract 决定。
+
+Legacy Relation.weight 继续属于 derived / analytic artifact，不进入 canonical Core Relation。
+
+### 17.7 Typed references
+
+SubjectRef 只能解析到 Subject。
+
+CoreEntityRef 只能解析到 Behavior 或 Preference，并继续受 R1B global Relation endpoint matrix 与具体 Relation.type allowed endpoint roles 共同约束。
+
+R2A 冻结 typed reference semantics，但不冻结 serialized reference shape。
+
+Reference 的 concrete JSON representation 是 bare string、object wrapper 还是其他 lexical token，留待 R2B。
+
+Display label **MUST NOT** 充当 canonical reference。
+
+### 17.8 Provenance
+
+Canonical Provenance 最小 field inventory：
+
+| Field | Type | Cardinality | Requirement |
+|---|---|---:|---|
+| derivation | DerivationKind | 1 | REQUIRED |
+| source | SourceDescriptor | 0..1 | OPTIONAL, conditionally required |
+| generator | GeneratorDescriptor | 0..1 | OPTIONAL, conditionally required |
+| time | TemporalValue | 0..1 | OPTIONAL |
+| evidence | Evidence | 0..* | OPTIONAL collection |
+| confidence | Confidence | 0..1 | OPTIONAL |
+
+Provenance 不要求 identity，也不进入 document-level pool。
+
+Provenance 默认 embedded / attached to the assertion it traces：
+
+- Behavior.provenance : Provenance[1..*]；
+- Preference.provenance : Provenance[1..*]；
+- Relation.provenance : Provenance[1..*]；
+- Annotation.provenance : Provenance[1..*]。
+
+#### 17.8.1 Provenance.derivation
+
+DerivationKind 的 canonical semantics 至少且当前仅区分 DIRECT 与 INFERRED。
+
+R2A 冻结概念值 direct / inferred；其最终 lexical / enum serialization 由 R2B / Schema 工作确定。
+
+DIRECT 表示 structured semantic content 忠实来自 source-described / recorded / observed information。
+
+INFERRED 表示 semantic content 超出来源直接表达，由 human、model、rule 或 analytic process 产生推导。
+
+Tool / generator 的存在本身 **MUST NOT** 决定 derivation。
+
+#### 17.8.2 Provenance.source and generator
+
+source 表示原始 information source / source descriptor。
+
+generator 表示产生、抽取、转换或推导 semantic result 的 human / model / rule / analytic agent or process descriptor。
+
+Conditional invariants：
+
+- DIRECT provenance **MUST** have source；
+- INFERRED provenance **MUST** have generator。
+
+一个 Provenance **MAY** 同时具有 source 与 generator。
+
+例如 LLM 从 EHR 文本忠实抽取 DIRECT semantics 时，可以是：
+
+- source = EHR source；
+- generator = extraction system；
+- derivation = direct。
+
+因此 generator 的存在 **MUST NOT** 自动意味着 inferred。
+
+SourceDescriptor / GeneratorDescriptor concrete fields 留待 R2B。
+
+#### 17.8.3 Provenance.evidence
+
+Evidence 与 Provenance 继续保持不同概念。
+
+R2A 冻结 Evidence canonical ownership 为 optional embedded Provenance.evidence[0..*]。
+
+本轮不建立 document-level Evidence pool、Evidence identity 或 Evidence reference graph。
+
+Evidence concrete fields 留待 R2B。
+
+Evidence **MUST NOT** 与 Annotation 合并为同一对象。
+
+#### 17.8.4 Provenance.confidence
+
+如果 canonical Core 需要保留 inference confidence，其 canonical ownership 为 optional Provenance.confidence。
+
+Confidence **MUST NOT** 成为 Behavior / Preference / Relation intrinsic truth field。
+
+DIRECT self-report **MUST NOT** 被迫填写 Confidence。
+
+Confidence 的 scale、range、metric、calibration、numeric representation 与 validation 留待 R2B / 后续工作。
+
+### 17.9 Annotation
+
+Canonical Annotation 最小 field inventory：
+
+| Field | Type | Cardinality | Requirement |
+|---|---|---:|---|
+| text | Text | 1 | REQUIRED |
+| provenance | Provenance | 1..* | REQUIRED |
+
+Annotation：
+
+- 不要求 id；
+- 不是 Relation endpoint；
+- 不进入独立 document-level collection；
+- 作为 lightweight embedded structure 附着于当前允许的 canonical assertion/object。
+
+R2A 允许：
+
+- Behavior.annotations；
+- Preference.annotations；
+- Relation.annotations。
+
+R2A 不增加 Subject.annotations。
+
+每个 Annotation **MUST** 具有自己的 provenance[1..*]，从而区分 source-carried、human-authored 与 model-generated annotation。
+
+Annotation owner 的 provenance **MUST NOT** 在 source / generator / derivation 不同时自动替代 Annotation provenance。
+
+Text lexical constraints 留待 R2B。
+
+### 17.10 Nested qualifier provenance rule
+
+Owner-level provenance 描述 owner assertion。
+
+Nested semantic qualifier 如果具有不同 source、generator 或 derivation，则 canonical representation **MUST** 能够保留 local provenance。
+
+该规则至少适用于：
+
+- BehaviorFrequency；
+- BehaviorFactor；
+- Context。
+
+Temporal local provenance 是否采用相同机制留待 R2B。
+
+Canonical model **MUST NOT** 用单一 owner-level DIRECT / INFERRED label 粗暴覆盖内部 derivation 实际不同的 nested qualifier。
+
+### 17.11 Identity-bearing entities vs embedded structures
+
+R2A 保持 R1B identity boundary：
+
+- Subject：required identity；
+- Behavior：required identity；
+- Preference：required identity；
+- Relation：no required identity。
+
+以下 R2A named structures 不获得 required identity，不加入 Subject / Behavior / Preference document-local identity namespace，也不是 Relation endpoint：
+
+- TemporalExtent；
+- BehaviorFrequency；
+- Context；
+- BehaviorFactor；
+- Annotation；
+- Provenance；
+- Evidence。
+
+PBDLDocument 是 canonical root container，不因本节获得 entity identity semantics。
+
+### 17.12 Canonical ownership replaces legacy parallel fields
+
+Canonical model **MUST NOT** 同时保留以下平行 mechanisms：
+
+| Canonical ownership | Legacy parallel field that MUST NOT coexist canonically |
+|---|---|
+| Behavior.type | Behavior.behavior_type |
+| Preference.category | Preference.preference_category |
+| Preference.value | Preference.preference_value |
+| Behavior.annotations | Behavior.reasoning_note |
+| Preference.annotations | Preference.note |
+| Relation | Preference.associated_behavior |
+| Provenance | Behavior.evidence_source |
+| Provenance | Preference.source_type |
+| Context / Behavior / Provenance / application layer according to semantics | Behavior.communication_status |
+
+Legacy input **MAY** 被迁移，但 canonical output **MUST** 只使用 R2A ownership。
+
+### 17.13 Fields explicitly outside canonical Core
+
+以下 legacy fields **MUST NOT** 进入 PBDL-Core canonical object model：
+
+- Behavior.risk_tag → derived / application result；
+- Behavior.validity_flag → validator / report output；
+- Preference.preference_conflict_flag → derived ConflictAnalysis / application result；
+- Relation.weight → derived / analytic artifact；
+- 所有 Treatment Path / Pathway fields → extension / application layer。
+
+这些 fields **MUST NOT** 为了历史兼容被重新塞回 canonical Core。
+
+### 17.14 R2B deferred named types
+
+R2A 冻结以下名称 / ownership，但其具体 leaf structure 或 serialization 仍需 R2B concretize：
+
+- VersionToken；
+- EntityId；
+- SubjectRef；
+- CoreEntityRef；
+- ActorRef；
+- TemporalValue；
+- BehaviorFrequency；
+- Context；
+- BehaviorFactor；
+- PreferenceValue；
+- SourceDescriptor；
+- GeneratorDescriptor；
+- Evidence；
+- Confidence；
+- Text lexical constraints；
+- Coding concrete JSON serialization；
+- reference serialization。
+
+R2A 明确停止在 field-level canonical model freeze，不在本轮设计 JSON Schema、EBNF、DSL syntax、parser、validator 或 runtime。
 
 ## 18. 校验模型
 

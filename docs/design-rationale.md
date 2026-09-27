@@ -538,3 +538,68 @@ R1 semantic foundation is closed; concrete representation remains future work.
 下一阶段 R2 — Canonical Model & Schema 将在后续独立设计轮次中，把已经冻结的语义映射到 concrete canonical object structure、fields、cardinalities、JSON Schema 与 validation invariants。
 
 本轮不设计或启动 R2，也不表示 PBDL 1.0 已完成。
+
+## DR-026 — Canonical model separates identity-bearing entities from embedded semantic qualifiers
+
+### 决策
+
+R2A 保持 Subject、Behavior、Preference 为 document-local identity-bearing entities。
+
+Relation 继续不要求 identity，因为当前没有 Core reference 需要稳定指向 Relation，Relation 也不是 Relation endpoint。
+
+TemporalExtent、BehaviorFrequency、Context、BehaviorFactor、Annotation、Provenance 与 Evidence 均作为 embedded / attached semantic structures，不加入 entity identity namespace，也不成为 Relation endpoint。
+
+### 理由
+
+Identity 应由真实稳定引用需求驱动，而不是由“对象有结构”驱动。
+
+将所有 nested qualifier 都升级为 graph entity 会增加引用、生命周期、去重与 identity 管理复杂度，却没有 R1 已冻结的使用场景支持。
+
+R2A 因此把 identity-bearing graph entities 与 embedded semantic qualifiers 明确分层。
+
+## DR-027 — Provenance attaches to assertions, with local provenance for independently derived qualifiers
+
+### 决策
+
+Behavior、Preference、Relation 与 Annotation 都具有明确 provenance attachment。
+
+Owner assertion 的 Provenance 不能粗暴覆盖 independently derived nested qualifier。
+
+例如：
+
+- Behavior：patient missed medication → DIRECT；
+- BehaviorFrequency：usually daily → model inferred → INFERRED。
+
+Canonical model 必须允许 frequency qualifier 保留 local INFERRED provenance，而不是因为 owner Behavior 为 DIRECT 就把 frequency 也错误标成 DIRECT。
+
+同样原则适用于 BehaviorFactor 与 Context；Temporal qualifier 是否需要同样 local mechanism 留待 R2B。
+
+### 理由
+
+R1C 已冻结 semantic derivation relative to source 才决定 DIRECT / INFERRED。
+
+如果 canonical model 只允许整个 Behavior 一个 provenance，就会在 qualifier 由不同 source / generator 推导时丢失这一边界。
+
+局部 provenance capacity 因此是 semantic fidelity requirement，而不是实现便利。
+
+## DR-028 — Canonical field ownership replaces legacy parallel fields
+
+### 决策
+
+Legacy fields 可以继续作为 migration input，但 canonical model 只保留一套权威 ownership。
+
+例如：
+
+- behavior_type → Behavior.type；
+- reasoning_note / note → annotations；
+- associated_behavior → Relation；
+- evidence_source / source_type → Provenance；
+- communication_status → 根据实际语义分流到 Behavior / Context / Provenance / workflow layer。
+
+Canonical output 不得同时保留 legacy field 与新 canonical mechanism。
+
+### 理由
+
+平行 canonical fields 会制造两个 source of truth，使 validator、round-trip、provenance、reference 与 downstream interoperability 无法判断哪一个字段具有权威语义。
+
+R2A 因而在 representation 层正式结束 legacy duplication；兼容性通过 migration mapping 保留，而不是通过 canonical duplication 保留。
