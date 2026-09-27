@@ -799,9 +799,9 @@ R1C 冻结 Provenance 与 Evidence 的最小语义边界。
 
 Provenance 回答：
 
-> “这条 Behavior / Preference 信息是怎么来的？”
+> “这条 Behavior / Preference / Relation assertion 是怎么来的？”
 
-Provenance 描述信息的来源与产生路径。其语义 **MUST** 足以让下游判断该信息来自什么来源或产生方式，并能够区分来源直接描述的信息与外部推断得到的信息。
+Provenance 描述信息或 semantic assertion 的来源与产生路径。其语义 **MUST** 足以让下游判断该信息来自什么来源或产生方式，并能够区分来源直接描述的信息与外部推断得到的信息。
 
 概念上，Provenance 可以涉及：
 
@@ -818,7 +818,11 @@ Provenance 描述信息的来源与产生路径。其语义 **MUST** 足以让�
 
 每个 canonical Preference **MUST** 至少具有一条 provenance linkage。
 
-同一个 Behavior 或 Preference **MAY** 具有多条 provenance linkage，例如患者自述、EHR 记录与设备观测共同支持同一项结构化语义。
+每个 canonical Relation assertion **MUST** 至少具有一条 provenance linkage 或等价的可追踪 provenance semantics。
+
+Relation assertion 的 provenance **MUST NOT** 被 source endpoint 或 target endpoint 的 provenance 自动替代。Relation provenance 的详细规则见 §14.7。
+
+同一个 Behavior、Preference 或 Relation assertion **MAY** 具有多条 provenance linkage。
 
 多条 provenance **MUST NOT** 被解释为该信息自动“更真实”或自动具有更高可信度。PBDL-Core 不负责 evidence weighting、source ranking 或真值裁决。
 
@@ -936,13 +940,19 @@ R1C 不冻结 confidence 的字段名、数值范围、算法、校准方式或�
 
 ### 13.7 Provenance identity
 
-R1C **不要求** Provenance 自身具有独立的 document-local identity。
+Provenance 自身仍 **不要求** 独立的 document-local identity。
 
-当前冻结的最小引用需求是 Behavior / Preference 指向或携带足够的 provenance information；目前没有 Core 场景要求其他实体稳定引用某个 Provenance instance。
+当前 mandatory provenance-bearing canonical semantic assertions 至少包括：
 
-未来若共享 provenance、provenance chaining、Evidence 引用或其他明确使用场景需要稳定引用 Provenance，可在后续设计轮次重新冻结 identity requirement。
+- Behavior；
+- Preference；
+- Relation assertion。
 
-Provenance 的具体 Schema、field names、嵌套结构与 serialization 仍为 **TODO**。
+R1H 新增 Relation assertion provenance requirement **MUST NOT** 被解释为 Provenance 因此必须具有 identity，也 **MUST NOT** 被解释为 Relation 因此必须具有 identity。
+
+当前仍没有 Core 场景要求其他实体通过稳定 Core reference 指向某个 Provenance instance。
+
+Shared provenance identity、provenance chaining、Evidence reference mechanics、具体 Schema、field names、嵌套结构与 serialization 仍为 **TODO**。
 
 ## 14. Relations
 
@@ -1040,11 +1050,17 @@ canonicalization **MUST NOT** 自动创建 Relation。
 
 Relation type 定义 source / target 在该关系中的 semantic roles，并 **MUST** 使 conforming implementation 能够判断该关系的 directionality semantics，例如 directional 或 symmetric / non-directional。
 
+每个 normative relation type definition **MUST** 明确其允许的 endpoint semantic roles / endpoint kinds。具体 relation type 可以比 R1B global endpoint matrix 更严格，但 **MUST NOT** 扩大 R1B global endpoint matrix 所允许的 Core endpoint combinations。
+
+每个 normative relation type definition **MUST** 明确其 causal semantic status：它要么明确承载 causal semantics，要么明确属于 non-causal semantics。
+
+如果 relation type definition 没有明确赋予 causal semantics，canonical consumer **MUST NOT** 根据 type name、directionality、endpoint order 或其他隐式线索把它解释为 causal relation。
+
 Relation type **MUST NOT** 只是一段自由文本说明、显示标签或 UI 文案。
 
 A conforming canonical Relation **MUST** 使用其语义由适用 PBDL vocabulary / terminology binding 定义的 relation type。Undefined 或 free-text-only relation type semantics **MUST NOT** 被当作规范性 machine semantics。
 
-R1H 不冻结 complete relation vocabulary、concrete code、field name、serialization 或 open-vs-closed vocabulary policy。
+R1H 不冻结 complete relation vocabulary、concrete code、field name、serialization 或 open-vs-closed vocabulary policy，也不新增任何 concrete causal relation type。
 
 对于 directional relation type，交换 source / target 会改变或破坏该 relation type 所定义的语义。
 

@@ -453,11 +453,15 @@ Legacy field 本身不自动决定 causal、directional、conflict 或 explanato
 
 Relation type 是 Relation 的机器语义核心。
 
-每个 type 必须具有稳定定义，并说明 endpoint semantic roles 与 directionality semantics。Directional type 中 endpoint 交换会改变或破坏语义；symmetric / non-directional type 中 endpoint 交换不能被解释为另一种 semantic relation meaning。
+每个 type 必须具有稳定定义，并说明 endpoint semantic roles、allowed endpoint kinds、directionality semantics 与 causal semantic status。
+
+Specific relation type 可以把 R1B global endpoint matrix 进一步缩小到更严格的 endpoint combinations，但不能扩大 R1B 已允许的 endpoint matrix。
+
+Directional type 中 endpoint 交换会改变或破坏语义；symmetric / non-directional type 中 endpoint 交换不能被解释为另一种 semantic relation meaning。
 
 Source → target 的箭头本身不表示 cause、precedes、influence、priority 或 importance。
 
-Directional 也不等于 causal。
+Directional 也不等于 causal；如果 type definition 没有明确赋予 causal semantics，consumer 不能根据名称、方向性或 endpoint order 猜测 causality。
 
 ### 理由
 
