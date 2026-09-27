@@ -649,6 +649,36 @@ Behavior.`reasoning_note` 与 Preference.`note` 是否应统一为通用 Annotat
 
 若保留模型推理文字，必须明确其 derivation，而不是把它当成来源事实。
 
+**R1I 状态：resolved by R1I。**
+
+R1I 已解决：
+
+- `Preference.note` 的 KEEP_CORE compatibility 保持不变；
+- `Behavior.reasoning_note` 的历史说明能力继续保留；
+- 两者 canonical semantic ownership 统一收敛到 lightweight Annotation semantics；
+- Annotation 是 human-readable auxiliary information，不是 structured machine semantics 的替代品；
+- Annotation 不替代 mandatory Provenance，也不自动成为 Evidence；
+- source-carried text、human-authored explanation 与 model / analytic explanation 必须保持 provenance / derivation 可区分；
+- model / analytic process 新增的来源外解释属于 INFERRED；
+- faithful LLM extraction / normalization **MAY** remain DIRECT；
+- Annotation 不要求独立 identity，也不成为 Relation endpoint；
+- `reasoning_note` 不表示 PBDL-Core 自身执行或认证推理；
+- PBDL-Core 不要求保存 hidden chain-of-thought / private reasoning trace；
+- Annotation 与 structured semantics 冲突时不能静默覆盖 structured semantics。
+
+架构问题“是否统一到 Annotation semantics”已关闭。
+
+R2 / 后续 representation work 仍需决定：
+
+- concrete canonical annotation field names；
+- embedded vs list structure；
+- annotation cardinality；
+- optional author / generator representation；
+- concrete provenance attachment structure；
+- plain-text serialization；
+- JSON Schema；
+- DSL syntax。
+
 ### OQ-010 — Pathway runtime boundary
 
 StepObject.`status` 与 `outcome` 到底是：

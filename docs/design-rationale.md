@@ -486,3 +486,55 @@ Endpoint provenance 不能自动充当 Relation provenance，因为“两个 end
 Relation assertion 可以来自不同于 endpoint 的信息来源或推理过程。如果直接继承 endpoint provenance，会把模型推断的关系伪装成来源明确陈述的关系。
 
 同理，一个无语义约束的 numeric `weight` 无法同时代表 correlation、confidence、ranking score、association strength 与 causal effect。把它重新放入 Core 会再次混淆 source-described semantics 与 derived analysis。
+
+## DR-024 — Annotation 是 human-readable adjunct，不是 machine-semantics backdoor
+
+### 决策
+
+Annotation 的最小职责是为已有 canonical semantic object / assertion 提供人类可读的补充说明、澄清或解释性文本。
+
+如果信息已经具有结构化 canonical semantic mechanism，Annotation 可以补充解释，但不能取代该机制。下游实现不应必须“读懂 note”才能恢复 identity、reference、type、time、frequency、Context、Relation、Provenance、DIRECT / INFERRED 或 causal-status 等机器语义。
+
+Annotation 也不是第二个 Context 式 catch-all container：不能把尚未设计字段的所有语义永久塞进自由文本，并依赖下游 NLP 恢复规范性含义。
+
+Annotation 不获得 required identity，也不成为 Relation endpoint。
+
+### 理由
+
+自由文本是重要的信息保真工具，但如果允许 note 成为唯一机器语义载体，R1B–R1H 已冻结的结构化边界都会被绕过。
+
+这会让实现重新依赖自然语言推断来决定本应结构化的语义，同时造成 schema validation、reference resolution、provenance tracking 和 interoperability 无法可靠执行。
+
+## DR-025 — `reasoning_note` 与 `note` 统一语义所有权，但 derivation 必须可区分
+
+### 决策
+
+历史 `Behavior.reasoning_note` 与 `Preference.note` 的人类可读说明能力统一收敛到 Annotation semantics。
+
+但以下三类内容必须保持 provenance / derivation 可区分：
+
+1. 来源自己已经写出的说明；
+2. 人工标注者或审阅者新增的解释；
+3. model / analytic process 新增的解释。
+
+是否使用 LLM 本身不决定 DIRECT / INFERRED；真正标准仍然是 semantic content 相对于 source 是否新增了推导。
+
+因此，LLM 对来源已有说明进行忠实抽取、改写或规范化时仍可以是 DIRECT / source-faithful；模型新增来源未表达的解释时，该新增内容属于 INFERRED。
+
+PBDL-Core 不要求保存 hidden chain-of-thought、private reasoning trace 或 token-level internal deliberation。需要解释时，可以保存 concise explanation、rationale summary 或 result-oriented annotation，并保留其 source / generator / derivation distinction。
+
+### 理由
+
+`reasoning_note` 这个历史名称容易让实现误以为 PBDL-Core 自己承担推理、或者需要保存模型内部推理过程；`note` 又容易成为没有边界的自由文本容器。
+
+统一为 Annotation semantics 可以保留两者的历史价值，同时通过 provenance / derivation 与 structured-semantics boundary 防止其成为事实、推理或机器语义的后门。
+
+## R1 Closure Note — non-normative
+
+R1A–R1I 已完成 PBDL-Core semantic foundation 的主要边界冻结。
+
+R1 semantic foundation is closed; concrete representation remains future work.
+
+下一阶段 R2 — Canonical Model & Schema 将在后续独立设计轮次中，把已经冻结的语义映射到 concrete canonical object structure、fields、cardinalities、JSON Schema 与 validation invariants。
+
+本轮不设计或启动 R2，也不表示 PBDL 1.0 已完成。

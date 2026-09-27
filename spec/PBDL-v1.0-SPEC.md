@@ -299,6 +299,118 @@ Semantic temporal extent 回答“Behavior 在什么时候发生、持续或适�
 
 R1G 不把 recurrence semantics 扩张到 Preference 或 Relation，也不冻结 RRULE、cron-like language、calendar engine 或具体 temporal / recurrence serialization。
 
+### 5.8 Annotation semantics
+
+R1I 冻结 lightweight human-readable Annotation semantics。
+
+Annotation 用于为某个 canonical semantic object / assertion 提供人类可读的补充说明、澄清或解释性文本。它是 auxiliary human-readable information，而不是 canonical machine semantics 的唯一载体。
+
+Annotation **MAY** 用于保留：
+
+- 对 Behavior 的额外说明；
+- 对 Preference 的人类可读补充；
+- 来源中无法完全结构化、但值得保留的说明；
+- 人工或外部系统产生的解释性备注。
+
+R1I 不冻结 Annotation 的 concrete field name、object structure、cardinality、serialization 或 syntax。
+
+#### 5.8.1 Annotation is not a machine-semantics backdoor
+
+如果某项信息对 identity、reference、Behavior type、Preference value、temporal semantics、frequency、Context、Relation type、relation direction、Provenance、DIRECT / INFERRED 或 causal / non-causal distinction 等 canonical machine semantics 具有规范性意义，conforming canonical representation **MUST NOT** 只把它藏在自由文本 Annotation 中。
+
+如果某项语义已有 structured canonical mechanism，Annotation **MAY** 补充解释，但 **MUST NOT** 替代该 structured mechanism。
+
+Conforming consumer **MUST NOT** 被迫通过自然语言理解 note / Annotation 才能确定对象的核心 machine semantics。
+
+#### 5.8.2 Annotation does not create semantic assertions by itself
+
+Annotation 文本自身 **MUST NOT** 自动创建新的 Behavior、Preference、Relation、Context、causal claim、risk result、recommendation 或其他 derived / application result。
+
+例如 Behavior 已结构化为“患者漏服药物”，而 Annotation 写“可能因为工作压力较大”，该文本本身 **MUST NOT** 自动使 canonical semantics 获得 source-attributed reason、causal Relation、Context 或 derived clinical conclusion。
+
+若 Annotation 中的内容需要成为 machine-consumable semantics，它必须通过已有适用的 structured semantic mechanism 表达，并遵守相应 provenance / derivation rules。
+
+#### 5.8.3 Annotation derivation / provenance categories
+
+R1I 至少区分以下 provenance / derivation 情况，但不冻结 surface enum：
+
+1. **Source-described / source-carried text**：来源本身已经包含该说明；忠实保留或轻度规范化时，Annotation **MAY** 具有 DIRECT provenance semantics。
+2. **Human-authored explanatory annotation**：人工标注者或审阅者额外增加的解释；它 **MUST** 与 source-described content 保持来源可区分，**MUST NOT** 冒充患者、临床人员或原始来源直接说过的话。
+3. **Model / analytic explanatory annotation**：模型、规则或 analytic process 在来源未表达的基础上生成的新解释；该新增内容 **MUST** 保持 INFERRED derivation semantics，并 **MUST NOT** 标成 DIRECT source text。
+
+是否使用 LLM / NLP 本身不决定 DIRECT / INFERRED。
+
+如果来源明确写“因为恶心，患者停止服药”，LLM 仅忠实改写为“患者将恶心描述为停药原因”，且没有新增来源不存在的解释，该 Annotation **MAY** 继续属于 DIRECT / source-faithful representation。
+
+如果 LLM 新增“可能因为患者对药物存在恐惧”，而来源未表达该解释，则新增部分属于 INFERRED。
+
+#### 5.8.4 Annotation is not Provenance or Evidence
+
+Annotation **MUST NOT** 替代 Behavior、Preference 或 Relation assertion 的 mandatory Provenance requirement。
+
+“来源是谁”“如何产生”“DIRECT / INFERRED” **MUST NOT** 仅通过 note 文本表达并要求下游 NLP 猜测。
+
+Annotation 与 Evidence 也不是同一概念：
+
+- Evidence 回答“有什么材料支持 / 承载这项信息”；
+- Annotation 回答“有什么人类可读的补充说明”。
+
+将 source text 复制到 Annotation 中 **MUST NOT** 自动使该 Annotation 成为 normative Evidence object；Evidence material 也不自动成为 Annotation。
+
+R1I 不设计 quote、source span、document offset 或 evidence excerpt schema。
+
+#### 5.8.5 Annotation does not establish causality or Relation
+
+Annotation 中出现 `because`、`due to`、因、导致、所以、可能因为等语言 **MUST NOT** 仅凭自由文本内容自动建立 canonical causal semantics。
+
+Source-attributed reason 继续使用 R1E semantics；model-generated explanation 继续保持 INFERRED derivation when applicable。
+
+同样，Annotation 文本 **MUST NOT** 自动创建 canonical Relation。
+
+如果 Preference–Behavior association、Relation type、directionality 或 endpoints 需要 machine semantics，必须显式使用 R1H Relation mechanism，而不是只隐藏在 Annotation 中。
+
+#### 5.8.6 Annotation does not replace temporal, frequency, or Context semantics
+
+如果 Annotation 中的“最近”“上周”“经常”“每天”“工作时”等信息需要成为 canonical machine semantics，它们必须分别遵守 R1D temporal、R1G frequency / recurrence 与 R1F Context semantics。
+
+Annotation **MUST NOT** 作为这些 structured semantics 的唯一规范性表达。
+
+#### 5.8.7 Annotation does not create derived analysis or validator state
+
+Annotation 中的“严重不依从”“未来风险很高”等文本 **MUST NOT** 自动使 PBDL-Core 获得 risk tag、clinical severity、adherence score、prediction 或 recommendation。
+
+这些仍属于 source-described semantics 或 Core 外部 derived / application layer，具体取决于实际来源与结构化建模。
+
+Annotation **MUST NOT** 用于重新引入 legacy `Behavior.validity_flag`，也 **MUST NOT** 替代 validation error、warning、schema violation 或其他 validator / report output。
+
+#### 5.8.8 Annotation identity and graph boundary
+
+Annotation 不要求独立 identity，不加入 Subject / Behavior / Preference document-local identity namespace，也不是 Relation endpoint。
+
+R1I 不新增 Annotation→Annotation、Annotation→Relation、Relation→Annotation 或其他 Annotation graph edge。
+
+Annotation 是附着于现有 canonical semantic object / assertion 的 lightweight auxiliary information，而不是新的 identity-bearing Core graph entity。
+
+#### 5.8.9 Hidden chain-of-thought exclusion
+
+PBDL-Core **MUST NOT** 要求模型暴露、存储或交换 hidden chain-of-thought、private reasoning trace、token-level reasoning、internal scratchpad 或 hidden model deliberation 作为规范性 Annotation 内容。
+
+外部系统 **MAY** 提供 concise explanation、rationale summary 或 result-oriented annotation，但其 source / generator / derivation **MUST** 能与 source-carried text 保持可区分。
+
+Legacy `reasoning_note` 中的 “reasoning” **MUST NOT** 被解释为 PBDL-Core 要求保存模型私有推理过程。
+
+#### 5.8.10 Missing Annotation and structured-semantics precedence
+
+Behavior / Preference **MAY** 没有 Annotation。
+
+缺少 Annotation **MUST NOT** 被解释为没有 Context、没有 Provenance、没有 Evidence、没有解释、assertion 已完全理解或 assertion 不需要 provenance。
+
+它只表示没有提供额外 human-readable annotation。
+
+如果 Annotation 与 structured canonical semantics 冲突，conforming consumer **MUST NOT** 仅根据 Annotation 静默覆盖 structured semantics。
+
+此类冲突需要由上游修正、validation / review 或其他明确机制处理；R1I 不设计 conflict resolver。
+
 ## 6. 词法结构
 
 词法结构尚未冻结。
@@ -672,6 +784,22 @@ R1G 不把 recurrence semantic contract 扩张到 Preference 或 Relation。若�
 
 Behavior frequency / recurrence 的 concrete fields、period representation、day-of-week / time-of-day structure、rate model、duration arithmetic、recurrence serialization、JSON Schema 与 DSL syntax 仍为 **TODO**。
 
+### 10.6 Legacy `reasoning_note` compatibility
+
+历史 `Behavior.reasoning_note` 的人类可读说明能力继续保留，但其 canonical semantic ownership 收敛到 R1I Annotation semantics。
+
+Legacy `reasoning_note` **MUST NOT** 因字段名中的 “reasoning” 被解释为 PBDL-Core 自己执行并认证了正确推理、clinical reasoning、verified explanation 或 causal reasoning。
+
+如果 legacy `reasoning_note` 忠实承载来源已经明确表达的说明，其 Annotation **MAY** 具有 DIRECT provenance semantics。
+
+如果人工标注者、model、rule engine 或 analytic process 新增了来源未表达的解释，canonical representation **MUST** 保持其实际 human-authored 或 INFERRED derivation distinction；model-generated new explanation **MUST NOT** 冒充 DIRECT source text。
+
+Legacy `reasoning_note` **MUST NOT** 替代 structured Behavior semantics、mandatory Provenance、Evidence、R1E reason / causality boundary 或 derived-result boundary。
+
+R1I **MUST NOT** 被解释为要求保存模型 hidden chain-of-thought / private reasoning trace。
+
+R1I 不冻结最终字段名、嵌入方式、list structure 或 concrete provenance attachment structure。
+
 ## 11. Preference
 
 Preference 表示某个 Subject 对选项、属性、治疗特征或结果所表达或推断出的倾向、选择、优先级、厌恶或偏好。
@@ -731,6 +859,20 @@ Preference 缺少 semantic temporal information **MUST NOT** 被解释为永久�
 不同时期的不同 Preference 信息可以作为不同 Preference instances 共存，例如某一时期拒绝注射、另一时期接受注射。
 
 历史 Preference 正式字段表虽然没有独立 temporal 字段，但 v1 Core **MAY** 表达 Preference temporal applicability，以避免把可随时间变化的偏好误解为永久状态。
+
+### 11.3 Legacy `note` compatibility
+
+R1A 对 `Preference.note` 的 **KEEP_CORE** 结论保持不变。
+
+其历史 human-readable descriptive annotation 能力继续保留，并在 canonical semantic ownership 上统一解释为 R1I Annotation semantics。
+
+`Preference.note` **MUST NOT** 承担 `preference_category`、`preference_value` 或其他 structured Preference machine semantics 的唯一表达。
+
+例如，仅有 `note = "不喜欢打针"` **MUST NOT** 被视为 canonical structured Preference semantic content 的替代品。
+
+Preference Annotation **MUST NOT** 自动成为 Evidence 或 Provenance，也 **MUST NOT** 仅凭文本内容创建新的 Behavior、Preference、Relation、Context、causal claim 或 derived result。
+
+R1I 不要求最终 canonical representation 保留字段名 `note`；concrete Annotation field / structure 留待 R2。
 
 Preference 的具体字段、偏好类型词表、取值模型、confidence surface、Provenance / Evidence 的具体结构、frequency / recurrence 模型和语法仍为 **TODO**。
 
@@ -1239,8 +1381,16 @@ R0 阶段不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语编�
 64. Semantically distinct Relation assertions **MUST NOT** 仅因为 endpoints 相同而被静默合并；relation type、direction、temporal applicability 与 derivation / provenance distinction 必须得到保留。
 65. `Relation.weight` **MUST NOT** 作为默认 Core Relation intrinsic semantic strength；derived numeric strength / statistic **MUST** 与 source-described relation semantics 保持可区分。
 66. Undefined 或 free-text-only relation type semantics **MUST NOT** 被当作 canonical machine semantics。
+67. Annotation **MUST NOT** 作为已有 structured canonical machine semantics 的唯一替代载体；conforming consumer **MUST NOT** 被迫解析自由文本 Annotation 才能确定核心机器语义。
+68. Annotation text **MUST NOT** 自动创建新的 Behavior、Preference、Relation、Context、causal claim、risk result、recommendation 或其他 derived analysis result。
+69. Annotation **MUST NOT** 替代 mandatory Provenance；source / generator / DIRECT / INFERRED derivation **MUST NOT** 仅通过自由文本 note 表达并要求下游猜测。
+70. Legacy `Behavior.reasoning_note` 与 `Preference.note` 在 canonical semantic ownership 上统一收敛到 Annotation semantics，但 Annotation **MUST NOT** 因此获得 required identity 或 Relation endpoint status。
+71. Model / analytic process 在来源未表达的基础上生成的 explanatory Annotation **MUST** 保持 INFERRED derivation semantics，并 **MUST NOT** 伪装为 DIRECT source text；faithful extraction / normalization 本身 **MUST NOT** 自动使 Annotation 成为 INFERRED。
+72. Annotation **MUST NOT** 自动等价于 Evidence，也 **MUST NOT** 仅凭文本内容建立 causality 或 Relation。
+73. Annotation 与 structured canonical semantics 冲突时，conforming consumer **MUST NOT** 仅根据 Annotation 静默覆盖 structured semantics。
+74. PBDL-Core **MUST NOT** 要求 hidden chain-of-thought、private model reasoning trace、internal scratchpad 或 hidden model deliberation 作为规范性 Annotation 内容。
 
-跨文档 identity / reference protocol、Behavior frequency / recurrence concrete fields / serialization、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom concrete structure、symptom terminology representation、communication canonical fields / vocabulary、Context concrete fields / cardinality / nesting、Constraint / Barrier model、normative relation vocabulary / codes / inverse conventions、derived relation-strength artifact Schema、术语词表仍为 **TODO**。
+跨文档 identity / reference protocol、Behavior frequency / recurrence concrete fields / serialization、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom concrete structure、symptom terminology representation、communication canonical fields / vocabulary、Context concrete fields / cardinality / nesting、Annotation concrete fields / structure / cardinality / serialization、Constraint / Barrier model、normative relation vocabulary / codes / inverse conventions、derived relation-strength artifact Schema、术语词表仍为 **TODO**。
 
 ## 17. 规范化表示
 
