@@ -336,3 +336,50 @@ Temporal precedence 与 co-occurrence 同样不能自动升级成 reported reaso
 “患者说因为 X”、“记录显示 X 先出现”、“模型猜测因为 X”以及“方法学上证明 X 导致 Y”具有不同证据层级和 provenance。
 
 将它们统一压成一个 `trigger` 会破坏来源语义、推断边界与因果边界，因此 R1E 保留 legacy 能力，但要求 canonical semantics 保持这些情况可区分。
+
+## DR-017 — Context 限定语义，而不是 catch-all container
+
+### 决策
+
+Context 的最小职责是对 Behavior / Preference 的语义解释提供情境性限定。
+
+Context 不承担已经由其他层明确负责的职责：
+
+- Provenance 负责信息从哪里来、如何产生；
+- temporal semantics 负责信息描述对象何时发生或适用；
+- trigger / reason semantics 负责 source-attributed reason、association 与 inferred explanation 的边界；
+- derived / application layer 负责 risk、recommendation、conflict、score 与 causal inference；
+- workflow / application layer 负责 review、assignment、escalation、notification、closure 等流程状态。
+
+Context 本身不建立 causality，也不因某因素影响行为就自动把该因素定义成 objective Constraint / Barrier。
+
+Behavior / Preference 可以没有显式 Context；缺少 Context 不表示 unconditional 或 universally applicable。
+
+R1F 暂不要求 Context 具有独立 identity，也不把 Context 加入 Relation endpoint matrix。
+
+### 理由
+
+如果 Context 被设计成“所有暂时不知道放哪里的信息”的容器，Provenance、时间、原因、分析结果和软件工作流状态就会再次混回同一对象，破坏 R1B–R1E 已经建立的语义边界。
+
+最小而排他的 Context 职责可以保留真实情境信息，同时避免 Context 演化成无法验证、无法解释的万能属性袋。
+
+## DR-018 — Communication behavior、communication context、Provenance 与 workflow state 必须分离
+
+### 决策
+
+历史 `Behavior.communication_status` 的业务能力继续保留，但该单一字段可能混合至少四类不同语义：
+
+1. Subject / actor 实际实施或没有实施的 communication Behavior；
+2. 对另一个 Behavior / Preference 的 contextual communication qualification；
+3. 谁报告、记录、抽取或生成信息的 Provenance；
+4. review、acknowledgment、assignment、escalation、notification 等 workflow / application state。
+
+Canonical semantics 必须保持这些类别可区分，不能仅因为历史上共用一个 `communication_status` 字段就继续压成一个通用状态。
+
+“患者告诉医生 X”与“医生把 X 记录进 EHR”不是同一语义；“communicated / acknowledged”也不表示内容已经 verified、agreed 或 true。
+
+### 理由
+
+如果不拆分这四类语义，未来 Schema 会重新把患者行为、语义上下文、来源追踪和软件工作流混在一起。
+
+这不仅会削弱 PBDL-Core 的描述边界，也会让下游系统无法判断一个状态究竟描述患者做了什么、信息怎么进入系统、某项语义如何被沟通，还是后台流程已经走到哪一步。

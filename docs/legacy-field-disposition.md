@@ -444,6 +444,31 @@ R1D 已解决：
 - 临床沟通领域扩展；
 - 工作流系统状态。
 
+**R1F 状态：partially resolved by R1F。**
+
+R1F 已解决：
+
+- `communication_status` 不作为未经区分的 Behavior intrinsic status 直接冻结；
+- actual communication Behavior 与 workflow / application state 明确分离；
+- contextual communication qualification 与 Provenance 明确分离；
+- communicated / reported / acknowledged 不等于 verified truth、agreement 或事实认证；
+- workflow / application status 默认位于 PBDL-Core 外；
+- Context 获得最小 semantic boundary，并被明确禁止作为 catch-all container；
+- Context 当前不要求独立 Core identity，也不加入 document-local identity namespace；
+- Context 不成为 Relation endpoint，R1B endpoint matrix 保持不变。
+
+仍未解决：
+
+- final communication canonical fields；
+- communication vocabulary / enum；
+- actor / recipient model；
+- communication channel；
+- Context concrete fields；
+- Context cardinality / nesting；
+- Context JSON / DSL syntax；
+- 是否未来建立 Communication extension；
+- Context 与 Constraint / Barrier 的最终结构关系。
+
 ### OQ-003 — 统一 Evidence / Provenance
 
 `evidence_source` 与 `source_type` 应如何收敛？

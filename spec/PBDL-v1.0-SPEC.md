@@ -95,7 +95,7 @@ R1B 冻结以下四类核心语义对象的最小边界：
 - Preference：对某个 Subject 已表达或已推断的倾向、选择、优先级、厌恶或偏好的表示。
 - Relation：在允许的端点类型之间显式表达语义联系的 Core 构造。
 
-Context 仍属于 PBDL-Core 的候选概念。Provenance 与 Evidence 的最小语义边界已由 R1C 冻结为两个相关但不等价的概念；其具体字段、Schema、identity / reference 细节仍未完全冻结。
+Context 的最小语义职责已由 R1F 冻结：它用于对 Behavior / Preference 的语义解释提供情境性限定，但当前不作为具有独立 identity 的可引用一级 Core entity。其具体字段、cardinality、nesting、Schema 与 syntax 仍未冻结。Provenance 与 Evidence 的最小语义边界已由 R1C 冻结为两个相关但不等价的概念；其具体字段、Schema、identity / reference 细节仍未完全冻结。
 
 ### 5.1 文档与 Subject 绑定
 
@@ -472,6 +472,67 @@ R1E 不冻结新的 normative Relation vocabulary。`related_to`、`associated_w
 
 Behavior 的具体 trigger / symptom canonical fields、Context 归属、symptom terminology representation、Relation type names、JSON / DSL syntax 仍为 **TODO**。
 
+### 10.4 Legacy `communication_status` compatibility
+
+历史 `Behavior.communication_status` 的表达能力继续保留，但单一 legacy 字段混合了多种不同语义。Canonical transformation **MUST NOT** 仅凭 `communication_status` 字段名决定其 canonical semantic category，也 **MUST NOT** 默认把这些语义继续压成一个通用 Behavior status。
+
+R1F 至少区分以下四类情况。
+
+#### 10.4.1 Actual communication Behavior
+
+如果来源描述 Subject / actor 实际实施或没有实施某个沟通行为，例如：
+
+- 患者告诉医生自己漏服了药；
+- 患者给护士打电话报告副作用；
+- 患者没有告诉医生自己已经停药；
+
+这首先属于 observed / reported communication behavior，而不是单纯 workflow status。
+
+只要该信息满足 Behavior 的既有语义边界，它 **MAY** 作为 Behavior semantic content 表达。
+
+“患者告诉医生 X”与“X 被医生记录进 EHR”不是同一个概念；前者描述沟通行为，后者在表达信息来源、记录过程或进入系统的路径时属于 Provenance semantics。
+
+R1F 不冻结 communication behavior 的具体 behavior type、actor、recipient 或 channel 字段。已有 `Behavior.executor` 继续遵守 R1B 的兼容边界；R1F 不新增 Participant 一级 Core entity。
+
+#### 10.4.2 Contextual communication metadata
+
+如果 legacy `communication_status` 的真实语义是限定另一个 Behavior / Preference 如何处于某种沟通情境，例如“该漏服行为已经向临床人员披露”或“该偏好尚未向家属沟通”，这类信息可以保留为 candidate contextual / communication qualification。
+
+该类语义 **MUST** 与 actual communication Behavior、Provenance information、workflow / application state 保持可区分。
+
+R1F 不冻结其最终是否采用 Context、Behavior-local structured information、extension 或其他结构，也不冻结字段名或 enum。
+
+#### 10.4.3 Communication-related Provenance
+
+如果 legacy `communication_status` 实际想表达：
+
+- 谁报告或记录了这条信息；
+- 信息从哪个来源或渠道进入系统；
+- 谁抽取、生成或记录了该信息；
+- 信息何时被记录、抽取或生成；
+
+这些语义属于 R1C Provenance，而不是 generic Context。
+
+Canonical transformation **MUST NOT** 为了保留 legacy `communication_status` 而复制、覆盖或混淆已经属于 Provenance 的语义。
+
+#### 10.4.4 Workflow / application state
+
+如果 legacy `communication_status` 实际表示 `pending review`、`reviewed`、`acknowledged`、`escalated`、`assigned`、`notified`、`message sent`、`task completed`、`closed` 等软件或业务流程状态，这些信息默认属于 workflow / application layer。
+
+PBDL-Core **MUST NOT** 默认把此类 workflow / application state 当作患者自身 Behavior 的 intrinsic semantic state。
+
+历史能力可以由 future extension、application metadata 或外部 workflow system 继续承载；R1F 不设计该 extension。
+
+#### 10.4.5 Communication does not certify truth
+
+Information communicated **MUST NOT** 自动等价为 information verified。
+
+同样，`acknowledged` **MUST NOT** 自动等价为 `agreed`、`verified` 或 `true`。
+
+例如患者已经告诉医生“我每天都按时服药”，只说明发生过报告 / 沟通，不表示该内容已经被认证为现实真值。该边界继续遵守 R1C “PBDL records sourced information, not certified truth”。
+
+如果来源同时包含沟通行为、其他 Behavior 和 source-attributed reason，canonical transformation **MUST NOT** 仅压缩成一个 `communication_status` 而丢失其余可区分语义；legacy migration **MUST** 以实际来源含义为准。
+
 ## 11. Preference
 
 Preference 表示某个 Subject 对选项、属性、治疗特征或结果所表达或推断出的倾向、选择、优先级、厌恶或偏好。
@@ -520,9 +581,60 @@ Preference 的具体字段、偏好类型词表、取值模型、confidence surf
 
 ## 12. Context
 
-Context 是 PBDL-Core 的候选核心概念，用于承载解释 Behavior 或 Preference 所需的上下文信息。
+R1F 冻结 Context 的最小语义职责。
 
-上下文模型、作用域规则、允许的维度、继承规则和语法仍为 **TODO**。
+Context 用于表达解释某个 Behavior / Preference 时，与其发生、成立或被理解相关的情境性背景或条件限定。它的职责是 **qualify semantic interpretation**，而不是证明原因、执行推理、记录来源或承载软件工作流。
+
+概念上，Context 可以帮助表达类似“旅行期间发生漏服”“工作场景中避免用药”“存在家庭支持时愿意接受某方案”等情境，但这些只是说明性例子；R1F 不冻结具体 Context 类别、字段或 vocabulary。
+
+### 12.1 Context is not a catch-all container
+
+Context **MUST NOT** 被当作“无法分类的信息都放进 Context”的默认 catch-all container。
+
+已经具有明确语义职责的信息 **MUST NOT** 仅为了结构便利而被重新解释为 generic Context：
+
+- 信息从哪里来、如何产生，属于 R1C Provenance；
+- Behavior / Preference / Relation 何时发生、成立或适用，属于 R1D semantic temporal semantics；
+- source-attributed reason、observed antecedent 与 inferred explanation 继续遵守 R1E trigger / reason boundary；
+- risk、conflict、recommendation、score、causal inference 等 derived analysis 属于 Core 外部的 derived / application result；
+- `pending review`、`assigned`、`escalated`、`resolved`、system acknowledgment、notification state 等默认属于 workflow / application layer。
+
+Context **MUST NOT** 作为绕过既有 Provenance、temporal、trigger / reason 或 derived-analysis 边界的替代容器。
+
+### 12.2 Context does not establish causality
+
+某因素被表示为 Context **MUST NOT** 自动表示该因素 caused Behavior、caused Preference 或 clinically explains an outcome。
+
+例如，Behavior 发生在 traveling context 中，只说明该 Behavior 具有 traveling contextual qualification；它 **MUST NOT** 自动推出 traveling caused the Behavior。
+
+如果来源明确表达“因为旅行忘记服药”，该 reason attribution 继续遵守 R1E，而不是仅靠 Context 获得 reason / causal semantics。
+
+同样，Context **MUST NOT** 仅因为某因素影响或限制行为，就自动把它定义为 objective Constraint / Barrier。Constraint / Barrier model 仍为 future work。
+
+### 12.3 Missing Context
+
+Behavior / Preference **MAY** 没有显式 Context information。
+
+缺少 Context **MUST NOT** 被解释为：
+
+- context-free；
+- universally applicable；
+- unconditional；
+- 在任何环境都成立。
+
+它只表示 canonical semantics 当前没有提供额外 contextual qualification。
+
+### 12.4 Context identity and reference boundary
+
+R1F 不要求 Context 具有独立 identity。
+
+Context 不加入 Subject / Behavior / Preference 的 document-local identity namespace，也不成为当前 Relation endpoint。
+
+R1B identity / reference rules 与 Relation endpoint matrix 保持不变。
+
+如果未来出现 shared context、context reuse 或稳定 context reference 等真实需求，可以在后续设计轮次重新审议 identity / reference model；R1F 不冻结这些机制。
+
+Context 的 concrete fields、cardinality、nesting、identity / reuse mechanics、JSON Schema 与 DSL syntax 仍为 **TODO**。
 
 ## 13. Evidence 与 Provenance
 
@@ -816,8 +928,14 @@ R0 阶段不冻结任何具体 SNOMED CT、LOINC、ICD 或其他医学术语编�
 38. Observed / recorded association、co-occurrence 或 temporal antecedence **MUST NOT** 自动升级为 source-attributed reason 或 causal claim；temporal precedence **MUST NOT** 自动推出 causality。
 39. INFERRED explanation **MUST NOT** 静默表示为 DIRECT source-attributed reason，并继续遵守 R1C 关于 semantic derivation 的 DIRECT / INFERRED 判定规则。
 40. 如果来源不支持 symptom-related direction，canonicalization **MUST NOT** 从 `symptom_triggered` 字段名或时间顺序中发明 direction；已知 direction **MUST NOT** 自动等价为 causality。
+41. Context **MUST NOT** 自动建立 causality；Contextual qualification **MUST NOT** 自动等价为 reason、causal explanation 或 verified causal effect。
+42. Behavior / Preference 缺少显式 Context **MUST NOT** 被解释为 context-free、universally applicable 或 unconditional；它只表示未提供额外 contextual qualification。
+43. Context **MUST NOT** 被用作 Provenance、semantic time、trigger / reason semantics、derived analysis 或 workflow / application state 的默认替代容器。
+44. Legacy `communication_status` **MUST NOT** 仅凭字段名决定 canonical semantic category，也 **MUST NOT** 默认冻结为单一通用 Behavior status。
+45. Actual communication Behavior、contextual communication metadata、Provenance information 与 workflow / application state **MUST** 保持语义可区分。
+46. `communicated` / `reported` / `acknowledged` **MUST NOT** 自动等价为 `verified`、`true`、`agreed` 或来源内容已得到事实认证。
 
-跨文档 identity / reference protocol、frequency / recurrence、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom concrete structure、symptom terminology representation、术语词表、Context 详细结构和 Constraint 模型仍为 **TODO**。
+跨文档 identity / reference protocol、frequency / recurrence、具体 temporal field、exact date/time serialization、partial-date representation details、Provenance / Evidence 的具体 Schema、confidence surface、trigger / symptom concrete structure、symptom terminology representation、communication canonical fields / vocabulary、Context concrete fields / cardinality / nesting、Constraint / Barrier model、术语词表仍为 **TODO**。
 
 ## 17. 规范化表示
 
