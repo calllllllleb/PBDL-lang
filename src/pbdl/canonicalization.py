@@ -1,12 +1,19 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from functools import partial
 from typing import Any, Callable, TypeVar, cast
 
 from .semantic_validation import (
     SemanticInputError,
     SemanticValidationResult,
     validate_semantics,
+)
+from .relation_vocabulary import (
+    RelationVocabulary,
+    VocabularyInputError,
+    VocabularyValidationResult,
+    validate_relation_vocabulary,
 )
 
 
@@ -23,8 +30,14 @@ class CanonicalizationInputError(ValueError):
         schema_result: object | None = None,
         resolution_result: object | None = None,
         semantic_result: SemanticValidationResult | None = None,
+        vocabulary_result: VocabularyValidationResult | None = None,
     ) -> None:
-        results = [schema_result, resolution_result, semantic_result]
+        results = [
+            schema_result,
+            resolution_result,
+            semantic_result,
+            vocabulary_result,
+        ]
         if sum(result is not None for result in results) != 1:
             raise ValueError("exactly one validation result must be provided")
         if schema_result is not None:
@@ -33,13 +46,17 @@ class CanonicalizationInputError(ValueError):
         elif resolution_result is not None:
             message = "canonicalization requires a reference-valid document"
             validation_result = resolution_result
-        else:
+        elif semantic_result is not None:
             message = "canonicalization requires a semantic-valid document"
             validation_result = semantic_result
+        else:
+            message = "canonicalization requires a vocabulary-valid document"
+            validation_result = vocabulary_result
         super().__init__(message)
         self.schema_result = schema_result
         self.resolution_result = resolution_result
         self.semantic_result = semantic_result
+        self.vocabulary_result = vocabulary_result
         self.validation_result = validation_result
         self.lower_layer_result = validation_result
 
@@ -527,15 +544,39 @@ def _canonicalize_preference(preference: dict[str, Any]) -> None:
     _canonicalize_annotations(preference)
 
 
-def _relation_equal(left: dict[str, Any], right: dict[str, Any]) -> bool:
-    # Generic canonicalizer 没有 Relation vocabulary，因此只比较同向 endpoints。
-    # swapped endpoints 不得被猜成 symmetric，也不得为了 dedup 自行重排。
-    if left["source"]["ref"] != right["source"]["ref"]:
-        return False
-    if left["target"]["ref"] != right["target"]["ref"]:
-        return False
+def _relation_equal(
+    left: dict[str, Any],
+    right: dict[str, Any],
+    *,
+    relation_vocabulary: RelationVocabulary | None = None,
+) -> bool:
+    # Relation.type 的完整 Coding 信息始终先比较；vocabulary lookup 只使用
+    # system + code，不能弱化 version/display 对 full equality 的影响。
     if not _coding_equal(left["type"], right["type"]):
         return False
+
+    directionality = (
+        None
+        if relation_vocabulary is None
+        else relation_vocabulary.directionality_for(left["type"])
+    )
+    if directionality in {"symmetric", "non_directional"}:
+        same_endpoints = (
+            left["source"]["ref"] == right["source"]["ref"]
+            and left["target"]["ref"] == right["target"]["ref"]
+        )
+        swapped_endpoints = (
+            left["source"]["ref"] == right["target"]["ref"]
+            and left["target"]["ref"] == right["source"]["ref"]
+        )
+        if not (same_endpoints or swapped_endpoints):
+            return False
+    else:
+        # 无 vocabulary 或 directional entry 时保持既有保守行为。
+        if left["source"]["ref"] != right["source"]["ref"]:
+            return False
+        if left["target"]["ref"] != right["target"]["ref"]:
+            return False
     if ("temporal" in left) != ("temporal" in right):
         return False
     if "temporal" in left and not _temporal_full_equal(
@@ -569,6 +610,8 @@ def _canonicalize_relation(relation: dict[str, Any]) -> None:
 
 def _canonicalize_valid_document(
     document: dict[str, Any],
+    *,
+    relation_vocabulary: RelationVocabulary | None = None,
 ) -> dict[str, Any]:
     canonical = deepcopy(document)
 
@@ -580,50 +623,109 @@ def _canonicalize_valid_document(
 
     for relation in canonical["relations"]:
         _canonicalize_relation(relation)
+    relation_equal: EqualFn[dict[str, Any]]
+    if relation_vocabulary is None:
+        relation_equal = _relation_equal
+    else:
+        relation_equal = partial(
+            _relation_equal,
+            relation_vocabulary=relation_vocabulary,
+        )
     canonical["relations"] = _stable_deduplicate(
-        canonical["relations"], _relation_equal
+        canonical["relations"], relation_equal
     )
 
     return canonical
 
 
-def canonicalize_document(document: object) -> dict[str, Any]:
-    try:
-        semantic_result = validate_semantics(document)
-    except SemanticInputError as error:
-        if error.schema_result is not None:
-            raise CanonicalizationInputError(
-                schema_result=error.schema_result
-            ) from error
-        raise CanonicalizationInputError(
+def _canonicalization_error_from_vocabulary_input(
+    error: VocabularyInputError,
+) -> CanonicalizationInputError:
+    if error.schema_result is not None:
+        return CanonicalizationInputError(schema_result=error.schema_result)
+    if error.resolution_result is not None:
+        return CanonicalizationInputError(
             resolution_result=error.resolution_result
-        ) from error
-
-    if not semantic_result.valid:
-        raise CanonicalizationInputError(
-            semantic_result=semantic_result
         )
+    return CanonicalizationInputError(semantic_result=error.semantic_result)
+
+
+def canonicalize_document(
+    document: object,
+    *,
+    relation_vocabulary: RelationVocabulary | None = None,
+) -> dict[str, Any]:
+    if relation_vocabulary is None:
+        try:
+            semantic_result = validate_semantics(document)
+        except SemanticInputError as error:
+            if error.schema_result is not None:
+                raise CanonicalizationInputError(
+                    schema_result=error.schema_result
+                ) from error
+            raise CanonicalizationInputError(
+                resolution_result=error.resolution_result
+            ) from error
+
+        if not semantic_result.valid:
+            raise CanonicalizationInputError(
+                semantic_result=semantic_result
+            )
+    else:
+        try:
+            vocabulary_result = validate_relation_vocabulary(
+                document, relation_vocabulary
+            )
+        except VocabularyInputError as error:
+            raise _canonicalization_error_from_vocabulary_input(error) from error
+        if not vocabulary_result.valid:
+            raise CanonicalizationInputError(
+                vocabulary_result=vocabulary_result
+            )
 
     canonical = _canonicalize_valid_document(
-        cast(dict[str, Any], document)
+        cast(dict[str, Any], document),
+        relation_vocabulary=relation_vocabulary,
     )
 
-    # Normalization 只能删除表示冗余；若结果不再 semantic-valid，属于实现 bug。
-    try:
-        post_result = validate_semantics(canonical)
-    except SemanticInputError as error:
-        raise RuntimeError(
-            "canonicalization produced a lower-layer-invalid document"
-        ) from error
-    if not post_result.valid:
-        raise RuntimeError(
-            "canonicalization produced a semantic-invalid document"
-        )
+    # Normalization 只能删除表示冗余；有 vocabulary 时还必须保持 VOCABULARY-valid。
+    if relation_vocabulary is None:
+        try:
+            post_result = validate_semantics(canonical)
+        except SemanticInputError as error:
+            raise RuntimeError(
+                "canonicalization produced a lower-layer-invalid document"
+            ) from error
+        if not post_result.valid:
+            raise RuntimeError(
+                "canonicalization produced a semantic-invalid document"
+            )
+    else:
+        try:
+            post_vocabulary_result = validate_relation_vocabulary(
+                canonical, relation_vocabulary
+            )
+        except VocabularyInputError as error:
+            raise RuntimeError(
+                "canonicalization produced a lower-layer-invalid document"
+            ) from error
+        if not post_vocabulary_result.valid:
+            raise RuntimeError(
+                "canonicalization produced a vocabulary-invalid document"
+            )
+
     return canonical
 
 
-def is_canonical_normal_form(document: object) -> bool:
-    canonical = canonicalize_document(document)
-    # dict member order 与 collection sorting 都不属于当前 normal form；canonicalizer
-    # 不重排合法 collection，因此普通结构 equality 足以检测本轮 normalization delta。
+def is_canonical_normal_form(
+    document: object,
+    *,
+    relation_vocabulary: RelationVocabulary | None = None,
+) -> bool:
+    canonical = canonicalize_document(
+        document,
+        relation_vocabulary=relation_vocabulary,
+    )
+    # dict member order 与 collection sorting 都不属于当前 normal form；
+    # canonicalizer 只稳定删除冗余，不执行 endpoint sorting。
     return canonical == document
