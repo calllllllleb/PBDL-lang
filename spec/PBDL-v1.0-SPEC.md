@@ -2016,7 +2016,7 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 
 - DSL 语法与序列化；
 - 具体 `Relation` 词汇条目与关系类型代码；
-- 逆关系约定；
+- 具体逆关系代码配对；
 - 派生 relation-strength 工件结构；
 - 外部 `Relation` 词汇的发现、打包与版本选择机制。
 
@@ -2054,6 +2054,8 @@ PBDL-Core 1.0 冻结的是 **Relation Vocabulary Contract**，而不是一套穷
 - 本节不得重新设计 `Coding` 身份或相等性。
 
 一个适用的 relation vocabulary registry 内，`system + code` 必须唯一标识一个词汇条目。`system`、`code` 与可选 `version` 继续遵守现有 `Coding` 字符串约束。不得通过同一 registry 中重复的 `system + code` 再让运行时根据 `version`、`display` 或其他启发式信息猜测应采用哪个契约。
+
+词汇条目解析必须仅使用 `system + code`；`version` 是解析后的兼容性断言，不是 entry selector。若 `Relation.type.version` 与已解析词汇条目的 `version` 同时存在，两者必须精确相同；任一方缺失时，不得仅因 `version` 缺失判定 vocabulary 不符合。同一 registry 中重复的 `system + code` 始终无效，不得通过 `version` 消歧。
 
 Relation vocabulary entry 的最小字段如下：
 
@@ -2156,7 +2158,7 @@ endpoints:
 - `code`；
 - 可选 `version`。
 
-该引用继续遵守本节的关系类型身份规则，必须唯一解析到另一个满足本节 contract 的关系类型条目，并且其 `system + code` 不得与当前条目自身相同；不得通过 `inverse` 自引用变相表达 `self_inverse`。PBDL 1.0 不要求被引用条目反向声明同一组 inverse metadata。对 `symmetric` / `non_directional` 类型，交换端点后的语义已经由 `directionality` 契约定义，不需要再用 `self_inverse` 重复表达。
+该引用继续遵守本节的关系类型身份规则，并仅使用 `system + code` 唯一解析到另一个满足本节 contract 的关系类型条目；其 `system + code` 不得与当前条目自身相同，不得通过 `inverse` 自引用变相表达 `self_inverse`。若 `inverse.version` 与已解析目标条目的 `version` 同时存在，两者必须精确相同；任一方缺失时，不得仅因 `version` 缺失判定该 inverse 引用不符合。PBDL 1.0 不要求被引用条目反向声明同一组 inverse metadata。对 `symmetric` / `non_directional` 类型，交换端点后的语义已经由 `directionality` 契约定义，不需要再用 `self_inverse` 重复表达。
 
 `inverse` 不改变 §22.9.3 已冻结的 `Relation` 相等性：
 
