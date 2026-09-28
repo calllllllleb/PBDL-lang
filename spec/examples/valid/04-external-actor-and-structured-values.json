@@ -1,0 +1,91 @@
+{
+  "pbdl_version": "1.0",
+  "subjects": [
+    {
+      "id": "subject_1"
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "behavior_1",
+      "subject": {
+        "ref": "subject_1"
+      },
+      "type": {
+        "system": "urn:example:pbdl-behavior",
+        "code": "medication_adherence"
+      },
+      "executor": {
+        "kind": "device",
+        "external_id": {
+          "system": "urn:example:device",
+          "value": "device_42"
+        },
+        "display": "Reminder device",
+        "role": "reminder"
+      },
+      "temporal": {
+        "kind": "interval",
+        "start": "2026-09",
+        "end": "2026-10"
+      },
+      "frequencies": [
+        {
+          "kind": "recurrence",
+          "period": {
+            "value": 1,
+            "unit": "week"
+          },
+          "precision": "exact",
+          "days_of_week": [
+            "mon",
+            "wed",
+            "fri"
+          ],
+          "day_part": "morning"
+        }
+      ],
+      "contexts": [
+        {
+          "value": {
+            "kind": "text",
+            "value": "at home"
+          }
+        }
+      ],
+      "factors": [
+        {
+          "role": "reported_reason",
+          "factor": {
+            "kind": "text",
+            "value": "reminder support"
+          },
+          "direction": "factor_to_behavior"
+        }
+      ],
+      "provenance": [
+        {
+          "derivation": "direct",
+          "source": {
+            "kind": "patient_self_report"
+          }
+        }
+      ],
+      "annotations": [
+        {
+          "text": "Needs follow-up",
+          "provenance": [
+            {
+              "derivation": "direct",
+              "source": {
+                "kind": "clinician_documentation"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preferences": [],
+  "relations": []
+}

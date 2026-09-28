@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/PBDLDocument",
   "$defs": {
     "VersionToken": {
       "title": "PBDL VersionToken",
@@ -1234,6 +1235,48 @@
       "required": [
         "text",
         "provenance"
+      ],
+      "unevaluatedProperties": false
+    },
+    "PBDLDocument": {
+      "title": "PBDL PBDLDocument",
+      "type": "object",
+      "properties": {
+        "pbdl_version": {
+          "$ref": "#/$defs/VersionToken"
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Subject"
+          },
+          "minItems": 1
+        },
+        "behaviors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Behavior"
+          }
+        },
+        "preferences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Preference"
+          }
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Relation"
+          }
+        }
+      },
+      "required": [
+        "pbdl_version",
+        "subjects",
+        "behaviors",
+        "preferences",
+        "relations"
       ],
       "unevaluatedProperties": false
     }

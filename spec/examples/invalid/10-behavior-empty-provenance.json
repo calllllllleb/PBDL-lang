@@ -1,0 +1,67 @@
+{
+  "pbdl_version": "1.0",
+  "subjects": [
+    {
+      "id": "subject_1"
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "behavior_1",
+      "subject": {
+        "ref": "subject_1"
+      },
+      "type": {
+        "system": "urn:example:pbdl-behavior",
+        "code": "medication_adherence"
+      },
+      "provenance": []
+    }
+  ],
+  "preferences": [
+    {
+      "id": "preference_1",
+      "subject": {
+        "ref": "subject_1"
+      },
+      "category": {
+        "system": "urn:example:pbdl-preference",
+        "code": "contact_method"
+      },
+      "value": {
+        "kind": "text",
+        "value": "phone"
+      },
+      "provenance": [
+        {
+          "derivation": "direct",
+          "source": {
+            "kind": "patient_self_report"
+          }
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "ref": "behavior_1"
+      },
+      "target": {
+        "ref": "preference_1"
+      },
+      "type": {
+        "system": "urn:example:pbdl-relation",
+        "code": "example_relation"
+      },
+      "provenance": [
+        {
+          "derivation": "direct",
+          "source": {
+            "kind": "clinician_documentation"
+          }
+        }
+      ]
+    }
+  ]
+}
