@@ -18,8 +18,14 @@ from .semantic_validation import (
     are_semantics_valid,
     validate_semantics,
 )
+from .canonicalization import (
+    CanonicalizationInputError,
+    canonicalize_document,
+    is_canonical_normal_form,
+)
 
 __all__ = [
+    "CanonicalizationInputError",
     "ResolutionInputError",
     "ResolutionResult",
     "ResolutionViolation",
@@ -30,6 +36,8 @@ __all__ = [
     "SemanticViolation",
     "are_references_valid",
     "are_semantics_valid",
+    "canonicalize_document",
+    "is_canonical_normal_form",
     "is_schema_valid",
     "resolve_references",
     "validate_document",
