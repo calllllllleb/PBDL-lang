@@ -178,6 +178,885 @@
           "$ref": "#/$defs/ExternalActorRef"
         }
       ]
+    },
+    "DerivationKind": {
+      "title": "PBDL DerivationKind",
+      "type": "string",
+      "enum": [
+        "direct",
+        "inferred",
+        "undetermined"
+      ]
+    },
+    "SourceKind": {
+      "title": "PBDL SourceKind",
+      "type": "string",
+      "enum": [
+        "patient_self_report",
+        "questionnaire",
+        "clinician_documentation",
+        "ehr_record",
+        "device_observation",
+        "legacy_record",
+        "other"
+      ]
+    },
+    "SourceDescriptor": {
+      "title": "PBDL SourceDescriptor",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/SourceKind"
+        },
+        "locator": {
+          "type": "string",
+          "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]"
+        },
+        "display": {
+          "$ref": "#/$defs/Text"
+        },
+        "times": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceTimeEvent"
+          }
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "unevaluatedProperties": false
+    },
+    "SourceTimeEvent": {
+      "title": "PBDL SourceTimeEvent",
+      "type": "object",
+      "properties": {
+        "role": {
+          "enum": [
+            "reported",
+            "recorded",
+            "observed"
+          ]
+        },
+        "at": {
+          "$ref": "#/$defs/TemporalValue"
+        }
+      },
+      "required": [
+        "role",
+        "at"
+      ],
+      "unevaluatedProperties": false
+    },
+    "GeneratorKind": {
+      "title": "PBDL GeneratorKind",
+      "type": "string",
+      "enum": [
+        "human",
+        "llm",
+        "rule_engine",
+        "analytic_model",
+        "migration_process",
+        "other"
+      ]
+    },
+    "GeneratorDescriptor": {
+      "title": "PBDL GeneratorDescriptor",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/GeneratorKind"
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]"
+        },
+        "display": {
+          "$ref": "#/$defs/Text"
+        },
+        "times": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GeneratorTimeEvent"
+          }
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "unevaluatedProperties": false
+    },
+    "GeneratorTimeEvent": {
+      "title": "PBDL GeneratorTimeEvent",
+      "type": "object",
+      "properties": {
+        "role": {
+          "enum": [
+            "extracted",
+            "generated",
+            "transformed",
+            "migrated"
+          ]
+        },
+        "at": {
+          "$ref": "#/$defs/TemporalValue"
+        }
+      },
+      "required": [
+        "role",
+        "at"
+      ],
+      "unevaluatedProperties": false
+    },
+    "EvidenceKind": {
+      "title": "PBDL EvidenceKind",
+      "type": "string",
+      "enum": [
+        "text_excerpt",
+        "document_reference",
+        "questionnaire_response",
+        "device_observation",
+        "legacy_material",
+        "other"
+      ]
+    },
+    "Evidence": {
+      "title": "PBDL Evidence",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/EvidenceKind"
+        },
+        "content": {
+          "$ref": "#/$defs/Text"
+        },
+        "locator": {
+          "type": "string",
+          "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]"
+        },
+        "times": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceTimeEvent"
+          }
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "content"
+          ]
+        },
+        {
+          "required": [
+            "locator"
+          ]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Provenance": {
+      "title": "PBDL Provenance",
+      "type": "object",
+      "properties": {
+        "derivation": {
+          "$ref": "#/$defs/DerivationKind"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceDescriptor"
+        },
+        "generator": {
+          "$ref": "#/$defs/GeneratorDescriptor"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          }
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        }
+      },
+      "required": [
+        "derivation"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "derivation": {
+                "const": "direct"
+              }
+            },
+            "required": [
+              "derivation"
+            ]
+          },
+          "then": {
+            "required": [
+              "source"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "derivation": {
+                "const": "inferred"
+              }
+            },
+            "required": [
+              "derivation"
+            ]
+          },
+          "then": {
+            "required": [
+              "generator"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "derivation": {
+                "const": "undetermined"
+              }
+            },
+            "required": [
+              "derivation"
+            ]
+          },
+          "then": {
+            "required": [
+              "source"
+            ],
+            "anyOf": [
+              {
+                "properties": {
+                  "source": {
+                    "required": [
+                      "locator"
+                    ]
+                  }
+                }
+              },
+              {
+                "required": [
+                  "evidence"
+                ],
+                "properties": {
+                  "evidence": {
+                    "minItems": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Instant": {
+      "title": "PBDL Instant",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "instant"
+        },
+        "at": {
+          "$ref": "#/$defs/TemporalValue"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "kind",
+        "at"
+      ],
+      "unevaluatedProperties": false
+    },
+    "Interval": {
+      "title": "PBDL Interval",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "interval"
+        },
+        "start": {
+          "$ref": "#/$defs/TemporalValue"
+        },
+        "end": {
+          "$ref": "#/$defs/TemporalValue"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "start"
+          ]
+        },
+        {
+          "required": [
+            "end"
+          ]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "TemporalExtent": {
+      "title": "PBDL TemporalExtent",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Instant"
+        },
+        {
+          "$ref": "#/$defs/Interval"
+        }
+      ]
+    },
+    "QuantitativeFrequencyPrecision": {
+      "title": "PBDL QuantitativeFrequencyPrecision",
+      "type": "string",
+      "enum": [
+        "exact",
+        "approximate"
+      ]
+    },
+    "FrequencyPeriod": {
+      "title": "PBDL FrequencyPeriod",
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "unit": {
+          "enum": [
+            "day",
+            "week",
+            "month",
+            "year"
+          ]
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "unevaluatedProperties": false
+    },
+    "Weekday": {
+      "title": "PBDL Weekday",
+      "type": "string",
+      "enum": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri",
+        "sat",
+        "sun"
+      ]
+    },
+    "DayPart": {
+      "title": "PBDL DayPart",
+      "type": "string",
+      "enum": [
+        "morning",
+        "afternoon",
+        "evening",
+        "night"
+      ]
+    },
+    "QualitativeFrequencyToken": {
+      "title": "PBDL QualitativeFrequencyToken",
+      "type": "string",
+      "enum": [
+        "never",
+        "rarely",
+        "occasionally",
+        "sometimes",
+        "often",
+        "frequently",
+        "usually",
+        "intermittently",
+        "always"
+      ]
+    },
+    "ObservedCountFrequency": {
+      "title": "PBDL ObservedCountFrequency",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "observed_count"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "precision": {
+          "$ref": "#/$defs/QuantitativeFrequencyPrecision"
+        },
+        "window": {
+          "$ref": "#/$defs/Interval"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "kind",
+        "count",
+        "precision"
+      ],
+      "unevaluatedProperties": false
+    },
+    "RateFrequency": {
+      "title": "PBDL RateFrequency",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "rate"
+        },
+        "value": {
+          "type": "number",
+          "minimum": 0
+        },
+        "period": {
+          "$ref": "#/$defs/FrequencyPeriod"
+        },
+        "precision": {
+          "$ref": "#/$defs/QuantitativeFrequencyPrecision"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "kind",
+        "value",
+        "period",
+        "precision"
+      ],
+      "unevaluatedProperties": false
+    },
+    "RecurrenceFrequency": {
+      "title": "PBDL RecurrenceFrequency",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "recurrence"
+        },
+        "period": {
+          "$ref": "#/$defs/FrequencyPeriod"
+        },
+        "precision": {
+          "$ref": "#/$defs/QuantitativeFrequencyPrecision"
+        },
+        "times_per_period": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "days_of_week": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Weekday"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "day_part": {
+          "$ref": "#/$defs/DayPart"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "kind",
+        "period",
+        "precision"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "days_of_week"
+            ]
+          },
+          "then": {
+            "properties": {
+              "period": {
+                "const": {
+                  "value": 1,
+                  "unit": "week"
+                }
+              }
+            },
+            "not": {
+              "required": [
+                "times_per_period"
+              ]
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "QualitativeFrequency": {
+      "title": "PBDL QualitativeFrequency",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "qualitative"
+        },
+        "value": {
+          "$ref": "#/$defs/QualitativeFrequencyToken"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "unevaluatedProperties": false
+    },
+    "BehaviorFrequency": {
+      "title": "PBDL BehaviorFrequency",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ObservedCountFrequency"
+        },
+        {
+          "$ref": "#/$defs/RateFrequency"
+        },
+        {
+          "$ref": "#/$defs/RecurrenceFrequency"
+        },
+        {
+          "$ref": "#/$defs/QualitativeFrequency"
+        }
+      ]
+    },
+    "CodedPreferenceValue": {
+      "title": "PBDL CodedPreferenceValue",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "coded"
+        },
+        "value": {
+          "$ref": "#/$defs/Coding"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "unevaluatedProperties": false
+    },
+    "TextPreferenceValue": {
+      "title": "PBDL TextPreferenceValue",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "text"
+        },
+        "value": {
+          "$ref": "#/$defs/Text"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "unevaluatedProperties": false
+    },
+    "BooleanPreferenceValue": {
+      "title": "PBDL BooleanPreferenceValue",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "boolean"
+        },
+        "value": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "unevaluatedProperties": false
+    },
+    "NumericPreferenceValue": {
+      "title": "PBDL NumericPreferenceValue",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "number"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "lt",
+            "lte",
+            "gt",
+            "gte"
+          ]
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/Coding"
+        }
+      },
+      "required": [
+        "kind",
+        "operator",
+        "value"
+      ],
+      "unevaluatedProperties": false
+    },
+    "PreferenceValue": {
+      "title": "PBDL PreferenceValue",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/CodedPreferenceValue"
+        },
+        {
+          "$ref": "#/$defs/TextPreferenceValue"
+        },
+        {
+          "$ref": "#/$defs/BooleanPreferenceValue"
+        },
+        {
+          "$ref": "#/$defs/NumericPreferenceValue"
+        }
+      ]
+    },
+    "CodedContextValue": {
+      "title": "PBDL CodedContextValue",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "coded"
+        },
+        "value": {
+          "$ref": "#/$defs/Coding"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "unevaluatedProperties": false
+    },
+    "TextContextValue": {
+      "title": "PBDL TextContextValue",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "text"
+        },
+        "value": {
+          "$ref": "#/$defs/Text"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "unevaluatedProperties": false
+    },
+    "ContextValue": {
+      "title": "PBDL ContextValue",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/CodedContextValue"
+        },
+        {
+          "$ref": "#/$defs/TextContextValue"
+        }
+      ]
+    },
+    "Context": {
+      "title": "PBDL Context",
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/ContextValue"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "unevaluatedProperties": false
+    },
+    "FactorRole": {
+      "title": "PBDL FactorRole",
+      "type": "string",
+      "enum": [
+        "reported_reason",
+        "observed_association",
+        "antecedent",
+        "explanatory"
+      ]
+    },
+    "FactorDirection": {
+      "title": "PBDL FactorDirection",
+      "type": "string",
+      "enum": [
+        "factor_to_behavior",
+        "behavior_to_factor",
+        "unspecified"
+      ]
+    },
+    "CodedFactorValue": {
+      "title": "PBDL CodedFactorValue",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "coded"
+        },
+        "value": {
+          "$ref": "#/$defs/Coding"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "unevaluatedProperties": false
+    },
+    "TextFactorValue": {
+      "title": "PBDL TextFactorValue",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "text"
+        },
+        "value": {
+          "$ref": "#/$defs/Text"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "unevaluatedProperties": false
+    },
+    "FactorValue": {
+      "title": "PBDL FactorValue",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/CodedFactorValue"
+        },
+        {
+          "$ref": "#/$defs/TextFactorValue"
+        }
+      ]
+    },
+    "BehaviorFactor": {
+      "title": "PBDL BehaviorFactor",
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/$defs/FactorRole"
+        },
+        "factor": {
+          "$ref": "#/$defs/FactorValue"
+        },
+        "direction": {
+          "$ref": "#/$defs/FactorDirection"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "role",
+        "factor",
+        "direction"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "role": {
+                "enum": [
+                  "reported_reason",
+                  "antecedent"
+                ]
+              }
+            },
+            "required": [
+              "role"
+            ]
+          },
+          "then": {
+            "properties": {
+              "direction": {
+                "const": "factor_to_behavior"
+              }
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
     }
   }
 }
