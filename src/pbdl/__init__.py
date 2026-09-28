@@ -11,6 +11,13 @@ from .resolution import (
     are_references_valid,
     resolve_references,
 )
+from .semantic_validation import (
+    SemanticInputError,
+    SemanticValidationResult,
+    SemanticViolation,
+    are_semantics_valid,
+    validate_semantics,
+)
 
 __all__ = [
     "ResolutionInputError",
@@ -18,8 +25,13 @@ __all__ = [
     "ResolutionViolation",
     "SchemaValidationResult",
     "SchemaViolation",
+    "SemanticInputError",
+    "SemanticValidationResult",
+    "SemanticViolation",
     "are_references_valid",
+    "are_semantics_valid",
     "is_schema_valid",
     "resolve_references",
     "validate_document",
+    "validate_semantics",
 ]
