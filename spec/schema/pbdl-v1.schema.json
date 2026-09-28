@@ -1057,6 +1057,185 @@
         }
       ],
       "unevaluatedProperties": false
+    },
+    "Subject": {
+      "title": "PBDL Subject",
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/EntityId"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "unevaluatedProperties": false
+    },
+    "Behavior": {
+      "title": "PBDL Behavior",
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/EntityId"
+        },
+        "subject": {
+          "$ref": "#/$defs/SubjectRef"
+        },
+        "type": {
+          "$ref": "#/$defs/Coding"
+        },
+        "executor": {
+          "$ref": "#/$defs/ActorRef"
+        },
+        "temporal": {
+          "$ref": "#/$defs/TemporalExtent"
+        },
+        "frequencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BehaviorFrequency"
+          }
+        },
+        "contexts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Context"
+          }
+        },
+        "factors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BehaviorFactor"
+          }
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Annotation"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "subject",
+        "type",
+        "provenance"
+      ],
+      "unevaluatedProperties": false
+    },
+    "Preference": {
+      "title": "PBDL Preference",
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/EntityId"
+        },
+        "subject": {
+          "$ref": "#/$defs/SubjectRef"
+        },
+        "category": {
+          "$ref": "#/$defs/Coding"
+        },
+        "value": {
+          "$ref": "#/$defs/PreferenceValue"
+        },
+        "temporal": {
+          "$ref": "#/$defs/TemporalExtent"
+        },
+        "contexts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Context"
+          }
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Annotation"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "subject",
+        "category",
+        "value",
+        "provenance"
+      ],
+      "unevaluatedProperties": false
+    },
+    "Relation": {
+      "title": "PBDL Relation",
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/CoreEntityRef"
+        },
+        "target": {
+          "$ref": "#/$defs/CoreEntityRef"
+        },
+        "type": {
+          "$ref": "#/$defs/Coding"
+        },
+        "temporal": {
+          "$ref": "#/$defs/TemporalExtent"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Annotation"
+          }
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "type",
+        "provenance"
+      ],
+      "unevaluatedProperties": false
+    },
+    "Annotation": {
+      "title": "PBDL Annotation",
+      "type": "object",
+      "properties": {
+        "text": {
+          "$ref": "#/$defs/Text"
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "text",
+        "provenance"
+      ],
+      "unevaluatedProperties": false
     }
   }
 }
