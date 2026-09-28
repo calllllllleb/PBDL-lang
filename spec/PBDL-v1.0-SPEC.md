@@ -22,7 +22,7 @@ PBDL-Core 只负责描述与表示。
 - Behavior（行为）
 - Preference（偏好）
 - Context（上下文）
-- Provenance（来源追踪）
+- `Provenance`（来源追踪）
 - Evidence（证据）
 - Relation（关系）
 
@@ -95,7 +95,7 @@ PBDL-Core 定义以下四类核心语义对象：
 - `Preference`：对某个 `Subject` 已表达或已推断的倾向、选择、优先级、厌恶或偏好的表示。
 - `Relation`：在允许的端点类型之间显式表达语义联系的 Core 构造。
 
-`Context` 用于限定 `Behavior` / `Preference` 的语义解释，但不作为具有独立身份、可被引用的一级 Core 实体。它以嵌入式限定信息的形式归属于 `Behavior` / `Preference`；具体字段、coded/text 值结构、局部 `provenance` 与相等性见 §8.5、§12 和 §17.4.5。`Provenance` 与 `Evidence` 的语义边界、字段、附着方式，以及 `SourceDescriptor` / `GeneratorDescriptor` / `Evidence` 的具体结构见 §13 与 §17.8。JSON Schema 与 DSL 语法仍留待后续定义。
+`Context` 用于限定 `Behavior` / `Preference` 的语义解释，但不作为具有独立身份、可被引用的一级 Core 实体。它以嵌入式限定信息的形式归属于 `Behavior` / `Preference`；具体字段、`coded` / `text` 值结构、局部 `provenance` 与相等性见 §8.5、§12 和 §17.4.5。`Provenance` 与 `Evidence` 的语义边界、字段、附着方式，以及 `SourceDescriptor` / `GeneratorDescriptor` / `Evidence` 的具体结构见 §13 与 §17.8。JSON Schema 与 DSL 语法仍留待后续定义。
 
 ### 5.1 文档与 Subject 绑定
 
@@ -187,9 +187,9 @@ PBDL-Core 的最小时间语义用于回答：
 PBDL-Core 区分两类不同的时间语义：
 
 - **语义时间**：描述 `Behavior` / `Preference` / `Relation` 本身发生、成立或适用的时间；
-- **Provenance 时间**：描述相关信息何时被报告、记录、抽取、观测或生成。
+- **来源追踪时间**：描述相关信息何时被报告、记录、抽取、观测或生成。
 
-语义时间与 Provenance 时间不得视为同一个时间概念。记录时间不得自动替代 `Behavior` / `Preference` / `Relation` 的语义时间。
+语义时间与来源追踪时间不得视为同一个时间概念。记录时间不得自动替代 `Behavior` / `Preference` / `Relation` 的语义时间。
 
 例如，患者在 9 月 20 日报告“上周漏服了三次药”时：
 
@@ -259,11 +259,11 @@ PBDL-Core 区分两类不同的时间语义：
 
 #### 5.7.5 时区信息保留
 
-如果来源未提供 timezone / offset，规范化不得凭空声明具体的 timezone / offset。
+如果来源未提供时区或偏移量，规范化不得凭空声明具体的时区或偏移量。
 
-如果来源已经提供 timezone / offset，规范表示必须保留来源实际提供的信息。
+如果来源已经提供时区或偏移量，规范表示必须保留来源实际提供的信息。
 
-当前规范不另行定义 timezone / offset 的序列化形式；§8.2 定义可选的 offset / zone suffix，并继续禁止凭空补造来源未提供的 timezone / offset。
+当前规范不另行定义时区或偏移量的序列化形式；§8.2 定义可选的数值型偏移量与时区后缀，并继续禁止凭空补造来源未提供的时区或偏移量。
 
 #### 5.7.6 相对时间
 
@@ -320,7 +320,7 @@ PBDL-Core 区分两类不同的时间语义：
 
 如果某项语义已经有结构化的规范表达机制，`Annotation` 可以补充解释，但不得替代该结构化机制。
 
-符合规范的使用方不得被迫通过自然语言理解 note / `Annotation` 才能确定对象的核心机器语义。
+符合规范的使用方不得被迫通过自然语言理解自由文本说明或 `Annotation`，才能确定对象的核心机器语义。
 
 #### 5.8.2 `Annotation` 本身不创建语义断言
 
@@ -334,9 +334,9 @@ PBDL-Core 区分两类不同的时间语义：
 
 `Annotation` 至少需要区分以下 `provenance` / `derivation` 情况，但当前规范不定义对应的表层枚举。
 
-1. **来源描述或来源承载的文本**：来源本身已经包含该说明；忠实保留或轻度规范化时，`Annotation` 可以具有 DIRECT provenance 语义。
+1. **来源描述或来源承载的文本**：来源本身已经包含该说明；忠实保留或轻度规范化时，`Annotation` 可以具有 `DIRECT` 来源语义。
 2. **人工撰写的解释性 `Annotation`**：人工标注者或审阅者额外增加的解释；它必须与来源描述的内容保持来源可区分，不得冒充患者、临床人员或原始来源直接说过的话。
-3. **模型或分析过程生成的解释性 `Annotation`**：模型、规则或分析过程在来源未表达的基础上生成新解释；该新增内容必须保持 INFERRED derivation 语义，并不得标成 DIRECT 来源文本。
+3. **模型或分析过程生成的解释性 `Annotation`**：模型、规则或分析过程在来源未表达的基础上生成新解释；该新增内容必须保持 `INFERRED` 派生语义，并不得标成 `DIRECT` 来源文本。
 
 是否使用 LLM / NLP 本身不决定 DIRECT / INFERRED。
 
@@ -363,7 +363,7 @@ PBDL-Core 区分两类不同的时间语义：
 
 `Annotation` 中出现 `because`、`due to`、因、导致、所以、可能因为等语言，不得仅凭自由文本内容自动建立规范因果语义。
 
-来源归因的理由继续使用 §10.3 语义；模型生成的解释在适用时继续保持 INFERRED derivation。
+来源归因的理由继续使用 §10.3 语义；模型生成的解释在适用时继续保持 `INFERRED` 派生语义。
 
 同样，`Annotation` 文本不得自动创建规范的 `Relation`。
 
@@ -403,7 +403,7 @@ PBDL-Core 不得要求模型暴露、存储或交换隐藏思维链（hidden cha
 
 `Behavior` / `Preference` 可以没有 `Annotation`。
 
-缺少 `Annotation` 不得被解释为没有 `Context`、没有 `Provenance`、没有 `Evidence`、没有解释、断言已完全理解或断言不需要 provenance。
+缺少 `Annotation` 不得被解释为没有 `Context`、没有 `Provenance`、没有 `Evidence`、没有解释、断言已完全理解或断言不需要来源追踪。
 
 它只表示没有提供额外的人类可读 `Annotation`。
 
@@ -471,43 +471,43 @@ PBDL-Core 不得要求模型暴露、存储或交换隐藏思维链（hidden cha
 
 ### 8.2 TemporalValue
 
-`TemporalValue` 的规范表示是受约束的字符串。其词法形式本身保留来源支持的时间精度，以及来源提供的 timezone / offset 信息。
+`TemporalValue` 的规范表示是受约束的字符串。其词法形式本身保留来源支持的时间精度，以及来源提供的时区或偏移量信息。
 
 `TemporalValue` 必须精确符合以下一种形式。
 
 #### 8.2.1 日期族形式
 
-Year 精度：
+年精度：
 
     YYYY
 
 其中 YYYY 为 0001..9999。
 
-Month 精度：
+月精度：
 
     YYYY-MM
 
 其中 MM 为 01..12。
 
-Date 精度：
+日期精度：
 
     YYYY-MM-DD
 
 其中日期必须是前推格里高利历（proleptic Gregorian calendar）中真实存在的日期。
 
-日期族值不得携带时间、offset 或 zone suffix。
+日期族值不得携带时间、偏移量或时区后缀。
 
 #### 8.2.2 日期时间形式
 
-Minute 精度：
+分钟精度：
 
     YYYY-MM-DDTHH:MM<zone?>
 
-Second 精度：
+秒精度：
 
     YYYY-MM-DDTHH:MM:SS<zone?>
 
-Fractional-second 精度：
+小数秒精度：
 
     YYYY-MM-DDTHH:MM:SS.F<zone?>
 
@@ -530,26 +530,26 @@ Fractional-second 精度：
     +HH:MM[ZoneToken]
     -HH:MM[ZoneToken]
 
-数值型 offset 范围为 -14:00..+14:00；绝对值为 14 小时时，分钟必须为 00。
+数值型偏移量范围为 -14:00..+14:00；绝对值为 14 小时时，分钟必须为 00。
 
 `ZoneToken` 必须是非空、区分大小写的 token；字符仅限 ASCII 字母、数字、`.`、`_`、`+`、`-`、`/`，且不得包含空白字符、`[` 或 `]`。
 
-方括号包围的 `ZoneToken` 只用于保留来源提供的 timezone 标识符，例如 `[America/Los_Angeles]`；PBDL-Core 不得根据 `ZoneToken` 名称自行推导来源未提供的数值型 offset。
+方括号包围的 `ZoneToken` 只用于保留来源提供的时区标识符，例如 `[America/Los_Angeles]`；PBDL-Core 不得根据 `ZoneToken` 名称自行推导来源未提供的数值型偏移量。
 
-来源未提供 timezone / offset 时，规范化不得添加 `Z`、数值型 offset 或 `ZoneToken`。
+来源未提供时区或偏移量时，规范化不得添加 `Z`、数值型偏移量或 `ZoneToken`。
 
-来源提供数值型 offset、zone 标识符或二者时，规范表示必须保留来源实际提供的信息。
+来源提供数值型偏移量、时区标识符或二者时，规范表示必须保留来源实际提供的信息。
 
 #### 8.2.3 无效形式
 
 以下形式不属于规范的 `TemporalValue`：
 
-- 只有 time 的值；
-- 携带 timezone / offset 的仅日期值；
+- 只有时间的值；
+- 携带时区或偏移量的仅日期值；
 - 格里高利历中不存在的日期；
 - 月、日或时钟组成部分格式错误的值；
 - 尚未解析的相对时间表达；
-- 为补齐精度而伪造的日期、时间或 timezone。
+- 为补齐精度而伪造的日期、时间或时区。
 
 尚未解析的相对时间表达继续遵守 §5.7 与 §17：必须在规范化前可靠解析，或仅作为 `Evidence` / `Annotation` 保真保存，不得伪装成 `TemporalValue`。
 
@@ -557,7 +557,7 @@ Fractional-second 精度：
 
 时间精度完全由词法形式保留：
 
-- `2026` 不等于把 year 扩展成某个具体日期；
+- `2026` 不等于把年份扩展成某个具体日期；
 - `2026-09` 不等于 9 月 1 日；
 - 分钟精度不等于秒精度；
 - `.1`、`.10` 与 `.100` 保留不同的 fractional-second 精度。
@@ -578,16 +578,16 @@ Fractional-second 精度：
 
     2026-09-27T18:00+08:00
 
-即使两个值可能表示同一物理时刻，也不得视为规范信息相等，因为它们保留的局部词法值与 offset 信息不同。
+即使两个值可能表示同一物理时刻，也不得视为规范信息相等，因为它们保留的局部词法值与偏移量信息不同。
 
 同样：
 
 - `Z` 与 `+00:00` 不属于规范信息相等；
-- timezone 缺失与 timezone 存在不属于规范信息相等；
+- 缺少时区信息与存在时区信息不属于规范信息相等；
 - `ZoneToken` 是否存在或其值不同，均不属于规范信息相等；
 - 精度不同不属于规范信息相等。
 
-实现可以提供独立的物理时刻比较操作，但该操作不得改写或替代规范信息相等，也不得为缺少 offset / timezone 的值发明时区。
+实现可以提供独立的物理时刻比较操作，但该操作不得改写或替代规范信息相等，也不得为缺少偏移量或时区信息的值发明时区。
 
 #### 8.2.6 `Interval` 校验的最小时间可比性
 
@@ -598,19 +598,19 @@ Fractional-second 精度：
 例如：
 
 - `2026-10` 的最早可能日期晚于 `2026-09-15` 的最晚可能日期，因此作为 `start` / `end` 时可判定 `start` 明确晚于 `end`；
-- `2026-09` 与 `2026-09-15` 的可能范围重叠，因此不能据此判定 `start` 明确晚于 `end`，也不得发明具体 day 来强行比较。
+- `2026-09` 与 `2026-09-15` 的可能范围重叠，因此不能据此判定 `start` 明确晚于 `end`，也不得发明具体日期来强行比较。
 
-对于 Date-time 值：
+对于日期时间值：
 
-- 两者都有显式数值型 offset 时，可以基于 offset 将各自的精度范围映射到物理时刻范围后比较顺序；
-- 两者都没有任何 offset / `ZoneToken` 时，可以按本地民用日期时间的精度范围比较；
-- 一方有数值型 offset、另一方没有时，视为不可比较；
-- 只有方括号 `ZoneToken` 而没有数值型 offset 时，不要求解析时区数据库或 DST，因此不据此拒绝其时间顺序；
+- 两者都有显式数值型偏移量时，可以基于偏移量将各自的精度范围映射到物理时刻范围后比较顺序；
+- 两者都没有任何数值型偏移量或 `ZoneToken` 时，可以按本地民用日期时间的精度范围比较；
+- 一方有数值型偏移量、另一方没有时，视为不可比较；
+- 只有方括号 `ZoneToken` 而没有数值型偏移量时，不要求解析时区数据库或 DST，因此不据此拒绝其时间顺序；
 - 日期族与日期时间族之间不强制比较顺序。
 
 只有当 `start` 的**最早可能值**仍严格晚于 `end` 的**最晚可能值**时，才必须判定 `start` 明确晚于 `end`。
 
-如果可能范围重叠，或当前信息不足以建立可比较顺序，校验器不得通过补造精度或 timezone 来拒绝该 `Interval`。
+如果可能范围重叠，或当前信息不足以建立可比较顺序，校验器不得通过补造精度或时区信息来拒绝该 `Interval`。
 
 本节只定义最小有效性边界，不要求实现完整的日期运算引擎。
 
@@ -624,7 +624,7 @@ Fractional-second 精度：
         | RecurrenceFrequency
         | QualitativeFrequency
 
-四种变体不得通过任意字符串合并为同一个 frequency 字段。
+四种变体不得通过任意字符串合并为同一个频率字段。
 
 所有变体都可以具有：
 
@@ -655,11 +655,11 @@ Fractional-second 精度：
 
 `value` 必须 >= 1。
 
-§8.3–§8.4 不加入 `"hour"`：当前典型情况不需要小时级用药计划引擎；day-part recurrence 已覆盖当前规范的日内时段要求。需要小时级重复模式的来源，在当前规范中不得被偷偷改写成一天的分数。
+§8.3–§8.4 不加入 `"hour"`：当前典型情况不需要小时级用药计划引擎；`day_part` 重复模式已覆盖当前规范的日内时段要求。需要小时级重复模式的来源，在当前规范中不得被偷偷改写成一天的分数。
 
-§8.3–§8.4 不允许非整数的 `period.value`。若来源表达当前规范无法无损表示的非整数周期，规范化器不得舍入、重新缩放或发明等价 duration；原始信息可以由 `Evidence` / `Annotation` 保真，并等待未来扩展。
+§8.3–§8.4 不允许非整数的 `period.value`。若来源表达当前规范无法无损表示的非整数周期，规范化器不得舍入、重新缩放或发明等价持续时间；原始信息可以由 `Evidence` / `Annotation` 保真，并等待未来扩展。
 
-`month` / `year` 表示 calendar 周期概念，不得自动换算为固定天数。
+`month` / `year` 表示日历周期概念，不得自动换算为固定天数。
 
 `FrequencyPeriod` 相等要求 `value` 的数值精确相等，且 `unit` token 相同。
 
@@ -681,7 +681,7 @@ Fractional-second 精度：
 
 `window` 可选。
 
-允许只提供 count。例如，来源只说“漏服了 3 次”时，可以规范化为 `count = 3` 且省略 `window`，不得发明观测时间窗。
+允许只提供 `count`。例如，来源只说“漏服了 3 次”时，可以规范化为 `count = 3` 且省略 `window`，不得发明观测时间窗。
 
 `window` 存在时使用 `Interval`；它表示观测或参考时间窗，不是 `rate` 的分母，也不得自动把 `count` 转成 `rate`。
 
@@ -703,9 +703,9 @@ Fractional-second 精度：
 
 `RateFrequency` 表示“每个 `period` 平均发生 `value` 次”的频率值。
 
-`period` 必须显式存在；只有裸 `value = 2` 时，不得解释为 rate。
+`period` 必须显式存在；只有裸 `value = 2` 时，不得解释为 `rate`。
 
-观测到的 count 不得仅因为具有 `window` 就自动规范化成 `RateFrequency`。
+观测到的 `count` 不得仅因为具有 `window` 就自动规范化成 `RateFrequency`。
 
 #### 8.3.5 RecurrenceFrequency
 
@@ -734,7 +734,7 @@ Fractional-second 精度：
 `days_of_week` 若存在：
 
 - 集合必须非空；
-- 不得出现重复的 weekday；
+- 不得出现重复的 `Weekday` token；
 - 集合顺序不得具有语义含义；
 - `period` 必须精确为 `{ value: 1, unit: "week" }`；
 - `times_per_period` 必须缺失，以避免同时存在两个相互竞争的发生次数机制。
@@ -745,7 +745,7 @@ Fractional-second 精度：
 
     "morning" | "afternoon" | "evening" | "night"
 
-`day_part` 可选；缺失表示未提供 day-part 限定。
+`day_part` 可选；缺失表示未提供日内时段限定。
 
 `DayPart` 表示来源描述的定性日内时段；§8.3–§8.4 不得为这些 token 暗中绑定统一的钟点阈值。
 
@@ -781,7 +781,7 @@ Core 不得为任一 token 绑定数值阈值、概率、`rate`、百分比或�
 
 token 列表顺序不得被解释为规范性的数值刻度或临床严重度顺序。
 
-`"never"` / `"always"` 仍受所属对象的 temporal / `Context` 范围限定；缺少范围不得自动升级为终身范围。
+`"never"` / `"always"` 仍受所属对象的时间范围 / `Context` 范围限定；缺少范围不得自动升级为终身范围。
 
 #### 8.3.7 `BehaviorFrequency` 内容相等
 
@@ -837,7 +837,7 @@ token 列表顺序不得被解释为规范性的数值刻度或临床严重度�
         | BooleanPreferenceValue
         | NumericPreferenceValue
 
-§8.3–§8.4 不新增序数/强度、引用值或 list / multi-select 变体。
+§8.3–§8.4 不新增序数/强度、引用值或列表/多选变体。
 
 #### 8.4.1 CodedPreferenceValue
 
@@ -846,11 +846,11 @@ token 列表顺序不得被解释为规范性的数值刻度或临床严重度�
         value : Coding
     }
 
-value 必需。
+`value` 必需。
 
 当适用的术语或 `category` 契约提供可靠且不丢失来源语义的 `Coding` 时，规范化器应使用 `coded` 变体，而不是仅为方便退化为自由文本。
 
-如果没有可靠 binding，规范化器不得发明 `Coding`。
+如果没有可靠的绑定规则，规范化器不得发明 `Coding`。
 
 #### 8.4.2 TextPreferenceValue
 
@@ -865,7 +865,7 @@ value 必需。
 
 `Text` 变体不得成为绕过结构化语义的后门。
 
-如果规范性的 `category`/`value` 绑定规则明确要求某个可靠的 coded value，规范化器不得仅为了避免术语映射而使用 `Text`。
+如果规范性的 `category`/`value` 绑定规则明确要求某个可靠的 `coded` 值，规范化器不得仅为了避免术语映射而使用 `Text`。
 
 使用方不得被迫通过 NLP 才能恢复本来可以可靠结构化的 `PreferenceValue`。
 
@@ -878,11 +878,11 @@ value 必需。
 
 `value` 为必需字段。
 
-boolean 变体只应在 `Preference.category` 的语义确实把 `value` 定义为二元选择或二元状态时使用。
+`boolean` 变体只应在 `Preference.category` 的语义确实把 `value` 定义为二元选择或二元状态时使用。
 
-例如，当 category 表示是否接受电话联系时，`value = false` 可以表示“不希望电话联系”。
+例如，当 `category` 表示是否接受电话联系时，`value = false` 可以表示“不希望电话联系”。
 
-boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Preference`；缺少 `Preference` 断言也不得解释为 `false`。
+`boolean` 值 `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Preference`；缺少 `Preference` 断言也不得解释为 `false`。
 
 规范化器不得仅因为旧版字符串看起来像 `"yes"` / `"no"`，就在缺少 `category` 或来源语义支持时猜测 `boolean`。
 
@@ -903,7 +903,7 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
 
 因此，“等待时间不超过 30 分钟”需要 `operator = "lte"`，不能只保存裸数值 30。
 
-`unit` 可选；但若来源或 category 语义表示有量纲数值，且来源提供了 `unit`，规范表示必须保留该 `unit`。
+`unit` 可选；但若来源或 `category` 语义表示有量纲数值，且来源提供了 `unit`，规范表示必须保留该 `unit`。
 
 `unit` 使用已有的 `Coding`；§8.3–§8.4 不得新增任意 unit 字符串类型。
 
@@ -933,7 +933,7 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
 
 `PreferenceValue` 也不包含通用列表或多选变体。
 
-如果来源表达多个可独立成立的 `Preference` 断言，规范化器可以使用多个 `Preference` 实例；如果多值集合本身具有不可拆分语义，而当前联合类型无法无损表示，则不得发明 list 语义，可保留来源材料并等待未来扩展。
+如果来源表达多个可独立成立的 `Preference` 断言，规范化器可以使用多个 `Preference` 实例；如果多值集合本身具有不可拆分语义，而当前联合类型无法无损表示，则不得发明列表语义，可保留来源材料并等待未来扩展。
 
 #### 8.4.7 `PreferenceValue` 相等性
 
@@ -966,16 +966,16 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
 旧版 `Preference.preference_value` 迁移必须保留来源支持的类型语义。
 
 - 来源或绑定规则可靠支持 `Coding` → 可以使用 `coded`；
-- 来源或 `category` 可靠支持 boolean → 可以使用 `boolean`；
-- 来源可靠支持数值型 comparator / `value` / `unit` 语义 → 可以使用 `number`；
+- 来源或 `category` 可靠支持 `boolean` → 可以使用 `boolean`；
+- 来源可靠支持数值比较运算符 / `value` / `unit` 语义 → 可以使用 `number`；
 - 来源只保留原始字符串，且无法可靠类型化 → 使用 text。
 
 规范化器不得：
 
-- 根据字符串外观猜测 boolean；
-- 发明术语 code；
+- 根据字符串外观猜测 `boolean`；
+- 发明术语代码；
 - 猜测 unit；
-- 猜测数值型 comparator / scale；
+- 猜测数值比较运算符或数值刻度；
 - 把缺乏可靠类型信息的旧版文本当作已经类型化的值。
 
 ### 8.5 Context
@@ -1001,7 +1001,7 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
         CodedContextValue
         | TextContextValue
 
-§8.5–§8.6 不复用 `PreferenceValue`，因为 `Context` 不具有偏好比较符、偏好选择或偏好专属的 value 语义。
+§8.5–§8.6 不复用 `PreferenceValue`，因为 `Context` 不具有偏好比较符、偏好选择或偏好专属的 `value` 语义。
 
 ##### CodedContextValue
 
@@ -1014,7 +1014,7 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
 
 例如，在有可靠 `Coding` 的前提下，可以表达旅行、工作环境、存在家庭支持、居家环境、通过特定渠道沟通或类似工作日的社会情境。
 
-当前规范不定义这些具体 code 或词汇。
+当前规范不定义这些具体术语代码或词汇。
 
 ##### TextContextValue
 
@@ -1029,11 +1029,11 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
 
 如果适用的规范性绑定规则已经提供可靠 `Coding`，规范化器应使用 `coded` 变体，而不得仅为实现方便把所有 `Context` 降级为 `Text`。
 
-规范化器不得为了避免 `Text` 回退而发明术语 code。
+规范化器不得为了避免 `Text` 回退而发明术语代码。
 
 `TextContextValue` 不得成为任意元数据容器，也不得要求下游通过 NLP 才能恢复本可可靠结构化的全部 `Context` 信息。
 
-§8.5–§8.6 不加入 `boolean` / `number` `ContextValue` 变体，因为 C1–C10 典型情况不需要它们；“存在家庭支持”等来源概念可以表示为 coded context，无法可靠编码时使用 `Text` 保真回退。
+§8.5–§8.6 不加入 `boolean` / `number` `ContextValue` 变体，因为 C1–C10 典型情况不需要它们；“存在家庭支持”等来源概念可以表示为 `coded` 情境值，无法可靠编码时使用 `Text` 保真回退。
 
 #### 8.5.2 `Context` 语义边界
 
@@ -1057,8 +1057,8 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
 两个 `Context` 的内容语义等价，当且仅当：
 
 - `ContextValue.kind` 相同；
-- `coded` value 使用 §15 的 `Coding` 规范信息相等；或
-- `text` value 使用 §8.1 的 `Text` 相等性。
+- `coded` 变体的值使用 §15 的 `Coding` 规范信息相等；或
+- `text` 变体的值使用 §8.1 的 `Text` 相等性。
 
 不同 `ContextValue.kind` 不得语义等价。
 
@@ -1086,7 +1086,7 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
 
 `role`、`factor`、`direction` 都是必需字段。
 
-`provenance` 可选，并完全复用 §17.10 的嵌套 provenance 规则。
+`provenance` 可选，并完全复用 §17.10 的嵌套 `provenance` 规则。
 
 `BehaviorFactor` 是 `Behavior` 局部的非 Core `factor` 限定信息，不具有独立身份，也不是 `Relation` 端点。
 
@@ -1101,14 +1101,14 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
 
 语义：
 
-- `"reported_reason"`：来源明确把 factor 描述为该 `Behavior` 的理由或原因归因；这是来源归因语义，不是已经验证的因果事实。
-- `"observed_association"`：来源只支持 factor 与 `Behavior` 的记录性/观测性关联或共现，不声称其为理由。
-- `"antecedent"`：来源支持 factor 在 `Behavior` 之前出现；时间上的先后不等于因果关系。
-- `"explanatory"`：外部人工、模型、规则或分析过程给出的解释性 factor。若该解释超出来源直接表达的内容，其有效 `provenance` 必须保持 `"inferred"` derivation。
+- `"reported_reason"`：来源明确将该因素描述为该 `Behavior` 的理由或原因归因；这是来源归因语义，不是已经验证的因果事实。
+- `"observed_association"`：来源只支持该因素与 `Behavior` 的记录性/观测性关联或共现，不声称其为理由。
+- `"antecedent"`：来源支持该因素在 `Behavior` 之前出现；时间上的先后不等于因果关系。
+- `"explanatory"`：外部人工、模型、规则或分析过程给出的解释性因素。若该解释超出来源直接表达的内容，其有效 `provenance` 必须保持 `"inferred"` 派生语义。
 
 `FactorRole` 不得使用 `"inferred"` 作为 `role`；DIRECT / INFERRED / UNDETERMINED 属于 `Provenance.derivation`。
 
-§8.5–§8.6 不新增 `causes`、`causal_factor`、`verified_cause` 等因果 role。
+§8.5–§8.6 不新增 `causes`、`causal_factor`、`verified_cause` 等因果角色。
 
 #### 8.6.2 FactorDirection
 
@@ -1120,15 +1120,15 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
 
 `direction` 为必需字段，用来显式区分“来源支持某个方向”和“来源没有足够方向信息”。
 
-`"factor_to_behavior"` 只表示来源支持的语义方向从 `factor` 指向所属 `Behavior`，不得自动表示该 factor 导致了 `Behavior`。
+`"factor_to_behavior"` 只表示来源支持的语义方向从 `factor` 所表示的因素指向所属 `Behavior`，不得自动表示该因素导致了 `Behavior`。
 
-`"behavior_to_factor"` 同理只表示相反方向，不得自动表示 `Behavior` 导致了 factor。
+`"behavior_to_factor"` 同理只表示相反方向，不得自动表示 `Behavior` 导致了该因素。
 
 `"unspecified"` 表示来源没有足够信息确定方向；规范化器不得通过旧版字段名、token 顺序、时间邻近性或 NLP 猜测补造方向。
 
-对于 `"antecedent"` role，`direction` 必须为 `"factor_to_behavior"`，因为该 role 定义的是 factor 在所属 `Behavior` 之前出现。
+对于 `"antecedent"` `role`，`direction` 必须为 `"factor_to_behavior"`，因为该 `role` 定义的是因素在所属 `Behavior` 之前出现。
 
-对于 `"reported_reason"` role，`direction` 必须为 `"factor_to_behavior"`，因为来源归因表达的是 factor 被报告为所属 `Behavior` 的理由。
+对于 `"reported_reason"` `role`，`direction` 必须为 `"factor_to_behavior"`，因为来源归因表达的是因素被报告为所属 `Behavior` 的理由。
 
 `"observed_association"` 与 `"explanatory"` 可以根据来源或推断支持使用任一 `direction` token，包括 `"unspecified"`。
 
@@ -1149,7 +1149,7 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
         value : Coding
     }
 
-当 factor 可以可靠映射到术语，例如 dizziness / nausea 等来源概念时，规范化器应使用 `coded` 变体。
+当该因素可以可靠映射到术语，例如 dizziness / nausea 等来源概念时，规范化器应使用 `coded` 变体。
 
 ##### TextFactorValue
 
@@ -1158,11 +1158,11 @@ boolean `false` 是一个真实的 `PreferenceValue`，不得解释为缺少 `Pr
         value : Text
     }
 
-当 factor 只有来源措辞、无法可靠映射到术语时，`TextFactorValue` 用于保真保存。
+当该因素只有来源措辞、无法可靠映射到术语时，`TextFactorValue` 用于保真保存。
 
-规范化器不得发明 factor `Coding`。
+规范化器不得为该因素发明 `Coding`。
 
-factor 文本不得只被塞进 `Annotation`，再要求下游 NLP 恢复 `BehaviorFactor` 的机器语义。
+因素文本不得只被塞进 `Annotation`，再要求下游 NLP 恢复 `BehaviorFactor` 的机器语义。
 
 §8.5–§8.6 不新增 Symptom Core 实体。
 
@@ -1175,18 +1175,18 @@ factor 文本不得只被塞进 `Annotation`，再要求下游 NLP 恢复 `Behav
 - reported_reason；
 - antecedent；
 - observed_association；
-- direction；
-- inferred / 解释性 factor。
+- 方向；
+- `inferred` / 解释性因素。
 
 如果未来需要规范性的因果 `Relation` 词汇，必须由专门的 `Relation` 词汇规范定义；当前规范不做该设计。
 
 #### 8.6.5 `BehaviorFactor` 与 `Relation` 的边界
 
-`BehaviorFactor` 只用于 `Behavior` 局部的非 Core factor。
+`BehaviorFactor` 只用于 `Behavior` 局部的非 Core 因素。
 
-如果 factor 实际是已有的文档内 `Behavior` 或 `Preference` 实体，并且语义是显式的类型化实体关系，规范表示必须使用 `Relation`，而不能把该实体的 `display` / label 降级成 `BehaviorFactor`。
+如果该因素实际是已有的文档内 `Behavior` 或 `Preference` 实体，并且语义是显式的类型化实体关系，规范表示必须使用 `Relation`，而不能把该实体的 `display` / 标签降级成 `BehaviorFactor`。
 
-`BehaviorFactor` 不得成为绕过 §14 的 `Relation` 端点或 type 契约的第二套实体链接机制。
+`BehaviorFactor` 不得成为绕过 §14 的 `Relation` 端点或 `type` 契约的第二套实体链接机制。
 
 #### 8.6.6 `BehaviorFactor` 相等性
 
@@ -1197,8 +1197,8 @@ factor 文本不得只被塞进 `Annotation`，再要求下游 NLP 恢复 `Behav
 - `role` token 相同；
 - `direction` token 相同；
 - `factor.kind` 相同；
-- `coded` factor 使用 §15 的 `Coding` 规范信息相等；或
-- `text` factor 使用 §8.1 的 `Text` 相等性。
+- `coded` 变体的因素值使用 §15 的 `Coding` 规范信息相等；或
+- `text` 变体的因素值使用 §8.1 的 `Text` 相等性。
 
 因此，nausea + `reported_reason` 与 nausea + `observed_association` 不得语义等价。
 
@@ -1253,14 +1253,14 @@ factor 文本不得只被塞进 `Annotation`，再要求下游 NLP 恢复 `Behav
 
 `Behavior` 本身不等价于：
 
-- diagnosis；
-- risk 结果；
+- 诊断；
+- 风险结果；
 - recommendation；
 - 因果解释；
 - `Preference`；
 - 治疗路径步骤。
 
-`Behavior` 的身份表示一个具体实例，而不是其类型或显示标签。因此，`Behavior` 的 type 不得自动充当 `Behavior` 身份。
+`Behavior` 的身份表示一个具体实例，而不是其类型或显示标签。因此，`Behavior` 的 `type` 不得自动充当 `Behavior` 身份。
 
 ### 10.1 旧版 `executor` 兼容性
 
@@ -1275,7 +1275,7 @@ factor 文本不得只被塞进 `Annotation`，再要求下游 NLP 恢复 `Behav
 
 当前规范不引入完整 Participant 模型，也不在此处定义 `executor` 的最终字段类型。后续规范不得仅因为 `Behavior` 已绑定 `Subject` 就无条件删除历史 `executor` 语义。
 
-每个符合规范的 `Behavior` 实例必须实际具有至少一条 `provenance` 关联链路，使其来源能够被追踪。仅仅“语言理论上支持 provenance”不足以满足该要求。
+每个符合规范的 `Behavior` 实例必须实际具有至少一条 `provenance` 关联链路，使其来源能够被追踪。仅仅“语言理论上支持来源追踪”不足以满足该要求。
 
 ### 10.2 `Behavior` 时间语义
 
@@ -1307,7 +1307,7 @@ factor 文本不得只被塞进 `Annotation`，再要求下游 NLP 恢复 `Behav
 
 来源归因的理由不得被规范语义自动等价为已经验证的因果 `Relation`。
 
-如果来源本身明确表达该原因，而 LLM / NLP 只进行忠实抽取、解析、规范化或术语映射，没有新增来源未表达的解释，该结构化结果仍可以具有 DIRECT provenance 语义。
+如果来源本身明确表达该原因，而 LLM / NLP 只进行忠实抽取、解析、规范化或术语映射，没有新增来源未表达的解释，该结构化结果仍可以具有 `DIRECT` 来源语义。
 
 来源归因所对应的来源身份必须能够通过 §13 的 `Provenance` 保持可追踪。
 
@@ -1395,7 +1395,7 @@ DIRECT / INFERRED 的判断继续遵守 §13：依据语义内容是否相对于
 
 “患者告诉医生 X”与“X 被医生记录进 EHR”不是同一个概念；前者描述沟通行为，后者若表达信息来源、记录过程或进入系统的路径，则属于 `Provenance` 语义。
 
-当前规范不定义沟通行为的具体 behavior type、actor、recipient 或 channel 字段。既有 `Behavior.executor` 继续遵守本节兼容边界；当前规范不新增 Participant 一级 Core 实体。
+当前规范不定义沟通行为的具体行为类型、参与者、接收者或渠道字段。既有 `Behavior.executor` 继续遵守本节兼容边界；当前规范不新增 Participant 一级 Core 实体。
 
 #### 10.4.2 沟通情境信息
 
@@ -1432,7 +1432,7 @@ PBDL-Core 不得默认把此类工作流或应用状态当作患者自身 `Behav
 
 #### 10.4.5 沟通不等于事实认证
 
-信息已经“communicated”，不得自动等价为信息已经“verified”。
+信息已经“沟通”，不得自动等价为信息已经“验证”。
 
 同样，`acknowledged` 不得自动等价为 `agreed`、`verified` 或 `true`。
 
@@ -1444,13 +1444,13 @@ PBDL-Core 不得默认把此类工作流或应用状态当作患者自身 `Behav
 
 `Behavior` 语义内容可以描述：
 
-- 一个具体 occurrence；
+- 一个具体发生记录；
 - 一个 behavior 状态；
 - 来源明确描述的汇总或重复行为模式。
 
 规范语义必须保留来源描述的是具体发生记录、已观察发生记录的汇总，还是重复/定性模式。
 
-规范化不得仅因为来源描述了模式，就自动展开出来源没有提供的具体观测发生时间戳；也不得仅因为存在若干独立发生记录，就自动把它们压缩为 recurring 模式。
+规范化不得仅因为来源描述了模式，就自动展开出来源没有提供的具体观测发生时间戳；也不得仅因为存在若干独立发生记录，就自动把它们压缩为重复模式。
 
 #### 10.5.1 参考时间窗内的观测或报告计数
 
@@ -1471,11 +1471,11 @@ PBDL-Core 不得默认把此类工作流或应用状态当作患者自身 `Behav
 
 如果来源明确描述某项 `Behavior` 具有重复模式，例如“每天吸烟”“每周运动三次”“每天早晨测血压”，规范语义可以保留该周期性或重复模式。
 
-Recurring 模式不得被强制展开成未来或过去的具体观测发生时间戳。
+重复模式不得被强制展开成未来或过去的具体观测发生时间戳。
 
 “每天”描述的是模式，不表示来源已经观察或确认每一天都存在一个具体 occurrence。
 
-如果多个独立发生记录被外部模型或分析过程总结为重复模式，而来源本身没有表达该模式，则该模式属于 INFERRED provenance 语义。
+如果多个独立发生记录被外部模型或分析过程总结为重复模式，而来源本身没有表达该模式，则该模式属于 `INFERRED` 来源语义。
 
 #### 10.5.3 定性频率
 
@@ -1502,7 +1502,7 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 #### 10.5.5 预期或处方计划不等于实际`Behavior` 频率
 
-预期或处方计划与实际患者 `Behavior` 的 frequency 必须保持可区分。
+预期或处方计划与实际患者 `Behavior` 的频率必须保持可区分。
 
 例如，“医生要求每天服药两次”描述的是预期或处方用药计划，不表示患者实际每天服药两次。
 
@@ -1528,9 +1528,9 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 例如，Monday、Tuesday、Wednesday 各记录一次 exercise，不自动等价为“患者每天运动”。
 
-如果来源明确总结为 daily，可以保留来源描述的模式；如果模式是模型、规则或分析过程根据发生记录推断所得，则该模式必须保留 INFERRED provenance 语义，并不得静默表示为 DIRECT 来源描述的频率。
+如果来源明确总结为“每天”，可以保留来源描述的模式；如果模式是模型、规则或分析过程根据发生记录推断所得，则该模式必须保留 `INFERRED` 来源语义，并不得静默表示为 `DIRECT` 来源描述的频率。
 
-如果 LLM / NLP 只忠实抽取来源已经明确表达的频率/重复模式，例如“我基本每天都会测血压”，结果仍可以属于 DIRECT provenance 语义。
+如果 LLM / NLP 只忠实抽取来源已经明确表达的频率/重复模式，例如“我基本每天都会测血压”，结果仍可以属于 `DIRECT` 来源语义。
 
 #### 10.5.8 未提供频率信息及其范围
 
@@ -1560,11 +1560,11 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 频率/重复模式信息属于 `Behavior` 语义内容的限定，但它与 `Context`、来源归因的理由和 `Provenance` 是不同维度。
 
-例如，“工作日经常忘记服药”可以同时包含定性频率与 workday `Context`；若来源另说“因为工作忙所以忘记”，还包含 §10.3 的来源归因理由。规范语义不得把这些语义压成一个频率字符串。
+例如，“工作日经常忘记服药”可以同时包含定性频率与工作日 `Context`；若来源另说“因为工作忙所以忘记”，还包含 §10.3 的来源归因理由。规范语义不得把这些语义压成一个频率字符串。
 
 频率断言继续继承该 `Behavior` 的 §13 来源可追踪性；“谁报告该频率”或“谁根据日志推断该模式”属于 `Provenance`，而不是频率值本身。
 
-§10.5 不把 recurrence 语义契约扩展到 `Preference` 或 `Relation`。若未来出现明确需求，应另行审议。
+§10.5 不把重复模式语义契约扩展到 `Preference` 或 `Relation`。若未来出现明确需求，应另行审议。
 
 §17 规定 `Behavior.frequencies : BehaviorFrequency[0..*]` 作为独立的结构化限定信息，并允许在必要时具有局部 `provenance`。
 
@@ -1574,7 +1574,7 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 - 只有 count 的观测表示；
 - `FrequencyPeriod`；
 - 精确/近似 `precision` token；
-- 每周 weekday 计划与有限的 `day_part` token；
+- 每周星期计划与有限的 `day_part` token；
 - 定性频率 token 集合；
 - `BehaviorFrequency` 语义内容相等与完整限定信息相等。
 
@@ -1586,9 +1586,9 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 旧版 `reasoning_note` 不得因为字段名中的 “reasoning” 被解释为 PBDL-Core 自己执行并认证了正确推理、临床推理、已验证解释或因果推理。
 
-如果旧版 `reasoning_note` 忠实承载来源已经明确表达的说明，其 `Annotation` 可以具有 DIRECT provenance 语义。
+如果旧版 `reasoning_note` 忠实承载来源已经明确表达的说明，其 `Annotation` 可以具有 `DIRECT` 来源语义。
 
-如果人工标注者、模型、规则引擎或分析过程新增了来源未表达的解释，规范表示必须保持其真实的人工撰写或 INFERRED derivation 区分；模型生成的新解释不得冒充 DIRECT 来源文本。
+如果人工标注者、模型、规则引擎或分析过程新增了来源未表达的解释，规范表示必须保持其真实的人工撰写或 `INFERRED` 派生语义区分；模型生成的新解释不得冒充 `DIRECT` 来源文本。
 
 旧版 `reasoning_note` 不得替代结构化 `Behavior` 语义、必需的 `Provenance`、`Evidence`、§10.3 的理由/因果边界或派生结果边界。
 
@@ -1606,13 +1606,13 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 - 观测到的 `Behavior`；
 - 临床推荐；
-- risk 结果；
-- conflict 结果；
+- 风险结果；
+- 冲突结果；
 - 客观约束或障碍。
 
 现实信息中可能存在客观约束或障碍，但当前规范不新增 `Constraint` 一级 Core 实体。相关语义边界保留为未来设计问题。
 
-`Preference` category 或显示标签不得自动充当 `Preference` 身份。
+`Preference.category` 或显示标签不得自动充当 `Preference` 身份。
 
 ### 11.1 旧版 `associated_behavior` 兼容性
 
@@ -1638,7 +1638,7 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 如果旧版或来源材料支持更具体的关系含义，规范语义应保留来源支持的最具体语义；但规范化不得生成来源没有支持的更强 `Relation` 类型。
 
-当前规范不定义该 `Relation` 的具体规范类型 code 或词汇 token。
+当前规范不定义该 `Relation` 的具体规范类型代码或词汇 token。
 
 每个符合规范的 `Preference` 实例必须实际具有至少一条 `provenance` 关联链路，使下游能够判断该 `Preference` 是直接表达还是外部推断所得。
 
@@ -1654,7 +1654,7 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 不同时期的不同 `Preference` 信息可以作为不同 `Preference` 实例共存，例如某一时期拒绝注射、另一时期接受注射。
 
-历史 `Preference` 正式字段表虽然没有独立 temporal 字段，但 v1 Core 可以表达 `Preference` 的时间适用范围，以避免把可随时间变化的偏好误解为永久状态。
+历史 `Preference` 正式字段表虽然没有独立 `temporal` 字段，但 v1 Core 可以表达 `Preference` 的时间适用范围，以避免把可随时间变化的偏好误解为永久状态。
 
 ### 11.3 旧版 `note` 兼容性
 
@@ -1680,7 +1680,7 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 `boolean` 值 `false` 是明确的 value，不等于缺少 `Preference`。
 
-`NumericPreferenceValue` 必须显式保留 comparator；有量纲数值的 `unit` 不能被猜测。
+`NumericPreferenceValue` 必须显式保留比较运算符；有量纲数值的 `unit` 不能被猜测。
 
 §8.3–§8.4 不定义 `Preference` 重复模式、`Preference` 冲突、序数/强度分析、多选引擎、JSON Schema 或 DSL 语法。
 
@@ -1708,7 +1708,7 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 - 信息从哪里来、如何产生，属于 §13 的 `Provenance`；
 - `Behavior` / `Preference` / `Relation` 何时发生、成立或适用，属于 §5.7 的时间语义；
 - 来源归因的理由、观测到的前置关系与推断解释，继续使用 §10.3 / §8.5–§8.6 的 `BehaviorFactor` 语义；
-- risk、conflict、recommendation、score、因果推断等派生分析属于 Core 外部的派生/应用结果；
+- 风险、冲突、推荐、评分、因果推断等派生分析属于 Core 外部的派生/应用结果；
 - 工作流或应用状态默认属于 Core 外。
 
 `Context` 不得作为绕过既有 `Provenance`、时间语义、`BehaviorFactor` / reason 或派生分析边界的替代容器。
@@ -1729,7 +1729,7 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 当来源包含情境信息，但无法可靠映射到术语时，`TextContextValue` 提供保真回退。
 
-规范化器不得发明术语 code。
+规范化器不得发明术语代码。
 
 `Text` 回退不得让所有 `Context` 退化成自由文本，也不能成为任意元数据容器。
 
@@ -1737,7 +1737,7 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 日历或日期时间形式的语义时间范围属于 `TemporalExtent`。
 
-`Behavior` 的重复模式或 weekday 计划属于 `BehaviorFrequency`。
+`Behavior` 的重复模式或星期计划属于 `BehaviorFrequency`。
 
 “工作日”只有在来源语义是社会或生活情境概念时才可以作为 `Context`；如果它只是重复规则或日历筛选条件，则不得为了实现方便重复编码成 `Context`。
 
@@ -1768,11 +1768,11 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 `Context` 的 JSON Schema 与 DSL 语法尚未定义。
 
-## 13. Evidence 与 Provenance
+## 13. `Evidence` 与 `Provenance`
 
 `Provenance` 与 `Evidence` 的最小语义边界见 §13。
 
-### 13.1 Provenance
+### 13.1 `Provenance`
 
 `Provenance` 回答：
 
@@ -1797,7 +1797,7 @@ Recurring 模式不得被强制展开成未来或过去的具体观测发生时�
 
 每个符合规范的 `Relation` 断言必须至少具有一条 `provenance` 关联链路，或具有等价的可追踪来源语义。
 
-`Relation` 断言的 `provenance` 不得由 `source` 端点或 `target` 端点的 `provenance` 自动替代。`Relation` provenance 的详细规则见 §14.7。
+`Relation` 断言的 `provenance` 不得由 `source` 端点或 `target` 端点的 `provenance` 自动替代。`Relation` 断言的来源追踪详细规则见 §14.7。
 
 同一个 `Behavior`、`Preference` 或 `Relation` 断言可以具有多条 `provenance` 关联链路。
 
@@ -1851,7 +1851,7 @@ DIRECT / INFERRED 判断的是**结构化语义内容相对于来源内容的产
 
 如果结构化语义忠实表示来源中已经明确报告、记录或观测到的内容，即使抽取或标准化过程由 LLM / NLP 完成，该信息仍可以属于 DIRECT。
 
-只有当结构化语义内容超出来源直接表达、记录或观测的内容，并由模型、规则、分析过程或其他推导过程生成时，该信息才属于 INFERRED provenance 语义。
+只有当结构化语义内容超出来源直接表达、记录或观测的内容，并由模型、规则、分析过程或其他推导过程生成时，该信息才属于 `INFERRED` 来源语义。
 
 #### DIRECT
 
@@ -1871,7 +1871,7 @@ INFERRED 表示信息由 LLM、ML 模型、规则引擎、分析过程或其他�
 
 INFERRED 信息不得静默表示成 DIRECT 或来源直接描述的信息。
 
-规范语义表示必须使下游能够区分 DIRECT 与 INFERRED provenance 语义，而不能仅通过自由文本说明猜测。
+规范语义表示必须使下游能够区分 `DIRECT` 与 `INFERRED` 来源语义，而不能仅通过自由文本说明猜测。
 
 对于 Preference：
 
@@ -1893,15 +1893,15 @@ INFERRED 信息不得静默表示成 DIRECT 或来源直接描述的信息。
 - 患者自述规律服药；
 - 设备或记录显示存在漏服；
 
-二者可以并存，但不应因为主体相同就被静默压缩成一个单一 `Behavior`，再仅附加两个 provenance source。
+二者可以并存，但不应因为主体相同就被静默压缩成一个单一 `Behavior`，再仅附加两个 `provenance` 来源。
 
 PBDL-Core 不负责自动裁决冲突，不在 §13 设计 ConflictAnalysis。
 
 ### 13.5 旧版来源字段兼容性
 
-历史 `Behavior.evidence_source` 的来源追踪能力继续保留，但其规范方向是映射到统一的 `Provenance` / Source 语义，而不是把单一字符串字段定义为最终模型。
+历史 `Behavior.evidence_source` 的来源追踪能力继续保留，但其规范方向是映射到统一的 `Provenance` / 来源语义，而不是把单一字符串字段定义为最终模型。
 
-历史 `Preference.source_type` 同样收敛到统一的 `Provenance` / Source 语义。
+历史 `Preference.source_type` 同样收敛到统一的 `Provenance` / 来源语义。
 
 `Behavior` 与 `Preference` 不应长期维护两套彼此独立、语义重复的来源机制。
 
@@ -1909,17 +1909,17 @@ PBDL-Core 不负责自动裁决冲突，不在 §13 设计 ConflictAnalysis。
 
 ### 13.6 `Confidence` 边界
 
-confidence 不得成为所有 `Preference` 的强制属性。
+置信信息不得成为所有 `Preference` 的强制属性。
 
-DIRECT 的自述信息不得被迫赋予模型式 confidence。
+`DIRECT` 的自述信息不得被迫赋予模型式置信信息。
 
-如果 confidence 用于 INFERRED 信息，其语义必须能够说明：
+如果置信信息用于 `INFERRED` 信息，其语义必须能够说明：
 
-- confidence 由谁或什么系统生成；
-- confidence 衡量什么；
-- confidence 对应哪个推断过程、模型或分析过程。
+- 置信信息由谁或什么系统生成；
+- 置信信息衡量什么；
+- 置信信息对应哪个推断过程、模型或分析过程。
 
-规范的 `confidence` 字段归属于可选的 `Provenance.confidence`；`value` + `metric` + 可选 `scale` 的最小具体契约与相等性见 §17.8.6。校准框架、阈值策略、metric 词汇治理、JSON Schema 与 DSL 序列化尚未定义。
+规范的 `confidence` 字段归属于可选的 `Provenance.confidence`；`value` + `metric` + 可选 `scale` 的最小具体契约与相等性见 §17.8.6。校准框架、阈值策略、度量名称的词汇治理、JSON Schema 与 DSL 序列化尚未定义。
 
 历史 `Preference.confidence_score` 因此继续保留为待细化概念，但不得被解释为所有 `Preference` 的 Core 必需属性。
 
@@ -1933,11 +1933,11 @@ DIRECT 的自述信息不得被迫赋予模型式 confidence。
 - `Preference`；
 - `Relation` 断言。
 
-§14 新增的 `Relation` 断言 provenance 要求，不得被解释为 `Provenance` 因此必须具有身份，也不得被解释为 `Relation` 因此必须具有身份。
+§14 新增的 `Relation` 断言来源追踪要求，不得被解释为 `Provenance` 因此必须具有身份，也不得被解释为 `Relation` 因此必须具有身份。
 
 当前仍没有 Core 场景要求其他实体通过稳定的 Core 引用指向某个 `Provenance` 实例。
 
-`Provenance` 的最小字段与嵌入式附着方式见 §17；`SourceDescriptor` / `GeneratorDescriptor` / `Evidence`、嵌套 `provenance` 相等性与继承、`Confidence` 语义以及基于 `Text` / `TemporalValue` / `Confidence` 的来源相等性均在相关小节定义。共享 `Provenance` 身份、provenance chaining、JSON Schema 与 DSL 序列化仍为 **TODO**。
+`Provenance` 的最小字段与嵌入式附着方式见 §17；`SourceDescriptor` / `GeneratorDescriptor` / `Evidence`、嵌套 `provenance` 相等性与继承、`Confidence` 语义以及基于 `Text` / `TemporalValue` / `Confidence` 的来源相等性均在相关小节定义。共享 `Provenance` 身份、来源链式追踪、JSON Schema 与 DSL 序列化仍为 **TODO**。
 
 ## 14. Relations
 
@@ -1980,7 +1980,7 @@ PBDL-Core 不允许 `Relation` 作为 `source` 或 `target`，因此不支持 `R
 
 `Relation` 的时间元数据与 `Relation` 类型语义是不同维度。
 
-`Relation` 的时间元数据不得自动解释为 `precedes`、`follows`、before、after 或其他顺序关系。
+`Relation` 的时间元数据不得自动解释为 `precedes`、`follows`、之前、之后或其他顺序关系。
 
 如果未来 `Relation` 词汇定义 `precedes`、`follows` 等类型，其先后语义属于 `Relation` 类型本身，而不是时间元数据的隐式解释。
 
@@ -2006,7 +2006,7 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 
 - `TemporalValue` 的词法形式；
 - 时间精度保留；
-- 数值型 offset / `ZoneToken` 表示；
+- 数值型偏移量 / `ZoneToken` 表示；
 - 规范信息相等；
 - `Interval` 的最小可比性。
 
@@ -2016,7 +2016,7 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 
 - 最终 JSON Schema 集成；
 - DSL 语法与序列化；
-- 规范性 `Relation` 词汇与具体关系类型 code；
+- 规范性 `Relation` 词汇与具体关系类型代码；
 - 逆关系约定；
 - 派生 relation-strength 工件结构；
 - `Relation` 词汇的序列化。
@@ -2032,7 +2032,7 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 - 具有相同 `Context`；
 - 出现在同一 `Evidence` 或来源材料中；
 - 出现在同一句话或相邻字段；
-- 使用相同的术语 code / category；
+- 使用相同的术语代码或类别；
 
 规范化不得自动创建 `Relation`。
 
@@ -2054,7 +2054,7 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 
 符合规范的 `Relation` 必须使用其语义由适用的 PBDL 词汇或术语 binding 定义的关系类型。未定义或仅自由文本描述的关系类型语义不得被当作规范性机器语义。
 
-当前规范不定义完整的 `Relation` 词汇、具体 code、序列化形式或开放/封闭词汇策略，也不新增具体因果关系类型。`Relation` 的规范结构字段见 §17；规范关系词汇仍待专门定义。
+当前规范不定义完整的 `Relation` 词汇、具体代码、序列化形式或开放/封闭词汇策略，也不新增具体因果关系类型。`Relation` 的规范结构字段见 §17；规范关系词汇仍待专门定义。
 
 对于有向关系类型，交换 `source` / `target` 会改变或破坏该关系类型所定义的语义。
 
@@ -2078,13 +2078,13 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 - `Preference` B 可以来自患者自述；
 - A 与 B 之间的关系可以由模型推断。
 
-此时两个端点可以分别具有 DIRECT provenance，而 `Relation` 断言本身仍属于 INFERRED。
+此时两个端点可以分别具有 `DIRECT` 来源语义，而 `Relation` 断言本身仍属于 `INFERRED`。
 
 `Relation` 断言的 DIRECT / INFERRED 判定继续遵守 §13：依据关系语义内容是否相对于来源内容经过推导，而不是处理链路中是否使用了 LLM、NLP 或其他工具。
 
 如果来源明确表达某个 `Relation`，而 LLM / NLP 只是忠实抽取该关系、没有新增语义推断，则该 `Relation` 断言可以属于 DIRECT，即属于来源描述的关系。
 
-如果 `Relation` 来自模型、规则引擎、统计过程或其他分析推断，它必须保持 INFERRED provenance 语义，不得静默表示为 DIRECT 来源描述的 `Relation`。
+如果 `Relation` 来自模型、规则引擎、统计过程或其他分析推断，它必须保持 `INFERRED` 来源语义，不得静默表示为 `DIRECT` 来源描述的 `Relation`。
 
 如果 `Relation` 表达来源归因的理由，它仍继续遵守 §10.3：来源归因的理由不等价于已经验证的因果关系。
 
@@ -2099,8 +2099,8 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 - 关系类型；
 - direction；
 - 时间适用范围；
-- DIRECT / INFERRED derivation 语义；
-- provenance 所支持的含义；
+- `DIRECT` / `INFERRED` 派生语义；
+- 来源追踪所支持的含义；
 
 这些差异都可以使 `Relation` 断言在语义上不同。
 
@@ -2114,7 +2114,7 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 
 §14 不改变身份规则：`Relation` 在当前 v1 Core 最小模型中仍然不要求自身具有身份。
 
-新增的 `Relation` provenance 要求不得被解释为 `Relation` 因此获得必需身份。
+新增的 `Relation` 来源追踪要求不得被解释为 `Relation` 因此获得必需身份。
 
 `Relation` 仍不得作为 `Relation` 端点，端点矩阵保持不变。
 
@@ -2132,9 +2132,9 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 
 `Relation.weight` 不得重新成为默认 PBDL-Core `Relation` 的内在语义强度。
 
-旧 `weight` 可能代表相关系数、模型评分、排序权重、类似 confidence 的值、关联强度、因果效应估计等彼此不同的语义，Core 不能把它们视为一个统一概念。
+旧 `weight` 可能代表相关系数、模型评分、排序权重、类似置信信息的值、关联强度、因果效应估计等彼此不同的语义，Core 不能把它们视为一个统一概念。
 
-如果外部分析提供关系强度、统计量、score 或 effect estimate，该结果属于派生/分析工件。其 metric 语义、derivation 方法、模型/算法、provenance、version 与适用端点/关系需要由未来的派生结果规范明确；§14 不定义该 Schema。
+如果外部分析提供关系强度、统计量、评分或效应估计，该结果属于派生/分析工件。其度量含义、派生方法、模型/算法、来源追踪、版本与适用端点/关系需要由未来的派生结果规范明确；§14 不定义该 Schema。
 
 来源描述的定性强度与派生的数值型关系强度必须保持可区分。
 
@@ -2187,7 +2187,7 @@ Core 不得要求 `system` 一定是 URI；具体术语绑定规范可以进一�
 
 Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI-normalize 或术语规范化。
 
-当前规范不定义任何具体 SNOMED CT、LOINC、ICD 或其他医学术语 code。
+当前规范不定义任何具体 SNOMED CT、LOINC、ICD 或其他医学术语代码。
 
 ## 16. 语义约束
 
@@ -2202,13 +2202,13 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 7. `Behavior` 与 `Preference` 必须各自绑定到恰好一个 `Subject`。
 8. 每个符合规范的 `Behavior` 必须实际具有至少一条 `provenance` 关联链路。
 9. 每个符合规范的 `Preference` 必须实际具有至少一条 `provenance` 关联链路。
-10. 规范语义表示必须能区分 DIRECT 与 INFERRED provenance 语义。判断依据是结构化语义内容相对于来源内容是否经过推导，而不是处理链路中是否使用过 LLM、NLP、模型或其他工具。
+10. 规范语义表示必须能区分 `DIRECT` 与 `INFERRED` 来源语义。判断依据是结构化语义内容相对于来源内容是否经过推导，而不是处理链路中是否使用过 LLM、NLP、模型或其他工具。
 11. 仅使用工具进行抽取、解析、规范化、术语映射或序列化转换，不得自动使信息成为 INFERRED。
 12. INFERRED 信息不得静默表示成 DIRECT 或来源直接描述的信息。
 13. 同一个 `Behavior` / `Preference` 可以具有多条 `provenance` 关联链路，但多来源不得自动表示更高真值或可信度。
 14. 如果不同来源表达的语义内容实质不同或冲突，规范表示不得通过 `provenance`/`source` 合并、对象折叠或其他方式丢失、掩盖这些冲突，或使冲突语义不可区分。默认情况下，应使用彼此分离的 `Behavior` / `Preference` 实例。
 15. `Provenance` 与 `Evidence` 不得被当作完全同义的概念。
-16. confidence 不得成为所有 `Preference` 的强制属性；DIRECT 的自述信息不得被迫赋予模型式 confidence。
+16. 置信信息不得成为所有 `Preference` 的强制属性；`DIRECT` 的自述信息不得被迫赋予模型式置信信息。
 17. `Provenance` 在 §13 中不要求独立身份。
 18. 语义时间与 `Provenance` 时间不得视为同一个时间概念；`Provenance` 中的报告时间不得自动替代 `Behavior` / `Preference` / `Relation` 的语义时间。
 19. `Behavior`、`Preference` 与 `Relation` 应使用共享的 Core 时间抽象表达语义时间范围。
@@ -2217,10 +2217,10 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 22. 单边界 `Interval` 中未提供的另一侧边界只表示该边界未提供，不得自动解释为永久、ongoing、一直延伸到现在或未来、从无限过去开始，或数学意义上的无界区间。
 23. 缺少语义时间信息不得被解释为永久、当前、始终、反复或“时间不重要”。
 24. 规范化必须保留来源实际支持的时间精度，不得发明来源未提供的时间精度。
-25. 来源未提供 timezone / offset 时，规范化不得凭空补充；来源已经提供时，规范表示必须能够保留。
+25. 来源未提供时区或偏移量时，规范化不得凭空补充；来源已经提供时，规范表示必须能够保留。
 26. 规范语义中保留的相对时间表达必须具有明确锚点；没有明确锚点的裸相对时间不得被假装成唯一确定的绝对时间范围。
 27. `Relation` 的时间元数据不得自动承担 `precedes` / `follows` 等 `Relation` 类型的顺序语义。
-28. `Behavior` 的 type、`Preference` 的 category、显示标签与 `Relation` 类型不得自动充当实体实例身份。
+28. `Behavior` 的 `type`、`Preference` 的 `category`、显示标签与 `Relation` 类型不得自动充当实体实例身份。
 29. Core 引用必须在当前文档的引用范围内解析到恰好一个实体。
 30. 未定义引用与歧义引用均无效。
 31. `Relation` 的 `source` / `target` 必须使用明确的实体引用，不能使用未解析的自由文本标签。
@@ -2233,18 +2233,18 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 38. 观测或记录到的关联、共现或时间前置关系，不得自动升级为来源归因的理由或因果断言；时间上的先后不得自动推出因果关系。
 39. INFERRED 解释不得静默表示为 DIRECT 来源归因的理由，并继续遵守 §13 关于语义派生的 DIRECT / INFERRED 判定规则。
 40. 如果来源不支持症状相关方向，规范化不得从 `symptom_triggered` 字段名或时间顺序中发明方向；已知方向也不得自动等价为因果关系。
-41. `Context` 不得自动建立因果关系；情境限定不得自动等价为理由、因果解释或已经验证的因果 effect。
+41. `Context` 不得自动建立因果关系；情境限定不得自动等价为理由、因果解释或已经验证的因果效应。
 42. `Behavior` / `Preference` 缺少显式 `Context` 时，不得解释为无情境、普遍适用或无条件；它只表示未提供额外的情境限定。
 43. `Context` 不得作为 `Provenance`、语义时间、诱因/理由语义、派生分析或工作流/应用状态的默认替代容器。
 44. 旧版 `communication_status` 不得仅凭字段名决定规范语义类别，也不得默认定义为单一通用 `Behavior` 状态。
 45. 实际沟通 `Behavior`、沟通情境元数据、`Provenance` 信息与工作流/应用状态必须保持语义可区分。
 46. `communicated` / `reported` / `acknowledged` 不得自动等价为 `verified`、`true`、`agreed` 或来源内容已经得到事实认证。
 47. `Behavior` 的频率/重复模式必须与 §5.7 的语义时间范围保持可区分；持续时间或适用区间不得自动等价为重复模式。
-48. 观测或报告的发生次数在参考时间窗内不得自动等价为 recurring 模式或稳定重复规则。
-49. 定性或近似 frequency 不得通过规范化擅自数值化、阈值化或提高到来源未提供的精确度。
+48. 观测或报告的发生次数在参考时间窗内不得自动等价为重复模式或稳定重复规则。
+49. 定性或近似频率不得通过规范化擅自数值化、阈值化或提高到来源未提供的精确度。
 50. 预期或处方计划不得自动表示实际患者 `Behavior` 的频率；实际 `Behavior` 频率也不得自动表示处方计划。
 51. Recurring 模式不得通过规范化自动展开成来源没有提供的虚构具体观测发生记录。
-52. 多个观测发生记录不得自动总结为重复模式；若模式来自外部推断，该模式必须保留 INFERRED provenance 语义，并不得静默表示为 DIRECT 来源描述的频率。
+52. 多个观测发生记录不得自动总结为重复模式；若模式来自外部推断，该模式必须保留 `INFERRED` 来源语义，并不得静默表示为 `DIRECT` 来源描述的频率。
 53. 缺少频率/重复模式信息不得被解释为发生一次、只发生一次、不重复、不规律、连续发生或任何具体重复模式。
 54. 规范化不得在缺少参考周期时发明频率值，也不得在缺少分母或预期机会次数时发明依从性比率、依从性百分比或其他比例。
 55. 频率/重复模式语义不得成为所有 `Behavior` 的强制属性。
@@ -2252,10 +2252,10 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 57. `Relation` 类型必须具有定义明确的机器语义，并决定端点角色与方向性；`source` / `target` 顺序本身不得建立因果关系、时间先后、重要性或其他未由关系类型定义的语义。
 58. 有向 `Relation` 不得自动等价为因果 `Relation`；对于对称或非定向关系类型，交换端点顺序不得被解释为不同的关系语义。
 59. 旧版 `Preference.associated_behavior` 在规范语义中必须统一表示为显式的 Preference–Behavior `Relation`，不得继续形成与 `Relation` 平行的规范链接机制。
-60. 旧版 `associated_behavior` 引用必须解析到恰好一个 `Behavior` 身份；未定义、未解析或歧义 mapping 都无效，规范转换不得静默猜测目标。
-61. 规范转换不得仅凭旧版 `associated_behavior` 发明比来源支持更强的 relation 语义。
+60. 旧版 `associated_behavior` 引用必须解析到恰好一个 `Behavior` 身份；未定义、未解析或歧义映射都无效，规范转换不得静默猜测目标。
+61. 规范转换不得仅凭旧版 `associated_behavior` 发明比来源支持更强的关系语义。
 62. 每个符合规范的 `Relation` 断言必须具有至少一条 `provenance` 关联链路或等价的可追踪来源语义；端点 `provenance` 不得自动替代 `Relation` 断言的 `provenance`。
-63. INFERRED `Relation` 断言不得静默表示为 DIRECT 来源描述的 `Relation`，即使其端点分别具有 DIRECT provenance。
+63. `INFERRED` `Relation` 断言不得静默表示为 `DIRECT` 来源描述的 `Relation`，即使其端点分别具有 `DIRECT` 来源语义。
 64. 语义上不同的 `Relation` 断言不得仅因为端点相同而被静默合并；关系类型、方向、时间适用范围以及 `derivation` / `provenance` 的差异都必须得到保留。
 65. `Relation.weight` 不得作为默认 Core `Relation` 的内在语义强度；派生的数值型强度或统计量必须与来源描述的关系语义保持可区分。
 66. 未定义或仅自由文本描述的关系类型语义，不得被当作规范机器语义。
@@ -2263,12 +2263,12 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 68. `Annotation.text` 不得自动创建新的 `Behavior`、`Preference`、`Relation`、`Context`、因果断言、风险结果、推荐或其他派生分析结果。
 69. `Annotation` 不得替代必需的 `Provenance`；`source` / `generator` / DIRECT / INFERRED `derivation` 不得只通过自由文本说明表达，再要求下游猜测。
 70. 旧版 `Behavior.reasoning_note` 与 `Preference.note` 在规范语义归属上统一为 `Annotation` 语义，但 `Annotation` 不得因此获得必需身份或 `Relation` 端点地位。
-71. 模型或分析过程在来源未表达的基础上生成的解释性 `Annotation` 必须保持 INFERRED derivation 语义，并不得伪装为 DIRECT 来源文本；忠实抽取或规范化本身不得自动使 `Annotation` 成为 INFERRED。
+71. 模型或分析过程在来源未表达的基础上生成的解释性 `Annotation` 必须保持 `INFERRED` 派生语义，并不得伪装为 `DIRECT` 来源文本；忠实抽取或规范化本身不得自动使 `Annotation` 成为 `INFERRED`。
 72. `Annotation` 不得自动等价于 `Evidence`，也不得仅凭文本内容建立因果关系或 `Relation`。
 73. `Annotation` 与结构化规范语义冲突时，符合规范的使用方不得仅根据 `Annotation` 静默覆盖结构化语义。
 74. PBDL-Core 不得要求隐藏思维链、私有模型推理轨迹、内部草稿或其他隐藏模型推理过程作为规范性 `Annotation` 内容。
 
-跨文档身份/引用协议、communication 词汇、`Constraint` / `Barrier` 模型、规范性 relation 词汇、code、逆关系约定、派生 relation-strength 工件 Schema、JSON Schema、DSL 语法与术语词表仍为 **TODO**。
+跨文档身份/引用协议、沟通词汇、`Constraint` / `Barrier` 模型、规范性关系词汇、代码、逆关系约定、派生关系强度工件 Schema、JSON Schema、DSL 语法与术语词表仍为 **TODO**。
 
 ## 17. 规范对象模型
 
@@ -2373,7 +2373,7 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 
 - `code + system` 承担机器语义身份；
 - display 为人类可读展示；
-- version 为可选信息。
+- `version` 为可选信息。
 
 `Coding` 的规范对象结构与相等性见 §15；JSON Schema 与 DSL 序列化尚未定义。
 
@@ -2461,8 +2461,8 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 
 原因是所属对象的 `provenance` 无法无损覆盖以下情况：
 
-- `Behavior` 为 DIRECT，但 temporal 来自另一来源；
-- `Behavior` 为 DIRECT，但 temporal 由模型推断；
+- `Behavior` 为 DIRECT，但 `temporal` 来自另一来源；
+- `Behavior` 为 DIRECT，但 `temporal` 由模型推断；
 - `Preference` 所属对象的 `provenance` = {P1,P2}，但 `temporal` 仅由 P1 支持；
 - `Relation` 断言为 DIRECT，但时间适用范围为 INFERRED。
 
@@ -2475,7 +2475,7 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 
 当前规范不得为时间 `provenance` 发明第二套机制。
 
-`TemporalValue` 的词法约束、精度、timezone 保留与相等性见 §8.2。
+`TemporalValue` 的词法约束、精度、时区保留与相等性见 §8.2。
 
 §5.7 允许带锚点保留相对时间，或在规范化前将其解析。§17 对规范表示施加更严格要求：`TemporalExtent` 的结构化边界必须是 §8.2 定义的合法 `TemporalValue`。
 
@@ -2497,7 +2497,7 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 
 `Behavior.frequencies` 集合可以同时包含不同变体，例如：
 
-- recurrence = 每天一次；
+- `recurrence` = 每天一次；
 - observed_count = 上周发生 3 次。
 
 二者表达不同的语义维度，不得因为指向同一个 `Behavior` 就互相覆盖或自动去重。
@@ -2560,17 +2560,17 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
         provenance? : Provenance[1..*]
     }
 
-`BehaviorFactor` 承载 `Behavior` 局部、非 Core factor 语义，包括来源归因的理由、观测关联、前置关系、外部解释性 factor 与旧版症状相关方向。
+`BehaviorFactor` 承载 `Behavior` 局部、非 Core 因素语义，包括来源归因的理由、观测关联、前置关系、外部解释性因素与旧版症状相关方向。
 
 `BehaviorFactor` 不得成为通用的 `Relation` 替代机制。
 
-如果 factor 实际是当前文档中的 `Behavior` / `Preference` 实体，并表达显式类型化实体关系，规范模型必须使用 `Relation`。
+如果该因素实际是当前文档中的 `Behavior` / `Preference` 实体，并表达显式类型化实体关系，规范模型必须使用 `Relation`。
 
 `BehaviorFactor` 必须是结构化限定信息，而不是任意推理字符串。
 
 `BehaviorFactor` 的局部 `provenance` 完全遵守 §17.10。
 
-特别地，如果所属 `Behavior` 为 DIRECT，而解释性 factor 来自模型或分析推断，则该 factor 必须显式写出局部 `provenance`，使有效 `derivation` 保持 `"inferred"`，不能继承成所属对象的 DIRECT。
+特别地，如果所属 `Behavior` 为 `DIRECT`，而解释性因素来自模型或分析推断，则该因素必须显式写出局部 `provenance`，使有效 `derivation` 保持 `"inferred"`，不能继承成所属对象的 `DIRECT`。
 
 `FactorRole`、`FactorDirection`、`FactorValue`、因果边界与相等性详见 §8.6。
 
@@ -2625,14 +2625,14 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 | `preference_category` | `Preference.category` |
 | `preference_value` | `Preference.value` |
 | `source_type` | `Preference.provenance` |
-| `confidence_score` | 仅在 `Provenance.confidence` 的语义以及 generator / inference 过程都可以说明时使用 |
+| `confidence_score` | 仅在 `Provenance.confidence` 的语义以及生成过程或推断过程都可以说明时使用 |
 | `associated_behavior` | `Relation` |
 | `note` | `Preference.annotations` |
 | `preference_conflict_flag` | 派生 `ConflictAnalysis` / 应用结果 |
 
 符合规范的 `Preference` 不得继续保留 `source_type`、`confidence_score`、`associated_behavior`、`note`、`preference_conflict_flag`、`preference_category` 或 `preference_value` 作为与新字段归属平行的旧版字段。
 
-旧版 `confidence_score` 不得无条件搬入 `Provenance.confidence`；只有在其 `metric` 含义以及 generator / inference 过程都可以说明时才可保留。
+旧版 `confidence_score` 不得无条件搬入 `Provenance.confidence`；只有在其 `metric` 含义以及生成过程或推断过程都可以说明时才可保留。
 
 ### 17.6 Relation
 
@@ -2697,7 +2697,7 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 
 规范内部引用采用对象包装而不是裸字符串，以减少显示字符串歧义，并为未来版本化引用扩展保留明确结构边界；当前规范引用对象不增加 `display` 或 `type` 字段。
 
-### 17.8 Provenance
+### 17.8 `Provenance`
 
 `Provenance` 的最小规范字段清单：
 
@@ -2732,24 +2732,24 @@ DIRECT 表示结构化语义内容忠实来自来源描述、记录或观测的�
 
 INFERRED 表示语义内容超出来源直接表达，并由人工、模型、规则或分析过程推导产生。
 
-UNDETERMINED 只表示：规范化器或迁移流程确实无法获得 derivation 元数据，或无法可靠判断其类别。
+UNDETERMINED 只表示：规范化器或迁移流程确实无法获得派生元数据，或无法可靠判断其类别。
 
 UNDETERMINED 不得被解释为：
 
 - 部分直接、部分推断；
 - 使用方可以把它当作 DIRECT；
-- 生成方在 derivation 已知时可以跳过分类；
+- 生成方在派生类别已知时可以跳过分类；
 - 一种置信水平。
 
 生成新的 PBDL 数据时，如果生成方拥有足够信息判定 DIRECT 或 INFERRED，就不得使用 UNDETERMINED 逃避分类。
 
-旧版迁移在历史元数据不足、无法可靠重建 derivation 时可以使用 UNDETERMINED，但不得猜测 DIRECT 或 INFERRED。
+旧版迁移在历史元数据不足、无法可靠重建派生类别时可以使用 UNDETERMINED，但不得猜测 DIRECT 或 INFERRED。
 
-UNDETERMINED provenance 必须保持至少一条可追踪的来源路径；通常 `source` 可以是被迁移的旧版记录或来源材料。已知的 `source`、`generator`、`Evidence` 信息必须保留，缺失元数据不得被发明。
+使用 UNDETERMINED 的 `Provenance` 必须保持至少一条可追踪的来源路径；通常 `source` 可以是被迁移的旧版记录或来源材料。已知的 `source`、`generator`、`Evidence` 信息必须保留，缺失元数据不得被发明。
 
-如果连最小可追踪来源路径都不存在，规范化必须报告 `provenance` 要求无法满足，不得仅靠 UNDETERMINED token 伪造来源信息完整性。
+如果连最小可追踪来源路径都不存在，规范化必须报告来源追踪要求无法满足，不得仅靠 UNDETERMINED token 伪造来源信息完整性。
 
-UNDETERMINED 是规范有效的迁移语义，但符合规范的校验器应产生来源质量警告，以提示 `derivation` 分类未能恢复。
+UNDETERMINED 是规范有效的迁移语义，但符合规范的校验器应产生来源质量警告，以提示派生分类未能恢复。
 
 工具或 `generator` 的存在本身不得决定 `derivation`。
 
@@ -2769,9 +2769,9 @@ UNDETERMINED 是规范有效的迁移语义，但符合规范的校验器应产�
 
 条件不变量：
 
-- DIRECT provenance 必须具有 `source`；
-- INFERRED provenance 必须具有 `generator`；
-- UNDETERMINED provenance 必须具有 `source`；`generator` 可以存在，例如迁移或转换过程。
+- 派生类别为 DIRECT 的 `Provenance` 必须具有 `source`；
+- 派生类别为 INFERRED 的 `Provenance` 必须具有 `generator`；
+- 派生类别为 UNDETERMINED 的 `Provenance` 必须具有 `source`；`generator` 可以存在，例如迁移或转换过程。
 
 只有 `SourceDescriptor.kind` 不足以满足 UNDETERMINED 对可追踪来源路径的要求。
 
@@ -2791,7 +2791,7 @@ UNDETERMINED 是规范有效的迁移语义，但符合规范的校验器应产�
         }
     }
 
-该附加可追踪性要求**只适用于** `"undetermined"`；当前规范不得因此把所有 DIRECT provenance 扩大为必须具有 `locator`。
+该附加可追踪性要求**只适用于** `"undetermined"`；当前规范不得因此把所有派生类别为 DIRECT 的 `Provenance` 扩大为必须具有 `locator`。
 
 一个 `Provenance` 可以同时具有 `source` 与 `generator`。
 
@@ -2801,7 +2801,7 @@ UNDETERMINED 是规范有效的迁移语义，但符合规范的校验器应产�
 - `generator` = 抽取系统；
 - `derivation` = `"direct"`。
 
-因此，`generator` 的存在不得自动意味着 inferred。
+因此，`generator` 的存在不得自动意味着派生类别为 INFERRED。
 
 `Provenance` 不得在顶层重新引入无角色的通用 `time : TemporalValue`。
 
@@ -2883,7 +2883,7 @@ UNDETERMINED 是规范有效的迁移语义，但符合规范的校验器应产�
 
 抽取、生成、转换或迁移相关时间必须使用显式标明 `role` 的 `GeneratorTimeEvent`。
 
-`GeneratorDescriptor` 的存在不得自动把 derivation 判为 `"inferred"`。
+`GeneratorDescriptor` 的存在不得自动把 `derivation` 判为 `"inferred"`。
 
 #### 17.8.5 Evidence
 
@@ -2924,13 +2924,13 @@ UNDETERMINED 是规范有效的迁移语义，但符合规范的校验器应产�
 - 不得与 `Annotation` 合并；
 - 不得要求把完整 EHR 或来源文档复制进 PBDL Core。
 
-#### 17.8.6 Provenance.confidence
+#### 17.8.6 `Provenance.confidence`
 
-如果 Core 的规范表示需要保留 confidence，其字段位置为可选的 `Provenance.confidence`。
+如果 Core 的规范表示需要保留置信信息，其字段位置为可选的 `Provenance.confidence`。
 
 `Confidence` 不得成为 `Behavior` / `Preference` / `Relation` 的内在真值字段。
 
-DIRECT self-report 不得被迫填写 `Confidence`。
+`DIRECT` 的自述信息不得被迫填写 `Confidence`。
 
 最小规范表示如下：
 
@@ -2951,7 +2951,7 @@ DIRECT self-report 不得被迫填写 `Confidence`。
 
 `metric` 必须是非空字符串，并承担“该数字衡量什么”的语义标识责任。
 
-Core 不定义 confidence 的 `metric` 词汇；生成方不得仅因为 `value` 恰好落在 0..1 就自动解释为概率。
+Core 不定义 `Confidence.metric` 的词汇；生成方不得仅因为 `value` 恰好落在 0..1 就自动解释为概率。
 
 如果 `scale` 存在：
 
@@ -2983,7 +2983,7 @@ Core 不定义 confidence 的 `metric` 词汇；生成方不得仅因为 `value`
 
 `Confidence` 相等性不得使用隐式浮点容差、舍入容差或统计等价。
 
-JSON 数值的不同词法写法如果表示同一有限数学数值，可以在数值语义上相等；当前规范不要求保留 JSON 数值的词法写法作为 confidence 信息。
+JSON 数值的不同词法写法如果表示同一有限数学数值，可以在数值语义上相等；当前规范不要求保留 JSON 数值的词法写法作为置信信息。
 
 ### 17.9 Annotation
 
@@ -3202,12 +3202,12 @@ JSON 数值的不同词法写法如果表示同一有限数学数值，可以在
 
 已定义的最小校验后果包括：
 
-- 旧版迁移因历史元数据确实不足而使用 `"undetermined"` 时，可以形成规范有效的 provenance；
-- 符合规范的校验器应对 `"undetermined"` 产生 provenance-quality 警告；
-- 生成方已经掌握足够的 derivation 信息却仍使用 `"undetermined"`，属于语义不符合；
-- 缺少 §17.8 所要求的可追踪来源路径时，`"undetermined"` 不得使 provenance 要求自动变为已满足；
+- 旧版迁移因历史元数据确实不足而使用 `"undetermined"` 时，可以形成规范有效的 `Provenance`；
+- 符合规范的校验器应对 `"undetermined"` 产生来源质量警告；
+- 生成方已经掌握足够的 `derivation` 信息却仍使用 `"undetermined"`，属于语义不符合；
+- 缺少 §17.8 所要求的可追踪来源路径时，`"undetermined"` 不得使来源追踪要求自动变为已满足；
 - `Text` 必须满足 §8.1 的非空白内容规则；
-- `TemporalValue` 必须满足 §8.2 的词法、格里高利日期与 offset 有效性；
+- `TemporalValue` 必须满足 §8.2 的词法、格里高利日期与偏移量有效性；
 - 当 §8.2.6 能判定 `Interval.start` 明确晚于 `Interval.end` 时，该 `Interval` 必须无效；
 - `TemporalExtent` 的显式局部 `provenance` 必须满足 §17.10 的完全覆盖与禁止叠加合并规则；
 - `Coding` 的必需与非空约束必须满足 §15；
@@ -3215,15 +3215,15 @@ JSON 数值的不同词法写法如果表示同一有限数学数值，可以在
 - `BehaviorFrequency` 必须满足 §8.3 的变体判别、`count` / `rate` / `period` 与重复模式集合规则；
 - `BehaviorFrequency` 的定量 `precision` 必须显式为 `"exact"` 或 `"approximate"`；
 - `RateFrequency` 缺少 `period` 必须无效；
-- `RecurrenceFrequency` 的 weekday 重复项，以及非法的 period/day schedule 组合都必须无效；
+- `RecurrenceFrequency` 的 `Weekday` 重复项，以及非法的 `period` / 日期计划组合都必须无效；
 - `PreferenceValue` 必须满足 §8.4 的带标签联合类型判别；
 - `NumericPreferenceValue.value` 必须有限，`operator` 必须为允许的 token，`unit` 若存在必须为有效 `Coding`；
 - `Context` 必须满足 §8.5 的 `coded` / `text` 带标签联合类型判别；
 - 完整信息相等的 `Context` 重复项不得在规范的 `context` 集合中重复保留；
-- `BehaviorFactor` 的 `role` / `direction` / factor 变体必须满足 §8.6；
+- `BehaviorFactor` 的 `role` / `direction` / `factor` 变体必须满足 §8.6；
 - `antecedent` 与 `reported_reason` 的 `direction` 必须为 `factor_to_behavior`；
-- 由推断得到的解释性 factor，如果不能与所属对象的 `provenance` 保持相同的 `derivation` / 适用来源集合，就必须显式写出局部 `provenance`；
-- `BehaviorFactor` 指向已有 Core 实体的显式类型化关系必须使用 `Relation`，不得通过 factor 的 text/code 表示规避。
+- 由推断得到的解释性因素，如果不能与所属对象的 `provenance` 保持相同的 `derivation` / 适用来源集合，就必须显式写出局部 `provenance`；
+- `BehaviorFactor` 指向已有 Core 实体的显式类型化关系必须使用 `Relation`，不得通过因素的文本或代码表示规避。
 
 当前规范不定义校验器实现。
 
@@ -3548,7 +3548,7 @@ JSON 数值的词法规范化与确定性写法属于未来的确定性序列化
 
 “需要规范化”表示语义内容可以理解，但规范形必须移除冗余的完整信息相等重复项。
 
-如果 `provenance`、`Annotation.provenance`、`BehaviorFactor` 的 `role` / `direction`、temporal `provenance`、`Relation.type` / `temporal` / `provenance` 等信息不同，从而导致完整规范信息不同，就不得机械去重。
+如果 `provenance`、`Annotation.provenance`、`BehaviorFactor` 的 `role` / `direction`、`temporal.provenance`、`Relation.type` / `Relation.temporal` / `Relation.provenance` 等信息不同，从而导致完整规范信息不同，就不得机械去重。
 
 `Relation` 重复项检测必须使用 §22.9.3 中感知类型契约的相等规则。对于对称或非定向关系类型，交换端点后若其余断言内容与完整信息相等，可以构成重复项；对于有向类型，端点顺序具有语义。若适用的 `Relation.type` 方向性契约不可用，规范化器不得自行猜测、交换、规范化或据此去重端点。
 
@@ -3898,7 +3898,7 @@ JSON Schema 不得尝试替代以下职责：
 - 规范数组排序/对象键顺序规则；
 - 通用类型转换或强制转换规则；
 - 共享 `Provenance` 身份或池（若未来出现真实需要）；
-- provenance chaining；
+- 来源链式追踪；
 - 专门的 `Relation` 词汇、逆关系约定与因果状态定义；
 - 扩展机制；
 - DSL / EBNF 语法；
