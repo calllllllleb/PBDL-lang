@@ -312,7 +312,7 @@ PBDL-Core 区分两类不同的时间语义：
 - 来源中无法完全结构化、但值得保留的说明；
 - 人工或外部系统产生的解释性备注。
 
-`Annotation` 的最小规范字段、附着位置与基数见 §17，`Text` 词法约束见 §8.1，作者/生成者信息通过 `Annotation.provenance` 表达。当前 Draft 2020-12 JSON Schema 已提供结构投影；DSL 语法仍留待后续定义。
+`Annotation` 的最小规范字段、附着位置与基数见 §17，`Text` 词法约束见 §8.1；最小作者/生成者来源信息通过 `Annotation.provenance` 表达，更细的作者/生成者身份模型仍留待后续定义。当前 Draft 2020-12 JSON Schema 已提供结构投影；DSL 语法仍留待后续定义。
 
 #### 5.8.1 `Annotation` 不是机器语义的后门
 
@@ -1594,7 +1594,7 @@ PBDL-Core 不得默认把此类工作流或应用状态当作患者自身 `Behav
 
 §5.8 不得被解释为要求保存模型的隐藏思维链或私有推理轨迹。
 
-§17 规定旧版 `reasoning_note` → `Behavior.annotations`，且 `Annotation` 采用轻量嵌入结构；更细的序列化以及作者/生成者表示仍留待后续定义。
+§17 规定旧版 `reasoning_note` → `Behavior.annotations`，且 `Annotation` 采用轻量嵌入结构；最小作者/生成者来源信息由 `Annotation.provenance` 表达，更细的作者/生成者身份模型与 DSL 表层序列化仍留待后续定义。
 
 ## 11. Preference
 
@@ -1668,7 +1668,7 @@ PBDL-Core 不得默认把此类工作流或应用状态当作患者自身 `Behav
 
 `Preference` 的 `Annotation` 不得自动成为 `Evidence` 或 `Provenance`，也不得仅凭文本内容创建新的 `Behavior`、`Preference`、`Relation`、`Context`、因果断言或派生结果。
 
-§17 规定旧版 `Preference.note` → `Preference.annotations`，并定义 `Annotation` 的最小 `text` + `provenance` 字段；更细的序列化以及作者/生成者表示仍留待后续定义。
+§17 规定旧版 `Preference.note` → `Preference.annotations`，并定义 `Annotation` 的最小 `text` + `provenance` 字段；最小作者/生成者来源信息由 `Annotation.provenance` 表达，更细的作者/生成者身份模型与 DSL 表层序列化仍留待后续定义。
 
 `Preference` 的规范字段见 §17；`SourceDescriptor` / `Evidence` 与 `Confidence` 的具体表示见 §17.8；`PreferenceValue` 的 `coded` / `text` / `boolean` / `number` 带标签联合类型见 §8.4。
 
