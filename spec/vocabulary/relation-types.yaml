@@ -1,6 +1,11 @@
-# PBDL Relation 类型词表注册表。
-# 具体词表条目将在后续语言设计轮次中冻结。
-version: "draft"
-status: "unfrozen"
-description: "用于未来 PBDL Relation 类型词表条目的占位注册表。"
+# PBDL 1.0 Relation 词汇注册表接口。
+# 规范性 Relation Vocabulary Contract 见 spec/PBDL-v1.0-SPEC.md §14.6。
+# 本文件是机器可消费的 registry carrier，不是独立的规范权威。
+# entries 非空时遵循 §14.6：system, code, version?, directionality,
+# endpoint_signatures, causal_status, inverse?, display?, description?。
+# PBDL-Core 1.0 不内置关系 ontology；具体条目可以由后续或外部专门词汇提供。
+
+pbdl_version: "1.0"
+status: "contract-frozen"
+description: "PBDL 1.0 Relation vocabulary registry surface；当前未定义任何内置 relation type entry。"
 entries: []

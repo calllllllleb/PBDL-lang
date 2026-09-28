@@ -1178,7 +1178,7 @@ token 列表顺序不得被解释为规范性的数值刻度或临床严重度�
 - 方向；
 - `inferred` / 解释性因素。
 
-如果未来需要规范性的因果 `Relation` 词汇，必须由专门的 `Relation` 词汇规范定义；当前规范不做该设计。
+具体的因果 `Relation` 类型必须由遵循 §14.6 Relation Vocabulary Contract 的词汇条目定义；PBDL-Core 1.0 不内置具体因果关系代码。
 
 #### 8.6.5 `BehaviorFactor` 与 `Relation` 的边界
 
@@ -1360,7 +1360,7 @@ DIRECT / INFERRED 的判断继续遵守 §13：依据语义内容是否相对于
 
 §10.3 不新增 Symptom 一级 PBDL-Core 实体，也不修改 `Relation` 端点矩阵。症状相关信息的最终结构归属尚未定义；未来可以由 `Behavior` 局部结构化信息、`Context`、外部 coded 概念、扩展或其他结构承担。
 
-当前规范不定义新的规范性 `Relation` 词汇。`related_to`、`associated_with`、`reported_reason_for`、`precedes`、`follows` 等仍是非规范性候选，除非后续规范另行定义。
+当前规范不内置具体的规范性 `Relation` 类型代码。`related_to`、`associated_with`、`reported_reason_for`、`precedes`、`follows` 等仍是非规范性候选，除非某个适用词汇按照 §14.6 的 Relation Vocabulary Contract 正式定义。
 
 §17 将 `Behavior` 局部、非 Core 实体的诱因、症状或理由关联归入 `Behavior.factors`；若两端均为允许的 Core 实体，且表达显式类型化实体关系，则仍使用 `Relation`。
 
@@ -1373,7 +1373,7 @@ DIRECT / INFERRED 的判断继续遵守 §13：依据语义内容是否相对于
 
 旧版 `behavior_trigger` / `symptom_triggered` 的规范化必须依据真实来源语义选择 `Context`、`BehaviorFactor` 或 `Relation`，不得仅根据旧版字段名猜测理由、方向或因果关系。
 
-规范性 `Relation` 词汇与具体 symptom 术语规范尚未定义；当前 Draft 2020-12 JSON Schema 已提供结构投影，DSL 语法仍待定义。
+PBDL 1.0 已在 §14.6 冻结 Relation Vocabulary Contract，但不内置具体关系类型代码；具体 symptom 术语规范仍未定义。当前 Draft 2020-12 JSON Schema 已提供结构投影，DSL 语法仍待定义。
 
 ### 10.4 旧版 `communication_status` 兼容性
 
@@ -1949,7 +1949,7 @@ PBDL-Core 不负责自动裁决冲突，不在 §13 设计 ConflictAnalysis。
 - `target` 端点；
 - 关系类型概念。
 
-`Relation` 的抽象语义见 §14；规范字段 `source` / `target` / `type` / `temporal` / `provenance` / `annotations` 与 `CoreEntityRef` 引用结构见 §17。当前 Draft 2020-12 JSON Schema 已提供结构投影；具体 `Relation` 词汇契约与 DSL 语法仍待定义。
+`Relation` 的抽象语义见 §14；规范字段 `source` / `target` / `type` / `temporal` / `provenance` / `annotations` 与 `CoreEntityRef` 引用结构见 §17。Relation Vocabulary Contract 见 §14.6；当前 Draft 2020-12 JSON Schema 已提供结构投影，DSL 语法仍待定义。
 
 `Relation` 的 `source` 与 `target` 必须是实体引用，并且必须分别解析到恰好一个允许的端点实体。
 
@@ -2015,10 +2015,10 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 仍为 **TODO** 的是：
 
 - DSL 语法与序列化；
-- 规范性 `Relation` 词汇与具体关系类型代码；
+- 具体 `Relation` 词汇条目与关系类型代码；
 - 逆关系约定；
 - 派生 relation-strength 工件结构；
-- `Relation` 词汇的序列化。
+- 外部 `Relation` 词汇的发现、打包与版本选择机制。
 
 ### 14.5 显式 `Relation` 边界
 
@@ -2041,29 +2041,151 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 
 每个符合规范的 `Relation` 必须使用具有稳定、机器可解释语义定义的关系类型。
 
-`Relation` 类型定义 `source` / `target` 在关系中的语义角色，并且必须让符合规范的实现能够判断其方向性，例如有向、对称或非定向。
+PBDL-Core 1.0 冻结的是 **Relation Vocabulary Contract**，而不是一套穷举的医学关系代码体系。具体关系类型可以由外部或专门词汇提供，只要其条目满足本节契约。
 
-每个规范性关系类型定义必须明确允许的端点语义角色或端点种类。具体关系类型可以比全局端点矩阵更严格，但不得扩大该矩阵允许的 Core 端点组合。
+`Relation` 实例本身继续只使用 §17 已冻结的字段；本节不得向 Core `Relation` 新增 `direction`、`symmetric`、`inverse`、`weight` 或其他词汇元数据字段。方向性、端点角色、因果状态与逆关系信息属于词汇条目，不属于关系实例。
 
-每个规范性关系类型定义必须明确其因果语义状态：要么明确承载因果语义，要么明确属于非因果语义。
+#### 14.6.1 关系类型身份
 
-如果关系类型定义没有明确赋予因果语义，符合规范的使用方不得根据类型名称、方向性、端点顺序或其他隐式线索把它解释为因果关系。
+关系类型身份继续使用现有 `Coding` 语义：
 
-`Relation` 类型不得只是一段自由文本说明、显示标签或 UI 文案。
+- `system + code` 构成基本机器身份；
+- `Coding.version` 继续遵守 §15 的现有规则：它不改变 `system + code` 的基本机器身份，但属于规范信息；
+- 本节不得重新设计 `Coding` 身份或相等性。
 
-符合规范的 `Relation` 必须使用其语义由适用的 PBDL 词汇或术语 binding 定义的关系类型。未定义或仅自由文本描述的关系类型语义不得被当作规范性机器语义。
+一个适用的 relation vocabulary registry 内，`system + code` 必须唯一标识一个词汇条目。`system`、`code` 与可选 `version` 继续遵守现有 `Coding` 字符串约束。不得通过同一 registry 中重复的 `system + code` 再让运行时根据 `version`、`display` 或其他启发式信息猜测应采用哪个契约。
 
-当前规范不定义完整的 `Relation` 词汇、具体代码、序列化形式或开放/封闭词汇策略，也不新增具体因果关系类型。`Relation` 的规范结构字段见 §17；规范关系词汇仍待专门定义。
+Relation vocabulary entry 的最小字段如下：
 
-对于有向关系类型，交换 `source` / `target` 会改变或破坏该关系类型所定义的语义。
+| 字段 | 基数 | 规范语义 |
+|---|---:|---|
+| `system` | 1 | 对应 `Relation.type.system` |
+| `code` | 1 | 对应 `Relation.type.code` |
+| `version` | 0..1 | 对应现有 `Coding.version` 信息；不改变基本身份 |
+| `directionality` | 1 | `directional` / `symmetric` / `non_directional` |
+| `endpoint_signatures` | 1..* | 允许的端点组合及其语义角色 |
+| `causal_status` | 1 | `causal` / `non_causal` |
+| `inverse` | 0..1 | 仅用于有向关系类型的可选逆关系类型引用 |
+| `display` | 0..1 | 非规范展示信息 |
+| `description` | 0..1 | 非规范说明信息 |
 
-对于对称或非定向关系类型，交换端点顺序不得被解释为不同的关系语义。
+`display` 与 `description` 不得参与关系类型身份、端点合法性、方向性、因果状态、相等性或去重判断；实现不得要求理解自然语言说明才能获得机器语义。
 
-在不知道关系类型的方向性语义时，规范化不得自行猜测、反转或重排端点。
+#### 14.6.2 `directionality`
 
-`source → target` 的端点顺序本身不得自动建立因果关系、时间先后、影响、优先级、evidence-for 或 parent/child 语义；这些语义只能由关系类型定义明确规定。
+每个词汇条目必须将 `directionality` 明确声明为以下三个值之一：
 
-有向 `Relation` 不得因为具有方向性就自动等价为因果 `Relation`。
+- `directional`；
+- `symmetric`；
+- `non_directional`。
+
+不得在规范词汇条目中使用 `unknown`、`auto`、`infer` 或其他要求运行时猜测方向性的状态。
+
+如果当前 `Relation.type` 没有可用的适用词汇条目，则状态是**词汇契约不可用**，而不是某个词汇条目的 `directionality = unknown`。
+
+对于 `directional` 关系类型，交换 `source` / `target` 会改变或破坏该关系类型所定义的语义。
+
+对于 `symmetric` 或 `non_directional` 关系类型，交换端点顺序不得被解释为不同的关系语义。两者在 §22.9.3 的通用交换端点相等性规则下具有相同的无序端点行为；二者的词汇学区别由具体词汇定义，但不得重新引入 `source` / `target` 位置方向性。
+
+在不知道关系类型的方向性语义时，相等性引擎或规范化器不得自行猜测、反转或重排端点。
+
+#### 14.6.3 endpoint signatures
+
+每个词汇条目的 `endpoint_signatures` 必须是一个非空的**端点组合集合**。每个 signature 单独表示一个允许组合；多个 signature 之间是“任一匹配即可”的关系。
+
+不得用彼此独立的 `allowed_source_types` 与 `allowed_target_types` 两个列表代替 endpoint signatures，因为这种表示会产生未声明的笛卡尔积组合。
+
+端点 `kind` 的规范值只有：
+
+- `behavior`，对应解析后的 `Behavior`；
+- `preference`，对应解析后的 `Preference`。
+
+词汇条目不得通过 endpoint signature 扩大 §5.6 已冻结的 Core 端点矩阵。
+
+每个端点描述还必须具有非空 `role`。该 `role` 是由当前关系类型定义的稳定语义角色 token，采用与 §22.6 语义字符串相同的非空白要求，并按精确字符串相等进行比较。它不是 Core `Relation` 字段，也不得从实体显示标签或字段位置之外的启发式信息推断。
+
+对 `directional` 类型，每个 endpoint signature 必须使用有序结构：
+
+```yaml
+source:
+  kind: behavior | preference
+  role: <role-token>
+target:
+  kind: behavior | preference
+  role: <role-token>
+```
+
+其中 `source` 与 `target` 的位置具有规范语义。一个实际 `Relation` 只有在解析后的 `source` / `target` 实体种类按顺序匹配某一个 signature 时，才满足端点类型契约。
+
+对 `symmetric` / `non_directional` 类型，每个 endpoint signature 必须使用无序二元结构：
+
+```yaml
+endpoints:
+  - kind: behavior | preference
+    role: <role-token>
+  - kind: behavior | preference
+    role: <role-token>
+```
+
+`endpoints` 中两个描述符的 YAML 列表顺序没有语义；匹配按无序二元组进行。词汇条目不得通过 `source_role` / `target_role` 或等价结构重新引入位置方向性。
+
+当无序 signature 的两个 endpoint `kind` 不同时，两个 `role` 可以不同，并分别绑定到其 `kind`；因此 `Behavior-Preference` 与 `Preference-Behavior` 的 JSON 端点排列仍表示同一 endpoint signature。
+
+当无序 signature 的两个 endpoint `kind` 相同时，两个 `role` 必须相同；否则运行时无法在不恢复端点位置方向性的前提下确定哪个同类端点承担哪个不同角色。
+
+#### 14.6.4 因果状态
+
+每个词汇条目必须具有 `causal_status`，其规范值只有：
+
+- `causal`；
+- `non_causal`。
+
+不得使用 `maybe_causal`、`likely_causal`、`unknown` 或其他模糊状态。
+
+`directionality` 与 `causal_status` 是两个独立维度。有向关系不得因为 `directionality = directional` 就自动具有因果语义；本节也不新增 `causal ⇒ directional` 或其他跨字段推导规则。
+
+`source → target` 的端点顺序本身不得自动建立因果关系、时间先后、影响、优先级、evidence-for 或 parent/child 语义；这些语义只能由适用关系类型契约明确规定。
+
+#### 14.6.5 可选 inverse
+
+`inverse` 是可选词汇元数据，仅适用于 `directionality = directional` 的关系类型。
+
+当某个有向关系类型具有正式定义的逆关系代码时，`inverse` 可以使用以下最小引用信息指向该关系类型：
+
+- `system`；
+- `code`；
+- 可选 `version`。
+
+该引用继续遵守本节的关系类型身份规则，必须唯一解析到另一个满足本节 contract 的关系类型条目，并且其 `system + code` 不得与当前条目自身相同；不得通过 `inverse` 自引用变相表达 `self_inverse`。PBDL 1.0 不要求被引用条目反向声明同一组 inverse metadata。对 `symmetric` / `non_directional` 类型，交换端点后的语义已经由 `directionality` 契约定义，不需要再用 `self_inverse` 重复表达。
+
+`inverse` 不改变 §22.9.3 已冻结的 `Relation` 相等性：
+
+- `type = X, A → B`；
+- `type = inverse(X), B → A`；
+
+即使在词汇语义上互为逆关系，也不得因此被通用 `Relation` equality 或 dedup 自动判为同一个 `Relation`。当前相等性仍要求 `type` 按现有 `Coding` 规则相等。
+
+#### 14.6.6 明确不属于 v1 contract 的元数据
+
+以下内容不属于 PBDL 1.0 Relation Vocabulary Contract：
+
+- `self_inverse`；
+- `weight`；
+- 数值型关系强度；
+- probability；
+- ranking / priority。
+
+外部词汇可以拥有其自身的额外元数据，但 PBDL 1.0 实现不得把这些额外信息当作 Core `Relation` 的方向性、因果状态、相等性或规范化规则，除非未来 PBDL 规范另行定义。
+
+#### 14.6.7 registry surface 与内置词汇边界
+
+`spec/vocabulary/relation-types.yaml` 是 PBDL 1.0 Relation vocabulary 的机器可消费 registry surface / contract carrier；其规范权威仍是本节，而不是 YAML 文件自身。
+
+registry contract 已冻结，不等于 PBDL-Core 已经建立了一套内置关系 ontology。当前没有经过规范设计的具体 PBDL 内置关系代码，因此 `entries` 可以且当前应保持为空。
+
+外部或专门 Relation vocabulary 可以提供遵循本节 entry contract 的条目。PBDL 1.0 不在本节定义外部 registry 的发现、打包、分发或版本选择协议。
+
+符合规范的 `Relation` 必须使用其语义由某个适用的、满足本节 contract 的词汇条目定义的关系类型。未定义、无法唯一解析或仅靠自由文本 `display` / `description` 描述的关系类型，不具有可供 VOCABULARY 层使用的完整机器语义契约。
 
 ### 14.7 `Relation` 断言的 `Provenance`
 
@@ -2267,7 +2389,7 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 73. `Annotation` 与结构化规范语义冲突时，符合规范的使用方不得仅根据 `Annotation` 静默覆盖结构化语义。
 74. PBDL-Core 不得要求隐藏思维链、私有模型推理轨迹、内部草稿或其他隐藏模型推理过程作为规范性 `Annotation` 内容。
 
-跨文档身份/引用协议、沟通词汇、`Constraint` / `Barrier` 模型、规范性关系词汇与代码、逆关系约定、派生关系强度工件 Schema、DSL 语法及术语词表仍为 **TODO**。
+跨文档身份/引用协议、沟通词汇、`Constraint` / `Barrier` 模型、具体 Relation vocabulary entries 与逆关系代码配对、派生关系强度工件 Schema、DSL 语法及大型术语词表仍为 **TODO**。
 
 ## 17. 规范对象模型
 
@@ -3188,7 +3310,7 @@ JSON 数值的不同词法写法如果表示同一有限数学数值，可以在
 
 - 类型兼容与转换细节；
 - 规范级确定性字节序列化；
-- 规范性 `Relation` 词汇与逆关系约定；
+- 具体 Relation vocabulary entries、逆关系代码配对，以及外部 registry 的发现/打包机制；
 - DSL / EBNF 语法与解析器。
 
 当前章节不定义这些后续能力。
@@ -3260,16 +3382,18 @@ STRUCTURAL
 
 词汇符合性依赖适用的术语或 `Relation` 词汇契约。
 
-对 `Relation.type`，词汇层至少负责定义：
+PBDL 1.0 已在 §14.6 冻结 Relation Vocabulary Contract，但不内置具体关系类型代码集合。对一个已经提供适用 relation vocabulary 的处理环境，VOCABULARY 层至少负责：
 
-- 关系代码是否具有规范定义；
-- 允许的端点语义角色或端点种类；
-- 关系是有向、对称还是非定向；
-- 因果语义状态；
-- 逆关系约定（若有）；
-- 交换端点后对相等性与去重的影响。
+- `Relation.type` 按 `system + code` 唯一解析到一个词汇条目；
+- 该条目满足 §14.6 的 entry contract；
+- 解析后的 `source` / `target` Core 实体种类满足至少一个 endpoint signature；
+- 有向关系的端点位置满足其 source/target 角色契约；
+- 对称或非定向关系按无序 endpoint signature 解释，不因 JSON 中 `source` / `target` 排列不同改变关系语义；
+- `directionality`、`causal_status` 与可选 `inverse` 按词汇条目提供机器语义。
 
-当前 PBDL 1.0 尚未冻结具体的 `Relation` Vocabulary。因此，通用文档内语义校验器不得猜测这些契约；通过 STRUCTURAL / REFERENCE / SEMANTIC 也不得被解释为已经通过某个尚不存在的具体 `Relation` 词汇契约。
+如果当前 `Relation.type` 没有可用的适用词汇条目，则其方向性、端点角色、因果状态与逆关系契约属于**词汇契约不可用**。通用文档内语义校验器不得根据 relation code 名称、显示文本或端点排列猜测这些语义。
+
+通过 STRUCTURAL / REFERENCE / 文档内 SEMANTIC 不得被解释为已经通过某个未提供的 Relation vocabulary。
 
 ### 18.5 规范形符合性（NORMALIZATION）
 
@@ -3285,7 +3409,7 @@ STRUCTURAL
 
 当存在适用的词汇契约时，VOCABULARY 不符合也构成相应词汇符合性失败；但通用规范化器不得在词汇契约不可用时自行猜测该失败。
 
-在具体 `Relation` 词汇尚未冻结时，通用规范化器只能执行**与词汇无关的规范化**。它不得猜测某个 `Relation.type` 是否对称，不得自行交换端点，也不得基于猜测的对称性进行交换端点后的去重。
+在当前 `Relation.type` 没有可用词汇条目时，通用规范化器只能执行**与词汇无关的规范化**。它不得猜测该类型是否对称，不得自行交换端点，也不得基于猜测的对称性进行交换端点后的去重。
 
 ### 18.6 生成方/来源忠实性义务（SOURCE-FIDELITY）
 
@@ -3943,6 +4067,8 @@ JSON 对象成员顺序不得具有语义含义。
 | `Context` 与 `BehaviorFactor` 的分类必须忠实于来源语义 | SOURCE-FIDELITY |
 | `Relation.type` 的 `Coding` 结构 | STRUCTURAL |
 | `Relation.type` 的端点角色/方向性/因果契约 | VOCABULARY |
+| `Relation.type` 的可选 `inverse` 元数据 | VOCABULARY |
+| 互为 inverse 的不同 `Relation.type` 不因此成为同一 `Relation` | VOCABULARY + SEMANTIC |
 | `Relation` 对有向与对称端点顺序的相等规则 | VOCABULARY + SEMANTIC |
 | 对称关系交换端点后的重复项移除 | VOCABULARY + SEMANTIC + NORMALIZATION |
 | 完整信息相等的嵌入式/无 id 重复项 => 规范形中去重 | NORMALIZATION |
@@ -3960,23 +4086,35 @@ JSON 对象成员顺序不得具有语义含义。
 
 ### 22.14 `Relation` 词汇职责边界
 
-`Relation.type` 已是 `Coding`，因此 JSON Schema 可以验证其 `Coding` 结构。
+`Relation.type` 已是 `Coding`，因此 JSON Schema 只负责验证其 `Coding` 结构；§14.6 的 Relation Vocabulary Contract 不向 Core `Relation` 增加任何实例字段。
+
+PBDL-Core 1.0 冻结的是 **Relation Vocabulary Contract**，不是内置医学关系 ontology。当前 `spec/vocabulary/relation-types.yaml` 作为 registry surface / contract carrier 可以保持 `entries: []`；具体 relation codes 由未来或外部专门词汇提供。
 
 通用 JSON Schema 不得被要求独立决定某个关系代码的以下语义：
 
-- 允许哪些端点角色或类型；
-- 是否有向或对称；
-- 逆关系约定；
-- 因果语义状态；
+- 允许哪些 endpoint signatures；
+- 端点在关系中的语义角色；
+- `directionality`；
+- `causal_status`；
+- 可选 `inverse`；
 - 交换端点后是否断言内容相等或可去重。
 
-对称或非定向关系中的 `Relation` 相等与交换端点去重属于 **VOCABULARY + SEMANTIC + NORMALIZATION**。通用 JSON Schema 不得自行判断关系是否对称，也不得自行交换或规范化端点。
+这些能力属于 VOCABULARY，以及在词汇信息可用后的语义校验与规范化职责。
 
-这些能力属于专门的 `Relation` 词汇、语义校验与规范化职责。
+未来运行时消费边界如下：
 
-当前规范不定义具体的关系代码。
+- **Semantic validator**：在调用方提供适用 relation vocabulary 时，可以检查 `Relation.type` 是否唯一解析到 entry，以及解析后的端点组合是否匹配 §14.6 的 endpoint signature；不得从 relation code 名称猜语义。
+- **Canonicalizer**：在适用 entry 可用时，可以根据 `directionality` 应用 §22.9.3 已冻结的有向或无序端点相等规则，并据此进行 swapped-endpoint duplicate removal；entry 不可用时必须保持保守行为。
+- **Resolver**：职责继续仅为 `CoreEntityRef` 到 `Behavior` / `Preference` 的文档内身份解析，不承担 relation vocabulary semantics。
+- **JSON Schema**：职责保持结构投影，只验证 `Relation.type` 为合法 `Coding`、`source` / `target` 为合法 `CoreEntityRef` 结构；不得编码具体 relation code、方向性或 endpoint vocabulary semantics。
 
-因此，在具体 `Relation` 词汇契约不可用时，通用规范化器只能执行与词汇无关的规范化；不得猜测关系是否对称，不得自行交换端点，也不得进行依赖交换端点语义的去重。
+当前仓库尚未实现上述 Relation vocabulary 的运行时消费；该实现状态不影响本节规范契约已经冻结。
+
+对称或非定向关系中的 `Relation` 相等与交换端点去重仍属于 **VOCABULARY + SEMANTIC + NORMALIZATION**，并严格继续使用 §22.9.3。通用 JSON Schema 不得自行判断关系是否对称。
+
+`inverse` 只提供词汇语义元数据，不是 equality/dedup shortcut。即使 `X` 与 `Y` 在词汇中互为 inverse，`type=X, A→B` 与 `type=Y, B→A` 仍不会仅因 inverse 元数据被 §22.9.3 判为相同关系。
+
+当适用 `Relation.type` entry 不可用时，通用相等性引擎与规范化器必须保持当前保守行为：不得猜测方向性，不得交换或规范化端点，不得执行依赖 swapped-endpoint 语义的去重。
 
 ### 22.15 JSON Schema 结构投影与职责边界
 
@@ -4012,7 +4150,7 @@ JSON Schema 不得尝试替代以下职责：
 - 通用类型转换或强制转换规则；
 - 共享 `Provenance` 身份或池（若未来出现真实需要）；
 - 来源链式追踪；
-- 专门的 `Relation` 词汇、逆关系约定与因果状态定义；
+- 具体 Relation vocabulary entries、逆关系代码配对，以及外部 registry 的发现、打包与版本选择机制；
 - 扩展机制；
 - DSL / EBNF 语法与解析器；
 - 完整的 warning / severity / error-code 诊断接口；
