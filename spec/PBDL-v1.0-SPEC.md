@@ -95,7 +95,7 @@ PBDL-Core 定义以下四类核心语义对象：
 - `Preference`：对某个 `Subject` 已表达或已推断的倾向、选择、优先级、厌恶或偏好的表示。
 - `Relation`：在允许的端点类型之间显式表达语义联系的 Core 构造。
 
-`Context` 用于限定 `Behavior` / `Preference` 的语义解释，但不作为具有独立身份、可被引用的一级 Core 实体。它以嵌入式限定信息的形式归属于 `Behavior` / `Preference`；具体字段、`coded` / `text` 值结构、局部 `provenance` 与相等性见 §8.5、§12 和 §17.4.5。`Provenance` 与 `Evidence` 的语义边界、字段、附着方式，以及 `SourceDescriptor` / `GeneratorDescriptor` / `Evidence` 的具体结构见 §13 与 §17.8。JSON Schema 与 DSL 语法仍留待后续定义。
+`Context` 用于限定 `Behavior` / `Preference` 的语义解释，但不作为具有独立身份、可被引用的一级 Core 实体。它以嵌入式限定信息的形式归属于 `Behavior` / `Preference`；具体字段、`coded` / `text` 值结构、局部 `provenance` 与相等性见 §8.5、§12 和 §17.4.5。`Provenance` 与 `Evidence` 的语义边界、字段、附着方式，以及 `SourceDescriptor` / `GeneratorDescriptor` / `Evidence` 的具体结构见 §13 与 §17.8。当前 Draft 2020-12 JSON Schema 已提供这些结构的结构投影；DSL 语法仍留待后续定义。
 
 ### 5.1 文档与 Subject 绑定
 
@@ -174,7 +174,7 @@ PBDL-Core 的 `Relation` 允许以下最小端点集合：
 
 PBDL-Core 不允许 `Relation→Relation`，以避免在没有明确使用场景时引入高阶关系、关系注释图或关系实体化语义。
 
-§17 定义了 `EntityId` 的词法形式以及 `SubjectRef` / `CoreEntityRef` / `ActorRef` 的规范引用表示。DSL 语法与 JSON Schema 仍为 **TODO**。
+§17 定义了 `EntityId` 的词法形式以及 `SubjectRef` / `CoreEntityRef` / `ActorRef` 的规范引用表示；当前 Draft 2020-12 JSON Schema 投影其结构形状，文档范围的唯一解析与目标类型检查属于 §18 的引用符合性。DSL 语法仍为 **TODO**。
 
 ### 5.7 时间语义基础
 
@@ -312,7 +312,7 @@ PBDL-Core 区分两类不同的时间语义：
 - 来源中无法完全结构化、但值得保留的说明；
 - 人工或外部系统产生的解释性备注。
 
-`Annotation` 的最小规范字段、附着位置与基数见 §17，`Text` 词法约束见 §8.1。作者/生成者表示、JSON Schema 与 DSL 语法仍留待后续定义。
+`Annotation` 的最小规范字段、附着位置与基数见 §17，`Text` 词法约束见 §8.1，作者/生成者信息通过 `Annotation.provenance` 表达。当前 Draft 2020-12 JSON Schema 已提供结构投影；DSL 语法仍留待后续定义。
 
 #### 5.8.1 `Annotation` 不是机器语义的后门
 
@@ -1217,7 +1217,7 @@ token 列表顺序不得被解释为规范性的数值刻度或临床严重度�
 
 - 类型兼容与转换规则；
 - 未来的字节级确定性序列化规范；
-- JSON Schema 与 DSL 语法。
+- DSL / EBNF 语法。
 
 ## 9. Patient / Subject
 
@@ -1373,7 +1373,7 @@ DIRECT / INFERRED 的判断继续遵守 §13：依据语义内容是否相对于
 
 旧版 `behavior_trigger` / `symptom_triggered` 的规范化必须依据真实来源语义选择 `Context`、`BehaviorFactor` 或 `Relation`，不得仅根据旧版字段名猜测理由、方向或因果关系。
 
-规范性 `Relation` 词汇、具体 symptom 术语规范、JSON Schema 与 DSL 语法尚未定义。
+规范性 `Relation` 词汇与具体 symptom 术语规范尚未定义；当前 Draft 2020-12 JSON Schema 已提供结构投影，DSL 语法仍待定义。
 
 ### 10.4 旧版 `communication_status` 兼容性
 
@@ -1578,7 +1578,7 @@ PBDL-Core 不得默认把此类工作流或应用状态当作患者自身 `Behav
 - 定性频率 token 集合；
 - `BehaviorFrequency` 语义内容相等与完整限定信息相等。
 
-持续时间运算、小时级重复模式、RRULE / cron、`Preference` 重复模式、JSON Schema 与 DSL 语法尚未定义。
+持续时间运算、小时级重复模式、RRULE / cron、`Preference` 重复模式与 DSL 语法尚未定义；当前 Draft 2020-12 JSON Schema 已提供相关结构投影。
 
 ### 10.6 旧版 `reasoning_note` 兼容性
 
@@ -1682,7 +1682,7 @@ PBDL-Core 不得默认把此类工作流或应用状态当作患者自身 `Behav
 
 `NumericPreferenceValue` 必须显式保留比较运算符；有量纲数值的 `unit` 不能被猜测。
 
-§8.3–§8.4 不定义 `Preference` 重复模式、`Preference` 冲突、序数/强度分析、多选引擎、JSON Schema 或 DSL 语法。
+§8.3–§8.4 不定义 `Preference` 重复模式、`Preference` 冲突、序数/强度分析或多选引擎；当前 Draft 2020-12 JSON Schema 已提供相关结构投影，DSL 语法仍待定义。
 
 ## 12. Context
 
@@ -1766,7 +1766,7 @@ PBDL-Core 不得默认把此类工作流或应用状态当作患者自身 `Behav
 
 §8.5–§8.6 不新增共享 `Context` 身份、`ContextRef`、`Constraint` / `Barrier` 实体或 Communication 实体。
 
-`Context` 的 JSON Schema 与 DSL 语法尚未定义。
+`Context` 的 Draft 2020-12 JSON Schema 结构投影已经存在；DSL 语法仍待定义。
 
 ## 13. `Evidence` 与 `Provenance`
 
@@ -1919,7 +1919,7 @@ PBDL-Core 不负责自动裁决冲突，不在 §13 设计 ConflictAnalysis。
 - 置信信息衡量什么；
 - 置信信息对应哪个推断过程、模型或分析过程。
 
-规范的 `confidence` 字段归属于可选的 `Provenance.confidence`；`value` + `metric` + 可选 `scale` 的最小具体契约与相等性见 §17.8.6。校准框架、阈值策略、度量名称的词汇治理、JSON Schema 与 DSL 序列化尚未定义。
+规范的 `confidence` 字段归属于可选的 `Provenance.confidence`；`value` + `metric` + 可选 `scale` 的最小具体契约与相等性见 §17.8.6。当前 Draft 2020-12 JSON Schema 已提供结构投影；校准框架、阈值策略、度量名称的词汇治理与 DSL 序列化仍未定义。
 
 历史 `Preference.confidence_score` 因此继续保留为待细化概念，但不得被解释为所有 `Preference` 的 Core 必需属性。
 
@@ -1937,7 +1937,7 @@ PBDL-Core 不负责自动裁决冲突，不在 §13 设计 ConflictAnalysis。
 
 当前仍没有 Core 场景要求其他实体通过稳定的 Core 引用指向某个 `Provenance` 实例。
 
-`Provenance` 的最小字段与嵌入式附着方式见 §17；`SourceDescriptor` / `GeneratorDescriptor` / `Evidence`、嵌套 `provenance` 相等性与继承、`Confidence` 语义以及基于 `Text` / `TemporalValue` / `Confidence` 的来源相等性均在相关小节定义。共享 `Provenance` 身份、来源链式追踪、JSON Schema 与 DSL 序列化仍为 **TODO**。
+`Provenance` 的最小字段与嵌入式附着方式见 §17；`SourceDescriptor` / `GeneratorDescriptor` / `Evidence`、嵌套 `provenance` 相等性与继承、`Confidence` 语义以及基于 `Text` / `TemporalValue` / `Confidence` 的来源相等性均在相关小节定义。当前 Draft 2020-12 JSON Schema 已提供结构投影；共享 `Provenance` 身份、来源链式追踪与 DSL 序列化仍为 **TODO**。
 
 ## 14. Relations
 
@@ -1949,7 +1949,7 @@ PBDL-Core 不负责自动裁决冲突，不在 §13 设计 ConflictAnalysis。
 - `target` 端点；
 - 关系类型概念。
 
-`Relation` 的抽象语义见 §14；规范字段 `source` / `target` / `type` / `temporal` / `provenance` / `annotations` 与 `CoreEntityRef` 引用结构见 §17。JSON Schema 与 DSL 语法尚未定义。
+`Relation` 的抽象语义见 §14；规范字段 `source` / `target` / `type` / `temporal` / `provenance` / `annotations` 与 `CoreEntityRef` 引用结构见 §17。当前 Draft 2020-12 JSON Schema 已提供结构投影；具体 `Relation` 词汇契约与 DSL 语法仍待定义。
 
 `Relation` 的 `source` 与 `target` 必须是实体引用，并且必须分别解析到恰好一个允许的端点实体。
 
@@ -2014,7 +2014,6 @@ PBDL-Core 当前不将`causal_effect` 定义为默认关系，也不把未经证
 
 仍为 **TODO** 的是：
 
-- 最终 JSON Schema 集成；
 - DSL 语法与序列化；
 - 规范性 `Relation` 词汇与具体关系类型代码；
 - 逆关系约定；
@@ -2268,7 +2267,7 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 73. `Annotation` 与结构化规范语义冲突时，符合规范的使用方不得仅根据 `Annotation` 静默覆盖结构化语义。
 74. PBDL-Core 不得要求隐藏思维链、私有模型推理轨迹、内部草稿或其他隐藏模型推理过程作为规范性 `Annotation` 内容。
 
-跨文档身份/引用协议、沟通词汇、`Constraint` / `Barrier` 模型、规范性关系词汇、代码、逆关系约定、派生关系强度工件 Schema、JSON Schema、DSL 语法与术语词表仍为 **TODO**。
+跨文档身份/引用协议、沟通词汇、`Constraint` / `Barrier` 模型、规范性关系词汇与代码、逆关系约定、派生关系强度工件 Schema、DSL 语法及术语词表仍为 **TODO**。
 
 ## 17. 规范对象模型
 
@@ -2276,9 +2275,9 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 
 本节定义规范对象图、字段归属、必需/可选属性、基数、嵌套限定信息归属、类型化引用归属、必需 `provenance` 的附着方式，以及旧版字段到规范表示的归属。
 
-本节**不定义** JSON 序列化形式、JSON Schema、DSL 语法或实现规范。
+本节定义规范对象模型，但不把 JSON Schema 或运行时实现提升为独立规范权威。`spec/schema/pbdl-v1.schema.json` 是本规范的 Draft 2020-12 结构投影；JSON 字节级序列化、DSL 语法与实现细节不由本节定义。
 
-[schema/pbdl-v1.schema.json](schema/pbdl-v1.schema.json) 仍只是 JSON Schema Draft 2020-12 占位文件；本节不得被解释为已经修改或定义该 Schema 文件。
+[`schema/pbdl-v1.schema.json`](schema/pbdl-v1.schema.json) 已作为 PBDL 1.0 的 Draft 2020-12 结构投影存在，并受本规范约束；当 Schema、示例或实现行为与本规范冲突时，仍以本规范为准。
 
 ### 17.1 规范根对象：`PBDLDocument`
 
@@ -2375,7 +2374,7 @@ Core 不得自动对 `system` / `code` / `version` 执行 trim、case-fold、URI
 - display 为人类可读展示；
 - `version` 为可选信息。
 
-`Coding` 的规范对象结构与相等性见 §15；JSON Schema 与 DSL 序列化尚未定义。
+`Coding` 的规范对象结构与相等性见 §15；当前 Draft 2020-12 JSON Schema 已提供结构投影，DSL 序列化仍待定义。
 
 `Behavior.type` 必须承担结构化机器语义，不得由 `Annotation` 替代。
 
@@ -3161,7 +3160,7 @@ JSON 数值的不同词法写法如果表示同一有限数学数值，可以在
 
 这些字段不得为了历史兼容被重新塞回 Core 的规范表示。
 
-### 17.14 仍待定义的能力
+### 17.14 当前已定义与仍待定义的能力
 
 身份、引用、参与者、来源、生成方与证据的基础类型已经定义。
 
@@ -3183,51 +3182,151 @@ JSON 数值的不同词法写法如果表示同一有限数学数值，可以在
 
 主要业务复合语义类型已经定义。
 
+当前 `spec/schema/pbdl-v1.schema.json` 已提供 Draft 2020-12 结构投影；仓库也已存在 Schema 校验、引用解析、文档内语义校验与规范化实现。它们是本规范的实现与投影，不是独立的规范权威。
+
 以下能力仍留待后续规范定义：
 
 - 类型兼容与转换细节；
-- 规范级全局序列化顺序；
+- 规范级确定性字节序列化；
 - 规范性 `Relation` 词汇与逆关系约定；
-- JSON Schema 集成；
-- DSL / EBNF 语法；
-- 实现。
+- DSL / EBNF 语法与解析器。
 
 当前章节不定义这些后续能力。
 
-## 18. 校验模型
+## 18. 符合性模型
 
-完整校验架构尚未定义。
+PBDL 1.0 将符合性职责正式分为彼此独立但可组合的层次。规范权威始终是本文档；JSON Schema、运行时校验器、解析器与规范化器只能实现或投影这些规则，不得反向修改规范语义。
 
-未来的校验模型预计至少需要区分结构合法性与语义合法性，但具体分层、严重级别模型、错误码与实现仍为 **TODO**。
+当前文档处理主链为：
 
-已定义的最小校验后果包括：
+```text
+STRUCTURAL
+→ REFERENCE
+→ SEMANTIC（仅文档内可判定语义）
+→ NORMALIZATION / canonical normal form
+```
 
-- 旧版迁移因历史元数据确实不足而使用 `"undetermined"` 时，可以形成规范有效的 `Provenance`；
-- 符合规范的校验器应对 `"undetermined"` 产生来源质量警告；
-- 生成方已经掌握足够的 `derivation` 信息却仍使用 `"undetermined"`，属于语义不符合；
-- 缺少 §17.8 所要求的可追踪来源路径时，`"undetermined"` 不得使来源追踪要求自动变为已满足；
-- `Text` 必须满足 §8.1 的非空白内容规则；
-- `TemporalValue` 必须满足 §8.2 的词法、格里高利日期与偏移量有效性；
-- 当 §8.2.6 能判定 `Interval.start` 明确晚于 `Interval.end` 时，该 `Interval` 必须无效；
-- `TemporalExtent` 的显式局部 `provenance` 必须满足 §17.10 的完全覆盖与禁止叠加合并规则；
-- `Coding` 的必需与非空约束必须满足 §15；
-- `Confidence` 必须满足有限数值、`metric` 与可选 `scale` 范围规则；
-- `BehaviorFrequency` 必须满足 §8.3 的变体判别、`count` / `rate` / `period` 与重复模式集合规则；
-- `BehaviorFrequency` 的定量 `precision` 必须显式为 `"exact"` 或 `"approximate"`；
-- `RateFrequency` 缺少 `period` 必须无效；
-- `RecurrenceFrequency` 的 `Weekday` 重复项，以及非法的 `period` / 日期计划组合都必须无效；
-- `PreferenceValue` 必须满足 §8.4 的带标签联合类型判别；
-- `NumericPreferenceValue.value` 必须有限，`operator` 必须为允许的 token，`unit` 若存在必须为有效 `Coding`；
-- `Context` 必须满足 §8.5 的 `coded` / `text` 带标签联合类型判别；
-- 完整信息相等的 `Context` 重复项不得在规范的 `context` 集合中重复保留；
-- `BehaviorFactor` 的 `role` / `direction` / `factor` 变体必须满足 §8.6；
-- `antecedent` 与 `reported_reason` 的 `direction` 必须为 `factor_to_behavior`；
-- 由推断得到的解释性因素，如果不能与所属对象的 `provenance` 保持相同的 `derivation` / 适用来源集合，就必须显式写出局部 `provenance`；
-- `BehaviorFactor` 指向已有 Core 实体的显式类型化关系必须使用 `Relation`，不得通过因素的文本或代码表示规避。
+`VOCABULARY` 在适用的外部或专门词汇契约存在时另行判定；`SOURCE-FIDELITY` 是与孤立文档机械校验正交的生成方/来源义务。
 
-当前规范不定义校验器实现。
+失败于 STRUCTURAL、REFERENCE 或 SEMANTIC 的输入属于相应层次的无效输入。仅需要 NORMALIZATION 的表示仍可以语义有效，但尚未达到规范形。
 
-§22.13 将当前条件不变量分为 STRUCTURAL / REFERENCE / SEMANTIC / NORMALIZATION / VOCABULARY，以明确 JSON Schema、引用解析器、语义校验器与规范化器之间的职责边界；本节不定义校验器实现。
+### 18.1 结构符合性（STRUCTURAL）
+
+结构符合性只依赖文档自身的 JSON 结构与可由 JSON Schema 忠实投影的约束。
+
+当前 `spec/schema/pbdl-v1.schema.json` 是 PBDL 1.0 的 Draft 2020-12 结构投影。它至少承担以下类别：
+
+- 字段集合与对象闭包；
+- JSON 类型；
+- 必需/可选字段与基数；
+- `null` 禁止规则；
+- 联合类型判别与变体字段闭包；
+- 可以由 Schema 忠实表达的结构性条件；
+- 可以由 Schema 忠实表达的词法约束。
+
+通过结构符合性是后续文档内校验的前置条件，但**不等于**已经通过引用、语义、词汇或规范形符合性。
+
+### 18.2 引用符合性（REFERENCE）
+
+引用符合性依赖当前 PBDL 文档范围内的实体身份与引用图。
+
+该层至少包括：
+
+- `Subject` / `Behavior` / `Preference` 的 `EntityId` 在共享命名空间中唯一；
+- `SubjectRef` 必须唯一解析到一个 `Subject`；
+- `CoreEntityRef` 必须唯一解析到一个允许的 Core 实体；
+- 引用目标类型必须符合该引用位置的要求；
+- 未定义引用与歧义引用均无效。
+
+这些规则不得为了方便重新塞回通用 JSON Schema。结构正确的引用对象仍可能在 REFERENCE 层无效。
+
+### 18.3 文档内语义符合性（SEMANTIC）
+
+文档内语义符合性只包含**单凭当前 PBDL 文档自身即可判定**的语义规则。该层在结构符合性与引用符合性成立后进行。
+
+典型规则包括：
+
+- `TemporalValue` 中真实的 proleptic Gregorian 日期有效性；
+- 按 §8.2.6 可比较时，`Interval.start` 不得明确晚于 `Interval.end`；
+- 规范要求为有限值的数值不得为 NaN 或无穷值；
+- `Confidence.scale` 存在时必须满足 `min < max`，且 `value` 位于闭区间内；
+- 其他只需读取同一文档中的多个字段即可判定、且不依赖外部来源事实或词汇契约的语义条件。
+
+文档内语义校验器不得为了检查无法从孤立文档得知的事实而猜测原始来源、生成方意图、生成过程事实或词汇语义。
+
+因此，SEMANTIC 通过只表示“当前文档自身可判定的语义规则成立”，不表示来源忠实性、词汇契约或外部事实已经得到验证。
+
+### 18.4 词汇符合性（VOCABULARY）
+
+词汇符合性依赖适用的术语或 `Relation` 词汇契约。
+
+对 `Relation.type`，词汇层至少负责定义：
+
+- 关系代码是否具有规范定义；
+- 允许的端点语义角色或端点种类；
+- 关系是有向、对称还是非定向；
+- 因果语义状态；
+- 逆关系约定（若有）；
+- 交换端点后对相等性与去重的影响。
+
+当前 PBDL 1.0 尚未冻结具体的 `Relation` Vocabulary。因此，通用文档内语义校验器不得猜测这些契约；通过 STRUCTURAL / REFERENCE / SEMANTIC 也不得被解释为已经通过某个尚不存在的具体 `Relation` 词汇契约。
+
+### 18.5 规范形符合性（NORMALIZATION）
+
+规范形符合性与有效性分离。
+
+必须区分：
+
+1. **无效**：违反 STRUCTURAL、REFERENCE 或文档内 SEMANTIC 要求；
+2. **语义有效但需要规范化**：语义可以成立，但表示中仍含本规范要求移除的冗余；
+3. **规范形**：所有当前适用的规范化规则均已满足。
+
+规范化不得把无效输入“修复”为有效输入，也不得把仅属于规范化的冗余误报为语义无效。
+
+当存在适用的词汇契约时，VOCABULARY 不符合也构成相应词汇符合性失败；但通用规范化器不得在词汇契约不可用时自行猜测该失败。
+
+在具体 `Relation` 词汇尚未冻结时，通用规范化器只能执行**与词汇无关的规范化**。它不得猜测某个 `Relation.type` 是否对称，不得自行交换端点，也不得基于猜测的对称性进行交换端点后的去重。
+
+### 18.6 生成方/来源忠实性义务（SOURCE-FIDELITY）
+
+部分 PBDL 1.0 规范义务依赖原始来源、生成方已知信息或实际生成过程，因此不能仅凭一份孤立的 PBDL 文档机械证明。
+
+这类 SOURCE-FIDELITY 义务至少包括：
+
+- 来源实际提供了 `unit` 时，生成方不得遗漏该 `unit`；
+- `Context` 与 `BehaviorFactor` 的选择必须忠实反映来源语义；
+- 模型、规则或分析过程新增了来源未表达的解释时，producer 必须保留相应的 `INFERRED` 派生语义；
+- 生成方已经知道 DIRECT / INFERRED 类别时，不得滥用 `"undetermined"`；
+- 其他需要比较“文档所写内容”与“原始来源或生成过程真实情况”的规范要求。
+
+这些要求继续是规范义务。独立文档校验器无法机械证明它们，并不意味着这些要求被删除或降级。
+
+文档内语义校验器不得根据缺失的外部证据猜测生成方是否违反 SOURCE-FIDELITY；只有在原始来源、生成日志或等价外部证据可用时，才可以对这些义务作出符合性判断。
+
+### 18.7 `"undetermined"` 与 warning 边界
+
+当历史元数据确实不足、且 §17.8 要求的可追踪来源路径已经满足时，合法使用 `"undetermined"` 可以仍然通过 STRUCTURAL、REFERENCE 与文档内 SEMANTIC 符合性。
+
+符合规范的校验器**应**对这种合法的 `"undetermined"` 产生来源质量 warning。该 warning 本身不是有效性失败，也不得仅因为存在 warning 就把文档判为语义无效。
+
+如果生成方已经知道 `derivation` 类别却仍使用 `"undetermined"`，这是 SOURCE-FIDELITY 不符合；孤立文档的 SEMANTIC 校验器不得假装能够从文档本身证明生成方当时知道什么。
+
+warning / severity / error-code 的完整诊断接口仍留待后续定义；本节不因此设计完整错误码体系。
+
+### 18.8 实现与规范权威
+
+当前仓库已经存在：
+
+- Draft 2020-12 Schema validation；
+- document reference resolver；
+- document-intrinsic semantic validator；
+- document canonicalizer。
+
+这些实现证明相应处理层已经存在，但它们不是新的规范性来源。
+
+当实现行为、Schema 投影、示例或测试与本文档发生冲突时，仍以本文档为准。
+
+§22.13 进一步按 STRUCTURAL / REFERENCE / SEMANTIC / SOURCE-FIDELITY / NORMALIZATION / VOCABULARY 对条件不变量进行职责分类。
 
 ## 19. 扩展机制
 
@@ -3243,22 +3342,33 @@ Core 的规范对象使用封闭字段集合。未定义或未知字段不得被
 
 ## 20. 示例
 
-当前尚未编写规范性或非规范性示例。
+当前仓库已经提供 JSON 示例/测试语料：
 
-示例目录已预留：
+- `spec/examples/valid/`：4 个结构层有效示例；
+- `spec/examples/invalid/`：12 个结构层无效示例。
 
--`examples/valid/`
--`examples/invalid/`
+这些示例主要用于 Draft 2020-12 JSON Schema 的结构投影与结构符合性测试，不是独立的规范性来源，也不得被解释为已经覆盖完整的 REFERENCE / SEMANTIC / SOURCE-FIDELITY / VOCABULARY / 全流水线符合性语料。
 
-**TODO：** 仅在相应语法和语义确定之后添加示例。
+更完整的引用、文档内语义、词汇与全流水线符合性语料仍可在后续补充，但不得反向改变本文档已经冻结的规范语义。
 
 ## 21. 版本与兼容性
 
-目标规范版本为 PBDL 1.0。
+当前规范版本为 PBDL 1.0。
 
-兼容性模型尚未定义。
+规范文档必须通过 `pbdl_version` 声明语言版本；PBDL 1.0 的值必须精确为：
 
-**TODO：** 定义语言版本声明、向后 / 向前兼容预期、弃用策略和扩展兼容规则。
+```json
+"1.0"
+```
+
+当前 Draft 2020-12 JSON Schema 对该值进行结构投影。
+
+未来版本的兼容性模型仍未冻结。以下内容继续保留为 **TODO**：
+
+- 向后兼容与向前兼容预期；
+- 弃用策略；
+- 扩展兼容规则；
+- 1.x / 2.x 等未来版本的演进与迁移规则。
 
 ## 22. 规范表示与序列化语义
 
@@ -3748,7 +3858,7 @@ JSON 对象成员顺序不得具有语义含义。
 
 未来的确定性序列化规范必须基于当前相等性与规范形规则定义字节级顺序，不得反过来改变 PBDL 语义。
 
-因此，JSON Schema 可以在尚未定义字节级确定性 JSON 序列化规则的情况下定义。
+因此，现有 Draft 2020-12 JSON Schema 不依赖尚未定义的字节级确定性 JSON 序列化规则。
 
 ### 22.12 跨类型 `Text` 保真回退边界
 
@@ -3798,51 +3908,54 @@ JSON 对象成员顺序不得具有语义含义。
 |---|---|
 | `PBDLDocument.subjects >= 1` | STRUCTURAL |
 | `behaviors` / `preferences` / `relations` 根数组必需，可为空 | STRUCTURAL |
-| `Subject` / `Behavior` / `Preference` 的 `EntityId` 在共享命名空间中唯一 | REFERENCE / SEMANTIC |
+| `Subject` / `Behavior` / `Preference` 的 `EntityId` 在共享命名空间中唯一 | REFERENCE |
 | `EntityId` 词法形式 | STRUCTURAL |
 | `SubjectRef` 恰好解析到一个 `Subject` | REFERENCE |
 | `CoreEntityRef` 恰好解析到一个 `Behavior` / `Preference` | REFERENCE |
 | `ActorRef` = `ref` XOR `kind` 变体 | STRUCTURAL |
 | 可选 Core 字段用省略表示缺失；禁止 `null` | STRUCTURAL |
 | 可选集合基数 0..* 且存在但为空 => 规范形中省略 | NORMALIZATION |
-| 可选集合基数 1..* 且存在但为空 => 无效 | STRUCTURAL / SEMANTIC |
-| 局部 `provenance` 存在 => 非空 | STRUCTURAL / SEMANTIC |
+| 可选集合基数 1..* 且存在但为空 => 无效 | STRUCTURAL |
+| 局部 `provenance` 存在 => 非空 | STRUCTURAL |
 | DIRECT => `source` 必需 | STRUCTURAL（条件） |
 | INFERRED => `generator` 必需 | STRUCTURAL（条件） |
 | UNDETERMINED => `source` 必需 | STRUCTURAL（条件） |
-| UNDETERMINED => `source.locator` 或包含来源材料的 `Evidence` | STRUCTURAL + SEMANTIC |
+| UNDETERMINED => `source.locator` 或包含来源材料的 `Evidence` | STRUCTURAL（条件） |
 | `Evidence` => `content` 或 `locator` | STRUCTURAL（条件） |
 | `Interval` => `start` 或 `end` | STRUCTURAL（条件） |
 | 可比较的 `Interval` 中 `start` 明确晚于 `end` => 无效 | SEMANTIC |
-| `Confidence.scale` 存在 => `min < max` 且 `value` 位于范围内 | SEMANTIC / 数值型 |
+| 要求有限的数值为 NaN 或无穷值 => 无效 | SEMANTIC |
+| `Confidence.scale` 存在 => `min < max` 且 `value` 位于范围内 | SEMANTIC |
 | `FrequencyPeriod.value` 为整数且 >= 1 | STRUCTURAL |
 | `ObservedCount.count` 为整数且 >= 0 | STRUCTURAL |
-| `Rate.value` 有限且 >= 0，并且 `period` 必需 | STRUCTURAL |
+| `Rate.value >= 0` 且 `period` 必需 | STRUCTURAL |
 | `Recurrence.times_per_period` 存在 => 整数且 >= 1 | STRUCTURAL |
-| `days_of_week` 存在 => 非空、无重复，`period=1 week`，`times_per_period` 缺失 | STRUCTURAL + SEMANTIC |
-| `NumericPreference.value` 有限且 `operator` 为允许 token | STRUCTURAL |
-| 有量纲 `NumericPreference` 的来源提供 `unit` => 保留 `unit` | SEMANTIC（规范化） |
-| `Context` / `Factor` / `Frequency` / `Temporal` 的局部 `provenance` 不同或仅为子集 => 显式局部 `provenance` | SEMANTIC |
+| `days_of_week` 存在 => 非空、无重复，`period=1 week`，`times_per_period` 缺失 | STRUCTURAL |
+| `NumericPreference.operator` 为允许 token | STRUCTURAL |
+| 来源实际提供有量纲 `NumericPreference.unit` => 生成方必须保留 | SOURCE-FIDELITY |
+| 局部限定信息实际只由所属对象来源集合的不同集合或真子集支持 => 生成方必须显式写出局部 `provenance` | SOURCE-FIDELITY |
 | 冗余局部 `provenance` == 继承的完整集合 => 省略 | NORMALIZATION |
 | `reported_reason` => `direction=factor_to_behavior` | STRUCTURAL（条件） |
 | `antecedent` => `direction=factor_to_behavior` | STRUCTURAL（条件） |
-| 解释性 `factor` 由模型推断且超出来源 => 有效 `derivation=inferred` | SEMANTIC |
-| `BehaviorFactor` 表达已有 Core 实体关系 => `Relation` | SEMANTIC |
-| `Context` 与 `Factor` 的分类遵循来源语义 | SEMANTIC |
+| 解释性因素由模型推断且超出来源 => 有效 `derivation=inferred` | SOURCE-FIDELITY |
+| 生成方已知 DIRECT / INFERRED 却使用 `"undetermined"` | SOURCE-FIDELITY |
+| `BehaviorFactor` 实际表达已有 Core 实体关系 => `Relation` | SOURCE-FIDELITY |
+| `Context` 与 `BehaviorFactor` 的分类必须忠实于来源语义 | SOURCE-FIDELITY |
 | `Relation.type` 的 `Coding` 结构 | STRUCTURAL |
-| `Relation.type` 的端点角色/方向性/因果契约 | VOCABULARY + SEMANTIC |
+| `Relation.type` 的端点角色/方向性/因果契约 | VOCABULARY |
 | `Relation` 对有向与对称端点顺序的相等规则 | VOCABULARY + SEMANTIC |
 | 对称关系交换端点后的重复项移除 | VOCABULARY + SEMANTIC + NORMALIZATION |
 | 完整信息相等的嵌入式/无 id 重复项 => 规范形中去重 | NORMALIZATION |
 | 未知 Core 属性 | STRUCTURAL：无效 |
-| `Text` 回退跨语义维度泄漏 | SEMANTIC（规范化） |
+| `Text` 回退是否忠实保留、而非隐藏本应结构化的来源语义 | SOURCE-FIDELITY |
 
 类别含义：
 
-- **STRUCTURAL**：JSON Schema 可以直接表达全部或主要结构；
-- **REFERENCE**：需要文档范围的引用解析器；
-- **SEMANTIC**：需要语义校验器或规范化器读取跨字段信息或来源支持的语义；
-- **NORMALIZATION**：属于规范化器职责，不应假装由 Schema 解决语义等价；
+- **STRUCTURAL**：由 Draft 2020-12 JSON Schema 结构投影直接承担或主要承担；
+- **REFERENCE**：依赖文档范围的身份命名空间与引用解析；
+- **SEMANTIC**：仅依赖当前 PBDL 文档自身即可判定的语义规则，不得猜测原始来源、producer 意图或词汇契约；
+- **SOURCE-FIDELITY**：规范性的生成方/来源忠实性义务，需要原始来源、生成过程或等价外部证据才能判定，独立文档校验器不得猜测；
+- **NORMALIZATION**：属于规范形与规范化职责，不应把可规范化冗余误报为无效；
 - **VOCABULARY**：依赖术语或 `Relation` 词汇契约。
 
 ### 22.14 `Relation` 词汇职责边界
@@ -3863,36 +3976,36 @@ JSON 对象成员顺序不得具有语义含义。
 
 当前规范不定义具体的关系代码。
 
-### 22.15 JSON Schema 前置条件
+因此，在具体 `Relation` 词汇契约不可用时，通用规范化器只能执行与词汇无关的规范化；不得猜测关系是否对称，不得自行交换端点，也不得进行依赖交换端点语义的去重。
 
-JSON Schema 可以在不重新猜测 Core 对象结构的前提下定义，因为以下前置条件已经明确：
+### 22.15 JSON Schema 结构投影与职责边界
 
-1. 所有具体 Core 对象的字段、必需/可选属性与基数；
-2. `EntityId` / `Text` / `TemporalValue` / `Coding` / 数值的基础词法约束；
+`spec/schema/pbdl-v1.schema.json` 已作为 PBDL 1.0 的 Draft 2020-12 结构投影存在。
+
+该 Schema 以本文档已经冻结的对象模型与结构不变量为依据，包括：
+
+1. 具体 Core 对象的字段、必需/可选属性与基数；
+2. `EntityId` / `Text` / `TemporalValue` / `Coding` / 数值的可投影词法与结构约束；
 3. Core 字段封闭规则；
 4. 缺失与 `null` 规则；
 5. 必需根集合与可选集合的空集合规则；
 6. 联合类型判别字段与变体字段闭包；
-7. 结构性条件不变量；
-8. 引用字段及引用解析职责；
-9. 语义内容相等与完整规范信息相等；
-10. 重复项与规范化边界；
-11. 顺序无关的语义集合规则；
-12. 未知字段与扩展边界；
-13. Schema 无法承担的语义、规范化与词汇职责已明确分类。
+7. 可由 Draft 2020-12 忠实表达的结构性条件不变量。
+
+该 Schema 是本规范的结构投影，不是独立规范权威，也不等价于完整 PBDL 符合性。
 
 JSON Schema 不得尝试替代以下职责：
 
-- 引用解析；
-- 来源支持的语义判断；
-- `Context` 与 `Factor` 的规范化；
-- `provenance` 语义相等；
-- 冗余 `provenance` / 重复项的语义规范化；
-- `Relation` 词汇的端点、方向与因果校验。
+- 文档范围的身份唯一性与引用解析；
+- 真实 Gregorian 日期等需要额外文档内语义判断的规则；
+- 原始来源或生成方行为的忠实性判断；
+- `provenance` 语义相等与有效来源集合比较；
+- 冗余 `provenance` / 重复项的规范化；
+- `Relation` 词汇的端点角色、方向性、因果状态与逆关系契约。
 
-### 22.16 仍待定义的表示能力
+### 22.16 仍待定义的表示与生态能力
 
-以下表示层能力仍待定义，但不阻塞结构 Schema：
+以下能力仍待定义，但不阻塞当前结构 Schema、引用层、文档内语义层与规范化层：
 
 - 未来的确定性字节级 JSON 序列化规范；
 - 规范数组排序/对象键顺序规则；
@@ -3901,11 +4014,12 @@ JSON Schema 不得尝试替代以下职责：
 - 来源链式追踪；
 - 专门的 `Relation` 词汇、逆关系约定与因果状态定义；
 - 扩展机制；
-- DSL / EBNF 语法；
-- 解析器、校验器与运行时实现；
-- 规范性示例。
+- DSL / EBNF 语法与解析器；
+- 完整的 warning / severity / error-code 诊断接口；
+- 更完整的引用、语义、词汇与全流水线符合性语料；
+- 未来版本的完整兼容性与迁移策略。
 
-这些项目都有明确的职责边界；它们不得被解释为当前 Core 对象结构仍未确定。
+这些项目都有明确的职责边界；它们不得被解释为当前 Core 对象结构、Draft 2020-12 结构投影或 §18 符合性分层仍未确定。
 
 ## 附录 A：语法
 
@@ -3915,7 +4029,7 @@ JSON Schema 不得尝试替代以下职责：
 
 ## 附录 B：校验错误码
 
-**TODO：** 在校验语义确定后定义错误码体系。
+**TODO：** 定义完整的 warning / severity / error-code 诊断接口与规范性错误码体系。
 
 当前不存在规范性错误码。
 
