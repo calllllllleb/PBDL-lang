@@ -176,7 +176,7 @@ def _parse_endpoint(value: object, *, context: str) -> _Endpoint:
         )
 
     kind = mapping["kind"]
-    if kind not in {"behavior", "preference"}:
+    if not isinstance(kind, str) or kind not in {"behavior", "preference"}:
         raise _definition_error(
             f"{context}.kind must be behavior or preference"
         )
@@ -304,7 +304,7 @@ def _parse_entry(value: object, *, entry_index: int) -> _RelationTypeEntry:
     )
 
     directionality_value = mapping["directionality"]
-    if directionality_value not in {
+    if not isinstance(directionality_value, str) or directionality_value not in {
         "directional",
         "symmetric",
         "non_directional",
@@ -316,7 +316,10 @@ def _parse_entry(value: object, *, entry_index: int) -> _RelationTypeEntry:
     directionality = cast(Directionality, directionality_value)
 
     causal_value = mapping["causal_status"]
-    if causal_value not in {"causal", "non_causal"}:
+    if not isinstance(causal_value, str) or causal_value not in {
+        "causal",
+        "non_causal",
+    }:
         raise _definition_error(
             f"{context}.causal_status must be causal or non_causal"
         )

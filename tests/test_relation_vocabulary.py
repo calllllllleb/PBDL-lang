@@ -113,6 +113,15 @@ def _malformed_registries() -> list[tuple[str, dict[str, Any]]]:
     bad_causal = deepcopy(directional)
     bad_causal["causal_status"] = "maybe_causal"
 
+    non_string_directionality = deepcopy(directional)
+    non_string_directionality["directionality"] = []
+
+    non_string_causal = deepcopy(directional)
+    non_string_causal["causal_status"] = {}
+
+    non_string_kind = deepcopy(directional)
+    non_string_kind["endpoint_signatures"][0]["source"]["kind"] = []
+
     empty_signatures = deepcopy(directional)
     empty_signatures["endpoint_signatures"] = []
 
@@ -175,6 +184,9 @@ def _malformed_registries() -> list[tuple[str, dict[str, Any]]]:
         ("duplicate_identity", {"entries": [directional, duplicate]}),
         ("directionality", {"entries": [bad_directionality]}),
         ("causal_status", {"entries": [bad_causal]}),
+        ("directionality_type", {"entries": [non_string_directionality]}),
+        ("causal_status_type", {"entries": [non_string_causal]}),
+        ("endpoint_kind_type", {"entries": [non_string_kind]}),
         ("empty_signatures", {"entries": [empty_signatures]}),
         ("directional_shape", {"entries": [wrong_directional_shape]}),
         ("endpoint_kind", {"entries": [bad_kind]}),
