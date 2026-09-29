@@ -16,7 +16,7 @@ PBDL 的职责是在上游信息产生系统与下游应用之间提供稳定、
 
 PBDL-Core 只负责描述与表示。
 
-当前 PBDL-Core 的候选核心概念包括：
+当前 PBDL-Core 的核心概念包括：
 
 - Patient / Subject（患者 / 主体）
 - Behavior（行为）
