@@ -47,7 +47,9 @@ jobs:
       - name: Verify distribution contents
         run: |
           python - <<'PY'
+          from email.parser import Parser
           from pathlib import Path
+          import tarfile
           from zipfile import ZipFile
 
           wheels = list(Path("dist").glob("*.whl"))
@@ -66,10 +68,42 @@ jobs:
               "pbdl/_data/pbdl-v1.schema.json",
           }
 
+          repository_license = Path("LICENSE").read_bytes()
+
           with ZipFile(wheels[0]) as archive:
               names = set(archive.namelist())
               assert required_runtime_files <= names
               packaged_schema = archive.read("pbdl/_data/pbdl-v1.schema.json")
+
+              metadata_names = [
+                  name for name in names
+                  if name.endswith(".dist-info/METADATA")
+              ]
+              license_names = [
+                  name for name in names
+                  if name.endswith(".dist-info/licenses/LICENSE")
+              ]
+              assert len(metadata_names) == 1, metadata_names
+              assert len(license_names) == 1, license_names
+
+              metadata = Parser().parsestr(
+                  archive.read(metadata_names[0]).decode("utf-8")
+              )
+              assert metadata["Name"] == "pbdl-lang"
+              assert metadata["Version"] == "1.0.0"
+              assert metadata["License-Expression"] == "Apache-2.0"
+              assert archive.read(license_names[0]) == repository_license
+
+          with tarfile.open(sdists[0], "r:gz") as archive:
+              license_members = [
+                  member
+                  for member in archive.getmembers()
+                  if member.isfile() and member.name.endswith("/LICENSE")
+              ]
+              assert len(license_members) == 1, license_members
+              extracted = archive.extractfile(license_members[0])
+              assert extracted is not None
+              assert extracted.read() == repository_license
 
           canonical_schema = Path("spec/schema/pbdl-v1.schema.json").read_bytes()
           assert packaged_schema == canonical_schema

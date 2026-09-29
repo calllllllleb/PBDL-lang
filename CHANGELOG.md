@@ -2,7 +2,16 @@
 
 ## 未发布
 
-RC1 之后的未发布变更记录在此。
+1.0.0 之后的未发布变更记录在此。
+
+## 1.0.0 - 2026-09-29
+
+PBDL 1.0 final release. No Core semantic changes from 1.0.0rc1.
+
+- Promoted specification status from Release Candidate 1 to Final.
+- Set the Python distribution version to 1.0.0.
+- Adopted the Apache License, Version 2.0 (SPDX: Apache-2.0).
+- Finalized release-facing package metadata.
 
 ## 1.0.0rc1 - 2026-09-29
 
