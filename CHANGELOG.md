@@ -2,7 +2,11 @@
 
 ## 未发布
 
-当前未发布内容对应 PBDL 1.0 release line 的实现与 release preparation。尚未创建正式 1.0 release。
+RC1 之后的未发布变更记录在此。
+
+## 1.0.0rc1 - 2026-09-29
+
+PBDL 1.0 的第一个 release candidate。Core semantics 与 runtime 已通过 final repository consistency audit；该版本仍不是 final release。
 
 ### PBDL 1.0 Core
 
@@ -57,7 +61,7 @@
 ### Packaging 与 CI
 
 - 建立 PEP 517 / PEP 621 Python package，distribution name 为 pbdl-lang。
-- 当前 development package version 为 1.0.0.dev0，最低 Python 版本为 3.11。
+- 本 RC 的 Python distribution version 为 1.0.0rc1，最低 Python 版本为 3.11。
 - 支持构建 wheel 与 sdist。
 - 构建时将唯一 canonical Schema 从 spec/schema/pbdl-v1.schema.json 注入 wheel runtime resource；仓库不维护第二份 tracked canonical Schema。
 - clean-wheel smoke 验证从 repository 外部 cwd 安装并运行 public runtime。

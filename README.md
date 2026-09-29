@@ -8,7 +8,7 @@ PBDL 是一种用于结构化表示患者行为、偏好及其上下文、来源
 
 ## 当前状态
 
-当前仓库处于 **PBDL 1.0 release-candidate preparation** 阶段。
+当前仓库处于 **PBDL 1.0 Release Candidate 1** 阶段。
 
 已经完成并收口：
 
@@ -19,7 +19,7 @@ PBDL 是一种用于结构化表示患者行为、偏好及其上下文、来源
 - Python packaging 与 installed-runtime Schema resource；
 - GitHub Actions CI。
 
-当前规范仍标记为草案，Python distribution 版本为 1.0.0.dev0，尚未创建 1.0 RC / final tag，也尚未发布到 PyPI。
+当前规范状态为 Release Candidate 1，Python distribution 版本为 1.0.0rc1。RC1 仍不是 final release，项目尚未发布到 PyPI。
 
 版本号需要区分：
 
@@ -28,7 +28,7 @@ PBDL document version:
 "1.0"
 
 Python distribution version:
-1.0.0.dev0
+1.0.0rc1
 ~~~
 
 二者不是同一个版本字段。PBDL 1.0 文档中的版本仍必须写为：

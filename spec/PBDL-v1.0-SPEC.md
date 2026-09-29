@@ -1,6 +1,6 @@
 # PBDL 1.0 规范
 
-**状态：** 草案
+**状态：** Release Candidate 1
 **目标版本：** PBDL 1.0
 
 
