@@ -429,11 +429,13 @@ PBDL-Core 不得要求模型暴露、存储或交换隐藏思维链（hidden cha
 
 ## 7. 语法
 
-当前语法仍有意保持不完整。
+PBDL 1.0 不定义规范性的文本 DSL。PBDL 1.0 符合性不要求实现 DSL parser、DSL serializer，也不要求接受任何 DSL 文本语法。
 
-当前语法占位文件位于 [`grammar/pbdl.ebnf`](grammar/pbdl.ebnf)。
+当前语法占位文件位于 [`grammar/pbdl.ebnf`](grammar/pbdl.ebnf)。该文件是非规范性占位内容，不属于 PBDL 1.0 的符合性范围。
 
-**TODO：** 定义 Patient / `Subject`、`Behavior`、`Preference`、`Context`、`Evidence` / `Provenance` 与 `Relation` 的具体语法。
+未来 DSL 可以映射到同一 PBDL-Core 语义模型；除非未来规范显式修订，否则 DSL 不得改变 Core 语义、PBDL 1.0 JSON 数据模型、§22 的相等性规则或规范化规则。
+
+**TODO：** 定义未来文本 DSL 的 Patient / `Subject`、`Behavior`、`Preference`、`Context`、`Evidence` / `Provenance` 与 `Relation` 具体语法，以及相应 parser / serializer。
 
 ## 8. 类型系统
 
@@ -3306,7 +3308,7 @@ JSON 数值的不同词法写法如果表示同一有限数学数值，可以在
 
 主要业务复合语义类型已经定义。
 
-当前 `spec/schema/pbdl-v1.schema.json` 已提供 Draft 2020-12 结构投影；仓库也已存在 Schema 校验、引用解析、文档内语义校验与规范化实现。它们是本规范的实现与投影，不是独立的规范权威。
+当前 `spec/schema/pbdl-v1.schema.json` 已提供 Draft 2020-12 结构投影；仓库也已存在 Schema 校验、引用解析、文档内语义校验、Relation vocabulary 符合性校验、规范化与 `PBDLDocument` 规范信息相等实现。它们是本规范的实现与投影，不是独立的规范权威。
 
 以下能力仍留待后续规范定义：
 
@@ -3441,14 +3443,9 @@ warning / severity / error-code 的完整诊断接口仍留待后续定义；本
 
 ### 18.8 实现与规范权威
 
-当前仓库已经存在：
+当前仓库已经存在与本节职责对应的结构校验、引用解析、文档内语义校验、Relation vocabulary 符合性校验、规范化与 `PBDLDocument` 规范信息相等实现。
 
-- Draft 2020-12 Schema validation；
-- document reference resolver；
-- document-intrinsic semantic validator；
-- document canonicalizer。
-
-这些实现证明相应处理层已经存在，但它们不是新的规范性来源。
+这些实现证明相应处理能力已经存在，但它们不是新的规范性来源。
 
 当实现行为、Schema 投影、示例或测试与本文档发生冲突时，仍以本文档为准。
 
@@ -3481,26 +3478,57 @@ Core 的规范对象使用封闭字段集合。未定义或未知字段不得被
 
 当前规范版本为 PBDL 1.0。
 
+### 21.1 PBDL 1.0 规范机器交换表示
+
+PBDL 1.0 的规范机器交换表示是由本规范定义的 **JSON 数据模型表示**。
+
+职责边界如下：
+
+- 本规范是 PBDL 1.0 的唯一规范性来源；
+- Draft 2020-12 JSON Schema 是其中 STRUCTURAL 子集的机器可验证结构投影；
+- 运行时实现负责执行相应符合性处理，但不得反向成为规范权威；
+- JSON 数据模型是 PBDL 1.0 的规范机器交换表示；
+- 文本 DSL 不属于 PBDL 1.0 的符合性范围，见 §7。
+
+这里的 JSON 数据模型表示不等同于“canonical JSON”、确定性 JSON 或确定性字节序列化。对象成员顺序、规范未要求排序的集合表示、数值词法写法、空白与字节级编码的确定性规则仍按 §22.11 延后定义。
+
+在本规范声明顺序无关的集合中，两份 JSON 文档可以采用不同元素顺序；JSON 对象成员顺序也可以不同。只要它们按 §22.9 具有相同规范信息，就不得仅因为这些非语义表示差异判定为不同的 PBDL 语义内容。
+
+### 21.2 PBDL 1.0 版本处理边界
+
 规范文档必须通过 `pbdl_version` 声明语言版本；PBDL 1.0 的值必须精确为：
 
 ```json
 "1.0"
 ```
 
-当前 Draft 2020-12 JSON Schema 对该值进行结构投影。
+仅声明支持 PBDL 1.0 的处理器必须只把精确的 `"1.0"` 作为受支持的 PBDL 1.0 版本 token。诸如 `"1"`、`"1.0.0"`、`"1.1"`、`"2.0"`、`"draft"` 或其他值不得被当作 `"1.0"`。
 
-未来版本的兼容性模型仍未冻结。以下内容继续保留为 **TODO**：
+缺失的 `pbdl_version` 与 `null` 已由 STRUCTURAL 层拒绝；处理器不得把它们解释为隐式的 `"1.0"`。
+
+当处理器仅声明支持 PBDL 1.0 时，遇到非 `"1.0"` 的 `pbdl_version` 必须拒绝处理（fail closed）：不得自行猜测兼容性，不得自动降级或升级，不得把 `"1.0.0"` 等值归一化为 `"1.0"`，也不得忽略版本字段后继续按 PBDL 1.0 处理。
+
+当前 Draft 2020-12 JSON Schema 对精确的 `"1.0"` 进行结构投影；本节不要求为不受支持版本新增独立运行时异常或 API。
+
+### 21.3 当前版本与未来兼容策略的边界
+
+PBDL 1.0 Core 对象使用封闭字段集合。处理器不得为了所谓“向前兼容”而静默忽略未知 Core 字段；未知字段不等于未来兼容扩展，扩展机制仍由 §19 延后定义。
+
+PBDL 1.0 处理器也不得把历史字段名、未来字段或未知版本作为隐式迁移输入进行自动改写、忽略或补全。历史格式转换属于显式迁移/导入层，不是 PBDL 1.0 Core 处理器的隐式职责。
+
+本节只冻结 PBDL 1.0 当前版本的处理边界，并未定义未来版本之间的兼容政策。以下内容继续保留为 **TODO**：
 
 - 向后兼容与向前兼容预期；
 - 弃用策略；
 - 扩展兼容规则；
-- 1.x / 2.x 等未来版本的演进与迁移规则。
+- 1.x / 2.x 等未来版本的演进与迁移规则；
+- 自动文档迁移或通用迁移框架。
 
 ## 22. 规范表示与序列化语义
 
 本节规定规范表示、相等性、规范化与顺序边界。
 
-本节不新增业务实体，也不改变前述业务语义；其职责是规定所有具体 Core 类型在可映射为 JSON 的语义模型中的表示、相等性、规范化与顺序边界。
+本节不新增业务实体，也不改变前述业务语义；其职责是规定所有具体 Core 类型在 PBDL 1.0 规范 JSON 数据模型中的表示、相等性、规范化与顺序边界。
 
 ### 22.1 规范类型清单
 
@@ -3970,9 +3998,11 @@ C. 若适用的 `Relation.type` 方向性契约不可用：
 
 > **语义模型中的集合顺序无关；字节级确定性 JSON 序列化延后定义。**
 
+PBDL 1.0 的规范 JSON 数据模型表示不等同于“canonical JSON”或确定性字节编码。
+
 JSON 对象成员顺序不得具有语义含义。
 
-当前 Core 中声明为顺序无关的数组，无论输入或序列化器如何排列，只要元素集合按本节相等性规则相同，就具有相同的语义规范信息。
+当前 Core 中声明为顺序无关的数组，无论输入或序列化器如何排列，只要元素集合按本节相等性规则相同，就具有相同的语义规范信息。因而，两份 JSON 文档可以具有不同的对象成员顺序或这些数组的元素顺序，同时仍具有相同的规范信息；判断依据是 §22.9，而不是字节相等。
 
 当前规范**不规定**：
 
@@ -4101,22 +4131,22 @@ PBDL-Core 1.0 冻结的是 **Relation Vocabulary Contract**，不是内置医学
 - 可选 `inverse`；
 - 交换端点后是否断言内容相等或可去重。
 
-这些能力属于 VOCABULARY，以及在词汇信息可用后的语义校验与规范化职责。
+这些能力属于 VOCABULARY，以及在词汇信息可用后的关系相等与规范化职责。文档内 SEMANTIC 校验器不得因为调用方提供了 relation vocabulary 就改变为词汇校验器。
 
-未来运行时消费边界如下：
+运行时职责边界如下：
 
-- **Semantic validator**：在调用方提供适用 relation vocabulary 时，可以检查 `Relation.type` 是否唯一解析到 entry，以及解析后的端点组合是否匹配 §14.6 的 endpoint signature；不得从 relation code 名称猜语义。
-- **Canonicalizer**：在适用 entry 可用时，可以根据 `directionality` 应用 §22.9.3 已冻结的有向或无序端点相等规则，并据此进行 swapped-endpoint duplicate removal；entry 不可用时必须保持保守行为。
+- **Vocabulary validator / VOCABULARY 层**：负责 `Relation.type` 的词汇条目解析、§14.6 的版本兼容性断言，以及解析后端点种类对 endpoint signature 的符合性判断；不得从关系代码名称或显示文本猜语义。
+- **Canonicalizer**：可以显式接收适用的 Relation vocabulary，并根据 `directionality` 应用 §22.9.3 已冻结的有向或无序端点相等规则，据此移除交换端点后的重复项；词汇契约不可用时必须保持保守行为。
+- **`PBDLDocument` 规范信息相等**：可以显式接收适用的 Relation vocabulary，并根据同一 `directionality` 契约执行方向性感知的 `Relation` 相等判断；不得把 `inverse` 当作相等性捷径。
 - **Resolver**：职责继续仅为 `CoreEntityRef` 到 `Behavior` / `Preference` 的文档内身份解析，不承担 relation vocabulary semantics。
-- **JSON Schema**：职责保持结构投影，只验证 `Relation.type` 为合法 `Coding`、`source` / `target` 为合法 `CoreEntityRef` 结构；不得编码具体 relation code、方向性或 endpoint vocabulary semantics。
-
-当前仓库尚未实现上述 Relation vocabulary 的运行时消费；该实现状态不影响本节规范契约已经冻结。
+- **Semantic validator**：职责继续仅为文档自身可判定的文档内语义，不消费 Relation vocabulary，也不得猜测词汇语义。
+- **JSON Schema**：职责保持结构投影，只验证 `Relation.type` 为合法 `Coding`、`source` / `target` 为合法 `CoreEntityRef` 结构；不得编码具体关系代码、方向性或 endpoint vocabulary 语义。
 
 对称或非定向关系中的 `Relation` 相等与交换端点去重仍属于 **VOCABULARY + SEMANTIC + NORMALIZATION**，并严格继续使用 §22.9.3。通用 JSON Schema 不得自行判断关系是否对称。
 
 `inverse` 只提供词汇语义元数据，不是 equality/dedup shortcut。即使 `X` 与 `Y` 在词汇中互为 inverse，`type=X, A→B` 与 `type=Y, B→A` 仍不会仅因 inverse 元数据被 §22.9.3 判为相同关系。
 
-当适用 `Relation.type` entry 不可用时，通用相等性引擎与规范化器必须保持当前保守行为：不得猜测方向性，不得交换或规范化端点，不得执行依赖 swapped-endpoint 语义的去重。
+当适用 `Relation.type` entry 不可用时，通用相等性引擎与规范化器必须保持当前保守行为：不得猜测方向性，不得交换或规范化端点，不得执行依赖交换端点语义的去重。
 
 ### 22.15 JSON Schema 结构投影与职责边界
 
@@ -4154,7 +4184,7 @@ JSON Schema 不得尝试替代以下职责：
 - 来源链式追踪；
 - 具体 Relation vocabulary entries、逆关系代码配对，以及外部 registry 的发现、打包与版本选择机制；
 - 扩展机制；
-- DSL / EBNF 语法与解析器；
+- 未来可能定义的 DSL / EBNF 语法与解析器；这些能力不属于 PBDL 1.0 的符合性范围；
 - 完整的 warning / severity / error-code 诊断接口；
 - 更完整的引用、语义、词汇与全流水线符合性语料；
 - 未来版本的完整兼容性与迁移策略。
@@ -4165,7 +4195,7 @@ JSON Schema 不得尝试替代以下职责：
 
 当前语法占位文件位于 [`grammar/pbdl.ebnf`](grammar/pbdl.ebnf)。
 
-当前语法有意保持不完整。
+该文件是非规范性占位内容，不属于 PBDL 1.0 的符合性范围。PBDL 1.0 不定义规范性的文本 DSL；未来 DSL / EBNF 语法与 parser / serializer 仍待后续规范定义，见 §7。
 
 ## 附录 B：校验错误码
 
