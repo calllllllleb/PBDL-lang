@@ -1,0 +1,43 @@
+{
+  "pbdl_version": "1.0",
+  "entries": [
+    {
+      "system": "urn:example:pbdl-relation",
+      "code": "peer_behavior",
+      "directionality": "symmetric",
+      "endpoint_signatures": [
+        {
+          "endpoints": [
+            {
+              "kind": "behavior",
+              "role": "peer"
+            },
+            {
+              "kind": "behavior",
+              "role": "peer"
+            }
+          ]
+        }
+      ],
+      "causal_status": "non_causal"
+    },
+    {
+      "system": "urn:example:pbdl-relation",
+      "code": "behavior_to_preference",
+      "directionality": "directional",
+      "endpoint_signatures": [
+        {
+          "source": {
+            "kind": "behavior",
+            "role": "behavior"
+          },
+          "target": {
+            "kind": "preference",
+            "role": "preference"
+          }
+        }
+      ],
+      "causal_status": "non_causal"
+    }
+  ]
+}

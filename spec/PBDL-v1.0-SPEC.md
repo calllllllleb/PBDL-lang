@@ -3465,14 +3465,16 @@ Core 的规范对象使用封闭字段集合。未定义或未知字段不得被
 
 ## 20. 示例
 
-当前仓库已经提供 JSON 示例/测试语料：
+当前仓库提供两类 JSON 示例/测试语料：
 
-- `spec/examples/valid/`：4 个结构层有效示例；
-- `spec/examples/invalid/`：12 个结构层无效示例。
+- `spec/examples/valid/` 与 `spec/examples/invalid/`：既有 STRUCTURAL reference corpus，用于 Draft 2020-12 JSON Schema 的结构投影与结构符合性测试；
+- `spec/examples/full-pipeline/`：小型、可人工审阅的跨层 executable reference corpus，用于验证真实 JSON 文档在 REFERENCE、SEMANTIC、VOCABULARY、NORMALIZATION 与规范信息相等职责之间的组合边界。
 
-这些示例主要用于 Draft 2020-12 JSON Schema 的结构投影与结构符合性测试，不是独立的规范性来源，也不得被解释为已经覆盖完整的 REFERENCE / SEMANTIC / SOURCE-FIDELITY / VOCABULARY / 全流水线符合性语料。
+full-pipeline corpus 中使用的 Relation vocabulary 仅为示例/测试用途，不构成 PBDL-Core 内置关系 ontology，也不是独立的规范性来源。
 
-更完整的引用、文档内语义、词汇与全流水线符合性语料仍可在后续补充，但不得反向改变本文档已经冻结的规范语义。
+SOURCE-FIDELITY 需要原始来源、生成过程或等价外部证据，不能仅凭孤立 PBDL 文档机械判定，因此该 executable corpus 不声称覆盖 SOURCE-FIDELITY 不符合。
+
+所有示例与测试语料都必须服从本文档已经冻结的规范语义；它们不得反向定义或修改 PBDL 1.0。
 
 ## 21. 版本与兼容性
 

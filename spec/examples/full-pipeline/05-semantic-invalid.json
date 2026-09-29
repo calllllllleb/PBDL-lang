@@ -1,0 +1,73 @@
+{
+  "pbdl_version": "1.0",
+  "subjects": [
+    {
+      "id": "subject_1"
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "behavior_1",
+      "subject": {
+        "ref": "subject_1"
+      },
+      "type": {
+        "system": "urn:example:pbdl-behavior",
+        "code": "example_behavior_1"
+      },
+      "provenance": [
+        {
+          "derivation": "direct",
+          "source": {
+            "kind": "patient_self_report"
+          }
+        }
+      ],
+      "temporal": {
+        "kind": "instant",
+        "at": "2023-02-29"
+      }
+    },
+    {
+      "id": "behavior_2",
+      "subject": {
+        "ref": "subject_1"
+      },
+      "type": {
+        "system": "urn:example:pbdl-behavior",
+        "code": "example_behavior_2"
+      },
+      "provenance": [
+        {
+          "derivation": "direct",
+          "source": {
+            "kind": "patient_self_report"
+          }
+        }
+      ]
+    }
+  ],
+  "preferences": [],
+  "relations": [
+    {
+      "source": {
+        "ref": "behavior_1"
+      },
+      "target": {
+        "ref": "behavior_2"
+      },
+      "type": {
+        "system": "urn:example:pbdl-relation",
+        "code": "peer_behavior"
+      },
+      "provenance": [
+        {
+          "derivation": "direct",
+          "source": {
+            "kind": "clinician_documentation"
+          }
+        }
+      ]
+    }
+  ]
+}
