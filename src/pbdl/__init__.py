@@ -32,9 +32,14 @@ from .canonicalization import (
     canonicalize_document,
     is_canonical_normal_form,
 )
+from .equality import (
+    DocumentEqualityInputError,
+    documents_canonically_equal,
+)
 
 __all__ = [
     "CanonicalizationInputError",
+    "DocumentEqualityInputError",
     "RelationVocabulary",
     "RelationVocabularyDefinitionError",
     "ResolutionInputError",
@@ -51,6 +56,7 @@ __all__ = [
     "are_references_valid",
     "are_semantics_valid",
     "canonicalize_document",
+    "documents_canonically_equal",
     "is_canonical_normal_form",
     "is_relation_vocabulary_valid",
     "is_schema_valid",
