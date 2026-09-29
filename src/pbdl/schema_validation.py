@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from functools import lru_cache
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -32,8 +33,8 @@ class SchemaValidationResult:
 
 
 def _find_schema_path(module_file: Path) -> Path:
-    # Schema 的唯一机器权威来自规范目录。这里向上查找仓库根目录，
-    # 不把 Schema 复制进运行时包，避免两份机器制品随维护产生漂移。
+    # Source checkouts keep the canonical machine-readable Schema under spec/schema.
+    # This fallback is used only when no build-injected package resource exists.
     for parent in module_file.resolve().parents:
         candidate = parent / "spec" / "schema" / "pbdl-v1.schema.json"
         if candidate.is_file():
@@ -45,10 +46,19 @@ def _canonical_schema_path() -> Path:
     return _find_schema_path(Path(__file__))
 
 
+def _packaged_schema_resource():
+    return resources.files("pbdl").joinpath("_data").joinpath("pbdl-v1.schema.json")
+
+
 @lru_cache(maxsize=1)
 def _load_schema() -> dict[str, Any]:
-    with _canonical_schema_path().open("r", encoding="utf-8") as handle:
-        schema = json.load(handle)
+    packaged_schema = _packaged_schema_resource()
+    if packaged_schema.is_file():
+        with packaged_schema.open("r", encoding="utf-8") as handle:
+            schema = json.load(handle)
+    else:
+        with _canonical_schema_path().open("r", encoding="utf-8") as handle:
+            schema = json.load(handle)
     if not isinstance(schema, dict):
         raise TypeError("canonical JSON Schema must be a JSON object")
     return schema
